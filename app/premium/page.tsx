@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
@@ -7,6 +8,7 @@ import FootballBackground from "@/components/FootballBackground";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
+import PurchasePreContractBox from "@/components/PurchasePreContractBox";
 
 type PaidPlan = "pro" | "elite";
 
@@ -25,6 +27,8 @@ export default function PremiumPage() {
   const { t } = useLanguage();
   const [loadingPlan, setLoadingPlan] = useState<PaidPlan | null>(null);
   const [error, setError] = useState("");
+  const [acceptedPurchaseTerms, setAcceptedPurchaseTerms] = useState(false);
+  const [acceptedImmediateAccess, setAcceptedImmediateAccess] = useState(false);
 
   const plans: Plan[] = useMemo(
     () => [
@@ -50,6 +54,11 @@ export default function PremiumPage() {
   );
 
   async function startCheckout(plan: PaidPlan) {
+    if (!acceptedPurchaseTerms || !acceptedImmediateAccess) {
+      setError(t.premium.acceptPurchaseRequired);
+      return;
+    }
+
     setLoadingPlan(plan);
     setError("");
 
@@ -142,6 +151,47 @@ export default function PremiumPage() {
               {t.premium.disclaimer}
             </p>
           </section>
+
+          <div className="mx-auto mt-10 max-w-3xl">
+            <PurchasePreContractBox />
+
+            <div className="mt-6 space-y-4 rounded-[2rem] border border-white/10 bg-black/30 p-6">
+              <label className="flex items-start gap-3 text-sm leading-6 text-[#D8D8D8]">
+                <input
+                  type="checkbox"
+                  checked={acceptedPurchaseTerms}
+                  onChange={(event) =>
+                    setAcceptedPurchaseTerms(event.target.checked)
+                  }
+                  className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
+                />
+
+                <span>
+                  {t.premium.acceptPurchaseTerms}{" "}
+                  <Link
+                    href="/legal/purchase"
+                    className="font-semibold text-[#18ff6d] hover:underline"
+                  >
+                    {t.legal.links.purchase}
+                  </Link>
+                  .
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 text-sm leading-6 text-[#D8D8D8]">
+                <input
+                  type="checkbox"
+                  checked={acceptedImmediateAccess}
+                  onChange={(event) =>
+                    setAcceptedImmediateAccess(event.target.checked)
+                  }
+                  className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
+                />
+
+                <span>{t.premium.acceptImmediateAccess}</span>
+              </label>
+            </div>
+          </div>
 
           {error && (
             <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-center">
@@ -279,6 +329,25 @@ export default function PremiumPage() {
 
             <p className="mx-auto mt-4 max-w-2xl text-[#A9A9A9]">
               {t.premium.footerText}
+            </p>
+
+            <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-[#777]">
+              {t.premium.termsNote}{" "}
+              <Link href="/legal/purchase" className="text-[#18ff6d] hover:underline">
+                {t.legal.links.purchase}
+              </Link>
+              {" · "}
+              <Link href="/legal/terms" className="text-[#18ff6d] hover:underline">
+                {t.legal.links.terms}
+              </Link>
+              {" · "}
+              <Link href="/legal/privacy" className="text-[#18ff6d] hover:underline">
+                {t.legal.links.privacy}
+              </Link>
+              {" · "}
+              <Link href="/legal/disclaimer" className="text-[#18ff6d] hover:underline">
+                {t.legal.links.disclaimer}
+              </Link>
             </p>
           </section>
         </div>

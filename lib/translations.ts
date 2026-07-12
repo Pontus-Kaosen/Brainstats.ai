@@ -41,6 +41,7 @@ export const translations = {
       builder: "Builder",
       dashboard: "Dashboard",
       premium: "Premium",
+      legal: "Juridik",
       login: "Logga in",
       logout: "Logga ut",
       loggedInAs: "Inloggad som",
@@ -69,6 +70,11 @@ export const translations = {
           text: "Lås upp djupare rapporter och fler analyser.",
         },
       ],
+      legalEyebrow: "Juridisk information",
+      legalTitle: "Villkor, integritet och ansvar",
+      legalDescription:
+        "BrainStats är ett AI-analysverktyg – inte ett spelbolag. Här hittar du tydlig information om vad tjänsten gör, hur vi behandlar data och vilka regler som gäller vid köp av Pro eller Elite.",
+      legalSellerLabel: "Säljare och kontakt",
     },
 
     login: {
@@ -86,6 +92,14 @@ export const translations = {
       switchToLogin: "Har du redan konto? Logga in",
       accountCreated: "Kontot skapades! Du kan nu logga in.",
       somethingWrong: "Något gick fel.",
+      acceptTermsLabel: "Jag godkänner",
+      acceptTermsRequired:
+        "Du måste godkänna användarvillkoren och integritetspolicyn för att skapa konto.",
+      termsLink: "användarvillkoren",
+      privacyLink: "integritetspolicyn",
+      and: "och",
+      legalFooter:
+        "Genom att använda BrainStats godkänner du våra villkor. Läs även köpvillkor, cookiepolicy och ansvarsfriskrivning.",
     },
 
     dashboard: {
@@ -169,6 +183,32 @@ export const translations = {
       footerTitle: "Every match deserves a BrainScore™",
       footerText:
         "Du kan börja gratis och uppgradera när du behöver fler analyser. Prenumerationerna förnyas månadsvis.",
+      termsNote:
+        "Genom att köpa premium godkänner du våra köpvillkor och användarvillkor. Läs även integritetspolicyn och ansvarsfriskrivningen.",
+      prePurchase: {
+        title: "Information före köp",
+        intro:
+          "Gäller betalda planer Pro (99 kr/mån) och Elite (149 kr/mån). Free-planen är gratis och kräver inget köp.",
+        sellerLabel: "Säljare",
+        paymentLabel: "Betalning",
+        paymentText:
+          "Månadsvis prenumeration via Stripe. Förnyas automatiskt tills du säger upp i dashboarden.",
+        deliveryLabel: "Leverans",
+        deliveryText:
+          "Digital tillgång till premium-funktioner aktiveras direkt efter betalning.",
+        withdrawalLabel: "Ångerrätt",
+        withdrawalText:
+          "14 dagars ångerrätt som konsument. Begär du omedelbar tillgång till den digitala tjänsten upphör ångerrätten när premium har aktiverats.",
+        cancelLabel: "Uppsägning",
+        cancelText:
+          "Säg upp när som helst via Hantera abonnemang i dashboarden (Stripe Customer Portal).",
+      },
+      acceptPurchaseTerms:
+        "Jag har läst och godkänner köpvillkoren.",
+      acceptImmediateAccess:
+        "Jag begär omedelbar tillgång till premium och förstår att ångerrätten upphör när tjänsten har aktiverats.",
+      acceptPurchaseRequired:
+        "Du måste godkänna köpvillkoren och omedelbar digital leverans innan betalning.",
       plans: {
         free: {
           name: "Free",
@@ -481,6 +521,50 @@ export const translations = {
       swedish: "Svenska",
       english: "English",
     },
+
+    legal: {
+      hubTitle: "Juridisk information",
+      hubDescription:
+        "Här hittar du användarvillkor, integritetspolicy, cookiepolicy och ansvarsfriskrivning för BrainStats.",
+      backToLegal: "← Till juridisk information",
+      lastUpdated: "Senast uppdaterad",
+      links: {
+        terms: "Användarvillkor",
+        purchase: "Köpvillkor",
+        privacy: "Integritetspolicy",
+        cookies: "Cookiepolicy",
+        disclaimer: "Ansvarsfriskrivning",
+      },
+      descriptions: {
+        terms: "Regler för konto, AI-analyser och användning av tjänsten.",
+        purchase:
+          "Priser, betalning, ångerrätt, reklamation och uppsägning för Pro och Elite.",
+        privacy: "Hur vi behandlar personuppgifter enligt GDPR.",
+        cookies: "Cookies, lokal lagring och analysverktyg.",
+        disclaimer: "AI-begränsningar, spelansvar och viktiga varningar.",
+      },
+    },
+
+    footer: {
+      tagline:
+        "AI-driven fotbollsanalys och beslutsstöd. BrainStats är inte ett spelbolag.",
+      disclaimer:
+        "18+. Spela ansvarsfullt. AI-analyser är ingen garanti för resultat.",
+      legalHeading: "Juridiskt",
+      allLegal: "All juridisk information",
+      copyright: "© 2026 BrainStats. Alla rättigheter förbehållna.",
+      sellerLine: "Pontus Kaosén · Org.nr 030610-1056 · support@brainstats.ai",
+      responsibleGambling: "Spelar du för mycket? Sök hjälp på stodlinjen.se",
+    },
+
+    cookieConsent: {
+      title: "Vi använder cookies",
+      description:
+        "BrainStats använder nödvändiga cookies för inloggning och valfri analys för att förbättra tjänsten.",
+      learnMore: "Läs cookiepolicyn",
+      acceptAll: "Acceptera alla",
+      essentialOnly: "Endast nödvändiga",
+    },
   },
 
   en: {
@@ -523,6 +607,7 @@ export const translations = {
       builder: "Builder",
       dashboard: "Dashboard",
       premium: "Premium",
+      legal: "Legal",
       login: "Log in",
       logout: "Log out",
       loggedInAs: "Signed in as",
@@ -551,6 +636,11 @@ export const translations = {
           text: "Unlock deeper reports and more analyses.",
         },
       ],
+      legalEyebrow: "Legal information",
+      legalTitle: "Terms, privacy and responsibility",
+      legalDescription:
+        "BrainStats is an AI analysis tool — not a bookmaker. Here you will find clear information about what the service does, how we handle data and the rules that apply when purchasing Pro or Elite.",
+      legalSellerLabel: "Seller and contact",
     },
 
     login: {
@@ -568,6 +658,14 @@ export const translations = {
       switchToLogin: "Already have an account? Log in",
       accountCreated: "Account created! You can now log in.",
       somethingWrong: "Something went wrong.",
+      acceptTermsLabel: "I agree to the",
+      acceptTermsRequired:
+        "You must accept the Terms of Service and Privacy Policy to create an account.",
+      termsLink: "Terms of Service",
+      privacyLink: "Privacy Policy",
+      and: "and",
+      legalFooter:
+        "By using BrainStats you agree to our terms. Also read the Purchase Terms, Cookie Policy and Disclaimer.",
     },
 
     dashboard: {
@@ -651,6 +749,32 @@ export const translations = {
       footerTitle: "Every match deserves a BrainScore™",
       footerText:
         "You can start free and upgrade when you need more analyses. Subscriptions renew monthly.",
+      termsNote:
+        "By purchasing premium you agree to our Purchase Terms and Terms of Service. Also read our Privacy Policy and Disclaimer.",
+      prePurchase: {
+        title: "Pre-purchase information",
+        intro:
+          "Applies to paid plans Pro (99 SEK/month) and Elite (149 SEK/month). The Free plan costs nothing and requires no purchase.",
+        sellerLabel: "Seller",
+        paymentLabel: "Payment",
+        paymentText:
+          "Monthly subscription via Stripe. Renews automatically until you cancel in the dashboard.",
+        deliveryLabel: "Delivery",
+        deliveryText:
+          "Digital access to premium features is activated immediately after payment.",
+        withdrawalLabel: "Right of withdrawal",
+        withdrawalText:
+          "14-day withdrawal right for consumers. If you request immediate access to the digital service, the withdrawal right ends when premium is activated.",
+        cancelLabel: "Cancellation",
+        cancelText:
+          "Cancel anytime via Manage subscription in the dashboard (Stripe Customer Portal).",
+      },
+      acceptPurchaseTerms:
+        "I have read and accept the Purchase Terms.",
+      acceptImmediateAccess:
+        "I request immediate premium access and understand that my withdrawal right ends once the service is activated.",
+      acceptPurchaseRequired:
+        "You must accept the Purchase Terms and immediate digital delivery before payment.",
       plans: {
         free: {
           name: "Free",
@@ -962,6 +1086,51 @@ export const translations = {
       ariaLabel: "Change language",
       swedish: "Svenska",
       english: "English",
+    },
+
+    legal: {
+      hubTitle: "Legal information",
+      hubDescription:
+        "Find BrainStats Terms of Service, Privacy Policy, Cookie Policy and Disclaimer here.",
+      backToLegal: "← Back to legal information",
+      lastUpdated: "Last updated",
+      links: {
+        terms: "Terms of Service",
+        purchase: "Purchase Terms",
+        privacy: "Privacy Policy",
+        cookies: "Cookie Policy",
+        disclaimer: "Disclaimer",
+      },
+      descriptions: {
+        terms: "Rules for accounts, AI analyses and use of the service.",
+        purchase:
+          "Pricing, payment, withdrawal rights, complaints and cancellation for Pro and Elite.",
+        privacy: "How we process personal data under GDPR.",
+        cookies: "Cookies, local storage and analytics tools.",
+        disclaimer: "AI limitations, responsible gambling and important warnings.",
+      },
+    },
+
+    footer: {
+      tagline:
+        "AI-powered football analysis and decision support. BrainStats is not a bookmaker.",
+      disclaimer:
+        "18+. Gamble responsibly. AI analyses are not a guarantee of results.",
+      legalHeading: "Legal",
+      allLegal: "All legal information",
+      copyright: "© 2026 BrainStats. All rights reserved.",
+      sellerLine: "Pontus Kaosén · Org. no 030610-1056 · support@brainstats.ai",
+      responsibleGambling:
+        "Gambling too much? Get help at BeGambleAware.org",
+    },
+
+    cookieConsent: {
+      title: "We use cookies",
+      description:
+        "BrainStats uses essential cookies for login and optional analytics to improve the service.",
+      learnMore: "Read the Cookie Policy",
+      acceptAll: "Accept all",
+      essentialOnly: "Essential only",
     },
   },
 } as const;

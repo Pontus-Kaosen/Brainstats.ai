@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import LegalLinksSection from "@/components/LegalLinksSection";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function LoginPage() {
@@ -9,12 +11,19 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
     setLoading(true);
     setMessage("");
+
+    if (mode === "signup" && !acceptedTerms) {
+      setMessage(t.login.acceptTermsRequired);
+      setLoading(false);
+      return;
+    }
 
     try {
       if (mode === "signup") {
@@ -31,6 +40,7 @@ export default function LoginPage() {
 
         setMessage(t.login.accountCreated);
         setMode("login");
+        setAcceptedTerms(false);
         setLoading(false);
         return;
       }
@@ -85,6 +95,35 @@ export default function LoginPage() {
           className="mt-4 w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 text-white outline-none"
         />
 
+        {mode === "signup" && (
+          <label className="mt-5 flex items-start gap-3 text-sm leading-6 text-[#A9A9A9]">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(event) => setAcceptedTerms(event.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
+            />
+
+            <span>
+              {t.login.acceptTermsLabel}{" "}
+              <Link
+                href="/legal/terms"
+                className="font-semibold text-[#18ff6d] hover:underline"
+              >
+                {t.login.termsLink}
+              </Link>{" "}
+              {t.login.and}{" "}
+              <Link
+                href="/legal/privacy"
+                className="font-semibold text-[#18ff6d] hover:underline"
+              >
+                {t.login.privacyLink}
+              </Link>
+              .
+            </span>
+          </label>
+        )}
+
         <button
           onClick={handleSubmit}
           disabled={loading}
@@ -101,6 +140,7 @@ export default function LoginPage() {
           onClick={() => {
             setMode(mode === "login" ? "signup" : "login");
             setMessage("");
+            setAcceptedTerms(false);
           }}
           className="mt-5 w-full text-[#E8DCC8]"
         >
@@ -114,6 +154,15 @@ export default function LoginPage() {
             {message}
           </div>
         )}
+
+        <div className="mt-8 border-t border-white/10 pt-6">
+          <p className="text-center text-xs leading-6 text-[#777]">
+            {t.login.legalFooter}
+          </p>
+          <div className="mt-4">
+            <LegalLinksSection compact />
+          </div>
+        </div>
       </div>
     </main>
   );

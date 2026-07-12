@@ -104,6 +104,10 @@ export default function Navbar() {
       title: t.navbar.premium,
       href: "/premium",
     },
+    {
+      title: t.navbar.legal,
+      href: "/legal",
+    },
   ];
 
   return (
@@ -227,6 +231,13 @@ export default function Navbar() {
                         {
                           t.navbar.premium
                         }
+                      </Link>
+
+                      <Link
+                        href="/legal"
+                        className="block rounded-2xl px-4 py-3 hover:bg-white/5"
+                      >
+                        📜 {t.navbar.legal}
                       </Link>
                     </div>
 

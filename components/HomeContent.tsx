@@ -4,6 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
+import LegalLinksSection from "@/components/LegalLinksSection";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function HomeContent() {
@@ -54,6 +55,8 @@ export default function HomeContent() {
             </div>
           ))}
         </section>
+
+        <LegalLinksSection />
       </div>
     </main>
   );
