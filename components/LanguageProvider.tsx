@@ -14,6 +14,7 @@ import {
 } from "@/lib/translations";
 
 import type { Translations } from "@/lib/translations";
+import { persistLanguageCookie } from "@/lib/languageCookie";
 
 type LanguageContextValue = {
   language: Language;
@@ -44,6 +45,7 @@ export default function LanguageProvider({
     ) {
       setLanguageState(savedLanguage);
       document.documentElement.lang = savedLanguage;
+      persistLanguageCookie(savedLanguage);
       return;
     }
 
@@ -57,6 +59,7 @@ export default function LanguageProvider({
 
     setLanguageState(detectedLanguage);
     document.documentElement.lang = detectedLanguage;
+    persistLanguageCookie(detectedLanguage);
   }, []);
 
   function setLanguage(nextLanguage: Language) {
@@ -66,6 +69,8 @@ export default function LanguageProvider({
       STORAGE_KEY,
       nextLanguage
     );
+
+    persistLanguageCookie(nextLanguage);
 
     document.documentElement.lang =
       nextLanguage;

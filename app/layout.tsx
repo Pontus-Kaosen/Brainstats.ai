@@ -5,8 +5,7 @@ import {
 
 import { Analytics } from "@vercel/analytics/next";
 import LanguageProvider from "@/components/LanguageProvider";
-import Footer from "@/components/Footer";
-import CookieConsent from "@/components/CookieConsent";
+import DeferredSiteChrome from "@/components/DeferredSiteChrome";
 
 import "./globals.css";
 
@@ -47,9 +46,8 @@ export default function RootLayout({
         <LanguageProvider>
           <div className="flex min-h-full flex-col">
             <div className="flex-1">{children}</div>
-            <Footer />
+            <DeferredSiteChrome />
           </div>
-          <CookieConsent />
         </LanguageProvider>
 
         <Analytics />

@@ -1,13 +1,12 @@
-"use client";
-
-import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
-import { useLanguage } from "@/components/LanguageProvider";
+import HomeCtaLink from "@/components/HomeCtaLink";
+import { getHomeContent } from "@/lib/homeContent";
+import { detectLanguage } from "@/lib/locale.server";
 
-export default function Home() {
-  const { t } = useLanguage();
+export default async function Home() {
+  const language = await detectLanguage();
+  const t = getHomeContent(language);
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
@@ -18,58 +17,52 @@ export default function Home() {
 
         <section className="mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-8 sm:py-32">
           <span className="rounded-full border border-[#E8DCC8]/20 px-5 py-2 text-sm text-[#E8DCC8]">
-            🧠 {t.home.badge}
+            🧠 {t.badge}
           </span>
 
-          <h2 className="mt-8 max-w-5xl text-4xl font-bold leading-tight sm:text-6xl">
-            {t.home.title}
-          </h2>
+          <h1 className="mt-8 max-w-5xl text-4xl font-bold leading-tight sm:text-6xl">
+            {t.title}
+          </h1>
 
           <p className="mt-8 max-w-2xl text-base leading-8 text-[#A9A9A9] sm:text-lg">
-            {t.home.description}
+            {t.description}
           </p>
 
           <div className="mt-12 flex w-full flex-col justify-center gap-4 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-5">
-            <Link href="/analyze" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto">
-                📝 {t.home.pasteBet}
-              </Button>
-            </Link>
+            <HomeCtaLink href="/analyze" className="w-full sm:w-auto">
+              📝 {t.pasteBet}
+            </HomeCtaLink>
 
-            <Link href="/builder" className="w-full sm:w-auto">
-              <Button
-                variant="secondary"
-                className="w-full sm:w-auto"
-              >
-                ⚽ {t.home.buildBet}
-              </Button>
-            </Link>
+            <HomeCtaLink
+              href="/builder"
+              variant="secondary"
+              className="w-full sm:w-auto"
+            >
+              ⚽ {t.buildBet}
+            </HomeCtaLink>
 
-            <Link href="/premium" className="w-full sm:w-auto">
-              <Button
-                variant="secondary"
-                className="w-full sm:w-auto"
-              >
-                💎 {t.home.seePremium}
-              </Button>
-            </Link>
+            <HomeCtaLink
+              href="/premium"
+              variant="secondary"
+              className="w-full sm:w-auto"
+            >
+              💎 {t.seePremium}
+            </HomeCtaLink>
           </div>
         </section>
 
         <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-20 sm:px-8 sm:pb-24 md:grid-cols-3">
-          {t.home.features.map((card) => (
-            <div
+          {t.features.map((card) => (
+            <article
               key={card.title}
               className="rounded-3xl border border-white/5 bg-[#1A1A1A] p-6 sm:p-8"
             >
-              <h3 className="text-xl font-bold text-[#E8DCC8]">
+              <h2 className="text-xl font-bold text-[#E8DCC8]">
                 {card.title}
-              </h3>
+              </h2>
 
-              <p className="mt-4 leading-7 text-[#A9A9A9]">
-                {card.text}
-              </p>
-            </div>
+              <p className="mt-4 leading-7 text-[#A9A9A9]">{card.text}</p>
+            </article>
           ))}
         </section>
       </div>

@@ -11,10 +11,14 @@ export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(CONSENT_KEY);
-    if (!saved) {
-      setVisible(true);
-    }
+    const timeoutId = window.setTimeout(() => {
+      const saved = window.localStorage.getItem(CONSENT_KEY);
+      if (!saved) {
+        setVisible(true);
+      }
+    }, 1200);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   function saveConsent(value: "accepted" | "essential") {

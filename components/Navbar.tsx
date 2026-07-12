@@ -24,31 +24,47 @@ export default function Navbar() {
   const { t } = useLanguage();
 
   useEffect(() => {
+    let cancelled = false;
+    let authSubscription: { unsubscribe: () => void } | null = null;
+
     async function loadUser() {
       const {
         data: { session },
-      } =
-        await supabase.auth.getSession();
+      } = await supabase.auth.getSession();
 
-      setEmail(
-        session?.user?.email || null
-      );
+      if (!cancelled) {
+        setEmail(session?.user?.email || null);
+      }
     }
 
-    loadUser();
+    function startAuth() {
+      void loadUser();
 
-    const { data } =
-      supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          setEmail(
-            session?.user?.email ||
-              null
-          );
-        }
-      );
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        setEmail(session?.user?.email || null);
+      });
+
+      authSubscription = data.subscription;
+    }
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleId = window.requestIdleCallback(startAuth, {
+        timeout: 2500,
+      });
+
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(idleId);
+        authSubscription?.unsubscribe();
+      };
+    }
+
+    const timeoutId = window.setTimeout(startAuth, 150);
 
     return () => {
-      data.subscription.unsubscribe();
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+      authSubscription?.unsubscribe();
     };
   }, []);
 
