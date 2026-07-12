@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 
@@ -23,6 +23,22 @@ const titleGradient =
 const cardClass =
   "brain-card rounded-3xl p-6 sm:p-8";
 
+  function createServerSupabase() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Supabase-miljövariabler saknas.");
+    }
+  
+    return createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  }
+
 function riskColor(risk?: string) {
   if (risk === "Low") {
     return "border-[#18ff6d44] bg-[#18ff6d]/10 text-[#18ff6d]";
@@ -37,6 +53,9 @@ function riskColor(risk?: string) {
 
 export default async function ReportPage({ params }: ReportProps) {
   const { id } = await params;
+
+  const supabase = createServerSupabase();
+
 
   const { data: analysis, error } = await supabase
     .from("analyses")
