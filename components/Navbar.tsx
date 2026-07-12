@@ -111,7 +111,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="border-b border-[#18ff6d22] bg-black/35 px-3 py-4 text-[#FAFAF8] backdrop-blur-xl sm:px-8 sm:py-5">
+    <nav className="border-b border-[#18ff6d22] bg-black/95 px-3 py-4 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <Link
           href="/"
@@ -179,7 +179,7 @@ export default function Navbar() {
                 </button>
 
                 {menuOpen && (
-                  <div className="absolute right-0 z-[90] mt-4 w-[min(18rem,calc(100vw-1.5rem))] rounded-3xl border border-[#18ff6d33] bg-[#101010]/98 p-3 shadow-[0_0_60px_rgba(24,255,109,.18)] backdrop-blur-xl">
+                  <div className="absolute right-0 z-[90] mt-4 w-[min(18rem,calc(100vw-1.5rem))] rounded-3xl border border-[#18ff6d33] bg-[#101010] p-3 shadow-[0_0_60px_rgba(24,255,109,.18)] max-md:backdrop-blur-none backdrop-blur-xl">
                     <div className="rounded-2xl bg-[#18ff6d]/10 p-4">
                       <p className="text-xs text-[#A9A9A9]">
                         {

@@ -11,6 +11,7 @@ import {
   formatTranslation,
   getLocale,
 } from "@/lib/locale";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 const TOURNAMENTS_VALUE = "__tournaments__";
 
@@ -142,6 +143,10 @@ function isCornerMarketValue(market: string) {
 
 export default function BuilderPage() {
   const { t, language } = useLanguage();
+  const isMobile = useIsMobile();
+  const fixturePreviewLimit = isMobile ? 4 : 8;
+  const groupedFixtureLimit = isMobile ? 10 : 20;
+  const liveRefreshMs = isMobile ? 120_000 : 60_000;
   const markets = t.builder.markets;
 
   const dateOptions = useMemo(
@@ -333,8 +338,6 @@ export default function BuilderPage() {
   
         const data = await response.json();
   
-        console.log("LIVE API RESPONSE:", data);
-  
         if (!response.ok || data.success !== true) {
           throw new Error(
             data.error || t.builder.errors.live
@@ -366,13 +369,13 @@ export default function BuilderPage() {
   
     loadLive();
   
-    const intervalId = window.setInterval(loadLive, 60000);
+    const intervalId = window.setInterval(loadLive, liveRefreshMs);
   
     return () => {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [liveRefreshMs, t.builder.errors.live]);
 
   useEffect(() => {
     if (allLeagues.length === 0) return;
@@ -473,7 +476,7 @@ export default function BuilderPage() {
       currentLeagueId: number,
       season: number
     ) {
-      const visibleFixtures = items.slice(0, 8);
+      const visibleFixtures = items.slice(0, fixturePreviewLimit);
 
       const teamIds = Array.from(
         new Set(
@@ -484,40 +487,63 @@ export default function BuilderPage() {
         )
       );
 
-      try {
-        const standingsResponse = await fetch(
+      const [standingsResult, formResults, h2hResults] = await Promise.all([
+        fetch(
           `/api/football/standings?league=${currentLeagueId}&season=${season}`
-        );
+        )
+          .then((response) => response.json())
+          .catch((error) => {
+            console.error("Standings kunde inte hämtas:", error);
+            return null;
+          }),
+        Promise.allSettled(
+          teamIds.map(async (teamId) => {
+            const response = await fetch(
+              `/api/football/form?team=${teamId}&season=${season}`
+            );
 
-        const standingsData = await standingsResponse.json();
+            const data = await response.json();
 
+            return {
+              teamId,
+              form: data.form || [],
+            };
+          })
+        ),
+        Promise.allSettled(
+          visibleFixtures.map(async (fixture) => {
+            const response = await fetch(
+              `/api/football/h2h?home=${fixture.teams.home.id}&away=${fixture.teams.away.id}`
+            );
+
+            const data = await response.json();
+
+            const h2h = (data.matches || []).map((match: any) => ({
+              homeWinner: match.teams.home.winner,
+              awayWinner: match.teams.away.winner,
+              homeGoals: match.goals.home,
+              awayGoals: match.goals.away,
+            }));
+
+            return {
+              fixtureId: fixture.fixture.id,
+              h2h,
+            };
+          })
+        ),
+      ]);
+
+      if (standingsResult) {
         const standingsRecord: Record<number, StandingItem> = {};
 
-        (standingsData.standings || []).forEach(
+        (standingsResult.standings || []).forEach(
           (team: StandingItem) => {
             standingsRecord[team.teamId] = team;
           }
         );
 
         setStandings(standingsRecord);
-      } catch (error) {
-        console.error("Standings kunde inte hämtas:", error);
       }
-
-      const formResults = await Promise.allSettled(
-        teamIds.map(async (teamId) => {
-          const response = await fetch(
-            `/api/football/form?team=${teamId}&season=${season}`
-          );
-
-          const data = await response.json();
-
-          return {
-            teamId,
-            form: data.form || [],
-          };
-        })
-      );
 
       const formRecord: Record<number, FormItem[]> = {};
 
@@ -528,28 +554,6 @@ export default function BuilderPage() {
       });
 
       setForms(formRecord);
-
-      const h2hResults = await Promise.allSettled(
-        visibleFixtures.map(async (fixture) => {
-          const response = await fetch(
-            `/api/football/h2h?home=${fixture.teams.home.id}&away=${fixture.teams.away.id}`
-          );
-
-          const data = await response.json();
-
-          const h2h = (data.matches || []).map((match: any) => ({
-            homeWinner: match.teams.home.winner,
-            awayWinner: match.teams.away.winner,
-            homeGoals: match.goals.home,
-            awayGoals: match.goals.away,
-          }));
-
-          return {
-            fixtureId: fixture.fixture.id,
-            h2h,
-          };
-        })
-      );
 
       const h2hRecord: Record<number, H2HItem[]> = {};
 
@@ -568,7 +572,7 @@ export default function BuilderPage() {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [leagueId, selectedSeason]);
+  }, [leagueId, selectedSeason, fixturePreviewLimit]);
 
   useEffect(() => {
     if (!selectedFixture || !isPlayerProp) {
@@ -729,7 +733,7 @@ export default function BuilderPage() {
   }, [fixtures, search, dateFilter]);
 
   const groupedFixtures = useMemo(() => {
-    return filteredFixtures.slice(0, 20).reduce(
+    return filteredFixtures.slice(0, groupedFixtureLimit).reduce(
       (groups: Record<string, Fixture[]>, fixture) => {
         const date = new Date(
           fixture.fixture.date
@@ -749,7 +753,7 @@ export default function BuilderPage() {
       },
       {}
     );
-  }, [filteredFixtures]);
+  }, [filteredFixtures, groupedFixtureLimit, language]);
 
   function addFixtureToSlip(fixture: Fixture) {
     setSelectedFixtureId(fixture.fixture.id);

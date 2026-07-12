@@ -209,7 +209,7 @@ const referee = usedData?.referee;
         <Navbar />
 
         <div className="mx-auto max-w-6xl px-8 py-10">
-        <section className="mt-14 overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-10 backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)]">
+          <section className="mt-14 overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-6 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10">
   <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
     {t.analyze.badge}
   </div>
@@ -244,7 +244,7 @@ const referee = usedData?.referee;
   </div>
 </section>
 
-          <section className="mt-10 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 backdrop-blur-xl">
+          <section className="mt-10 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 max-md:backdrop-blur-none backdrop-blur-xl">
             <textarea
               value={betText}
               onChange={(e) => {
@@ -265,7 +265,7 @@ const referee = usedData?.referee;
           </section>
 
           {loading && (
-            <section className="mt-8 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 backdrop-blur-xl">
+            <section className="mt-8 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 max-md:backdrop-blur-none backdrop-blur-xl">
               <p className={titleGradient}>{t.analyze.loadingReport}</p>
             </section>
           )}

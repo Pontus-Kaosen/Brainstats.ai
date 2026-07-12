@@ -4,7 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 import { useLanguage } from "@/components/LanguageProvider";
-import { legalSlugs } from "@/lib/legalContent";
+import { legalSlugs } from "@/lib/legalSlugs";
 import { getSellerBlock } from "@/lib/companyInfo";
 
 export default function LegalHubPage() {

@@ -190,7 +190,7 @@ export default function DashboardPage() {
         <Navbar />
 
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
-          <section className="overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-7 backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10">
+          <section className="overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-5 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10">
             <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
               {t.dashboard.badge}
             </div>

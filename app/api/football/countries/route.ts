@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchFootballApi, jsonWithCache } from "@/lib/footballApiFetch";
 
 const supportedCountries = [
   "England",
@@ -72,15 +73,7 @@ export async function GET() {
       );
     }
 
-    const response = await fetch(
-      "https://v3.football.api-sports.io/countries",
-      {
-        headers: {
-          "x-apisports-key": apiKey,
-        },
-        cache: "no-store",
-      }
-    );
+    const response = await fetchFootballApi("countries", 86400);
 
     const data = await response.json();
 
@@ -104,12 +97,15 @@ export async function GET() {
         a.name.localeCompare(b.name, "sv")
       );
 
-    return NextResponse.json({
-      success: true,
-      countries,
-      count: countries.length,
-      apiErrors: data?.errors || null,
-    });
+    return jsonWithCache(
+      {
+        success: true,
+        countries,
+        count: countries.length,
+        apiErrors: data?.errors || null,
+      },
+      86400
+    );
   } catch (error: unknown) {
     return NextResponse.json(
       {

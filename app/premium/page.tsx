@@ -211,7 +211,7 @@ export default function PremiumPage() {
               return (
                 <article
                   key={plan.id}
-                  className={`relative flex min-h-[560px] flex-col overflow-hidden rounded-[2rem] border p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 sm:p-8 ${
+                  className={`relative flex min-h-[560px] flex-col overflow-hidden rounded-[2rem] border p-7 max-md:backdrop-blur-none max-md:hover:translate-y-0 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 sm:p-8 ${
                     plan.popular
                       ? "border-[#18ff6d] bg-[#07140d]/90 shadow-[0_0_65px_rgba(24,255,109,0.2)]"
                       : plan.elite
@@ -220,7 +220,7 @@ export default function PremiumPage() {
                   }`}
                 >
                   <div
-                    className={`pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full blur-[80px] ${
+                    className={`pointer-events-none absolute -right-20 -top-20 hidden h-52 w-52 rounded-full blur-[80px] sm:block ${
                       plan.elite
                         ? "bg-[#2fbfff]/15"
                         : "bg-[#18ff6d]/10"

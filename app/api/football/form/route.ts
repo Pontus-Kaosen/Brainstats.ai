@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchFootballApi, jsonWithCache } from "@/lib/footballApiFetch";
 
 function getResult(match: any, teamId: number) {
   const homeId = match.teams.home.id;
@@ -30,14 +31,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(
-      `https://v3.football.api-sports.io/fixtures?team=${teamId}&season=${season}`,
-      {
-        headers: {
-          "x-apisports-key": process.env.API_FOOTBALL_KEY!,
-        },
-        cache: "no-store",
-      }
+    const response = await fetchFootballApi(
+      `fixtures?team=${teamId}&season=${season}`,
+      600
     );
 
     const data = await response.json();
@@ -68,12 +64,15 @@ const form = matches.map((match: any) => ({
 }));
     
 
-    return NextResponse.json({
-      success: true,
-      teamId,
-      form,
-      errors: data.errors,
-    });
+    return jsonWithCache(
+      {
+        success: true,
+        teamId,
+        form,
+        errors: data.errors,
+      },
+      600
+    );
   } catch (error: any) {
     return NextResponse.json(
       {

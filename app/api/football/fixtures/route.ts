@@ -2,6 +2,7 @@ import {
   NextRequest,
   NextResponse,
 } from "next/server";
+import { fetchFootballApi, jsonWithCache } from "@/lib/footballApiFetch";
 
 const LIVE_STATUSES = new Set([
   "1H",
@@ -75,15 +76,10 @@ export async function GET(
       timezone: "Europe/Stockholm",
     });
 
-    const response = await fetch(
-      `https://v3.football.api-sports.io/fixtures?${query.toString()}`,
-      {
-        headers: {
-          "x-apisports-key": apiKey,
-        },
-        cache: "no-store",
-        signal: controller.signal,
-      }
+    const response = await fetchFootballApi(
+      `fixtures?${query.toString()}`,
+      120,
+      { signal: controller.signal }
     );
 
     const data = await response.json();
@@ -218,15 +214,17 @@ export async function GET(
       })
       .slice(0, 100);
 
-    return NextResponse.json({
-      success: true,
-      league: Number(league),
-      season: Number(season),
-      count: fixtures.length,
-      fixtures,
-      apiErrors:
-        data?.errors || null,
-    });
+    return jsonWithCache(
+      {
+        success: true,
+        league: Number(league),
+        season: Number(season),
+        count: fixtures.length,
+        fixtures,
+        apiErrors: data?.errors || null,
+      },
+      120
+    );
   } catch (error: unknown) {
     const aborted =
       error instanceof Error &&

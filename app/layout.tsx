@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import {
   Geist,
-  Geist_Mono,
 } from "next/font/google";
 
 import { Analytics } from "@vercel/analytics/next";
@@ -14,11 +13,7 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,6 +26,12 @@ export const metadata: Metadata = {
     "AI-driven football intelligence, match analysis and data insights.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -40,9 +41,9 @@ export default function RootLayout({
     <html
       lang="sv"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col font-sans">
         <LanguageProvider>
           <div className="flex min-h-full flex-col">
             <div className="flex-1">{children}</div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
-import { legalSlugs } from "@/lib/legalContent";
+import { legalSlugs } from "@/lib/legalSlugs";
 import { getSellerBlock } from "@/lib/companyInfo";
 
 type LegalLinksSectionProps = {

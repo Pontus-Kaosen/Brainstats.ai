@@ -1,5 +1,5 @@
 import LegalDocumentView from "@/components/LegalDocumentView";
-import { isLegalSlug } from "@/lib/legalContent";
+import { isLegalSlug } from "@/lib/legalSlugs";
 import { notFound } from "next/navigation";
 
 type LegalDocumentPageProps = {

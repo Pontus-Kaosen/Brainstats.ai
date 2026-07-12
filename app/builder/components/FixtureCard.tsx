@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getLocale } from "@/lib/locale";
 
@@ -113,9 +114,13 @@ export default function FixtureCard({
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           {fixture.league.logo ? (
-            <img
+            <Image
               src={fixture.league.logo}
               alt={fixture.league.name}
+              width={40}
+              height={40}
+              loading="lazy"
+              sizes="40px"
               className="h-10 w-10 rounded-xl bg-white p-1 object-contain"
             />
           ) : (
@@ -143,10 +148,14 @@ export default function FixtureCard({
       <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <div className="min-w-0 text-center">
           {fixture.teams.home.logo && (
-            <img
+            <Image
               src={fixture.teams.home.logo}
               alt={fixture.teams.home.name}
-              className="mx-auto h-16 w-16 object-contain"
+              width={56}
+              height={56}
+              loading="lazy"
+              sizes="(max-width: 767px) 48px, 64px"
+              className="mx-auto h-12 w-12 object-contain sm:h-16 sm:w-16"
             />
           )}
 
@@ -180,10 +189,14 @@ export default function FixtureCard({
 
         <div className="min-w-0 text-center">
           {fixture.teams.away.logo && (
-            <img
+            <Image
               src={fixture.teams.away.logo}
               alt={fixture.teams.away.name}
-              className="mx-auto h-16 w-16 object-contain"
+              width={56}
+              height={56}
+              loading="lazy"
+              sizes="(max-width: 767px) 48px, 64px"
+              className="mx-auto h-12 w-12 object-contain sm:h-16 sm:w-16"
             />
           )}
 

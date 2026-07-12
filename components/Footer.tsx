@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
-import { legalSlugs } from "@/lib/legalContent";
+import { legalSlugs } from "@/lib/legalSlugs";
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -14,7 +14,7 @@ export default function Footer() {
   }));
 
   return (
-    <footer className="relative z-10 border-t border-[#18ff6d22] bg-black/60 px-4 py-10 text-[#FAFAF8] backdrop-blur-xl sm:px-8">
+    <footer className="relative z-10 border-t border-[#18ff6d22] bg-black/95 px-4 py-10 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 md:grid-cols-[1.2fr_1fr]">
           <div>

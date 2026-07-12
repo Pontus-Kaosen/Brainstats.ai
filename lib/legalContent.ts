@@ -1,12 +1,8 @@
 import type { Language } from "@/lib/translations";
 import { companyInfo, getSellerBlock } from "@/lib/companyInfo";
-
-export type LegalSlug =
-  | "terms"
-  | "purchase"
-  | "privacy"
-  | "cookies"
-  | "disclaimer";
+import type { LegalSlug } from "@/lib/legalSlugs";
+export type { LegalSlug } from "@/lib/legalSlugs";
+export { legalSlugs, isLegalSlug } from "@/lib/legalSlugs";
 
 export type LegalSection = {
   title: string;
@@ -839,16 +835,4 @@ export function getLegalDocument(
   slug: LegalSlug
 ): LegalDocument {
   return documents[language][slug];
-}
-
-export const legalSlugs: LegalSlug[] = [
-  "terms",
-  "purchase",
-  "privacy",
-  "cookies",
-  "disclaimer",
-];
-
-export function isLegalSlug(value: string): value is LegalSlug {
-  return legalSlugs.includes(value as LegalSlug);
 }
