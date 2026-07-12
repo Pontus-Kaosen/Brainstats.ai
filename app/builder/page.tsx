@@ -6,6 +6,13 @@ import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
 import BuilderPicker from "@/components/BuilderPicker";
+import { useLanguage } from "@/components/LanguageProvider";
+import {
+  formatTranslation,
+  getLocale,
+} from "@/lib/locale";
+
+const TOURNAMENTS_VALUE = "__tournaments__";
 
 type Country = {
   name: string;
@@ -123,64 +130,49 @@ type SlipItem = {
   playerName?: string;
 };
 
-const markets = [
-  "Hemmalag vinner",
-  "Bortalag vinner",
-  "Oavgjort",
-  "Dubbelchans",
-  "Draw No Bet",
-  "Över 2.5 mål",
-  "Under 2.5 mål",
-  "Över 1.5 mål",
-  "Under 1.5 mål",
-  "Över 3.5 mål",
-  "Båda lagen gör mål",
-  "Över hörnor",
-  "Under hörnor",
-  "Hemmalag hörnor",
-  "Bortalag hörnor",
-  "Över gula kort",
-  "Under gula kort",
-  "Hemmalag flest kort",
-  "Bortalag flest kort",
-  "Spelare mål",
-  "Spelare assist",
-  "Spelare skott",
-  "Spelare skott på mål",
-  "Första målskytt",
-  "Sista målskytt",
-];
-
 const tournamentIds = [1, 2, 3, 4, 5, 9, 848];
 
-const dateOptions = [
-  {
-    label: "Alla kommande",
-    value: "all",
-    icon: "📅",
-    description: "Visa samtliga kommande matcher",
-  },
-  {
-    label: "Idag",
-    value: "today",
-    icon: "🔥",
-    description: "Matcher som spelas idag",
-  },
-  {
-    label: "Imorgon",
-    value: "tomorrow",
-    icon: "⏭️",
-    description: "Matcher som spelas imorgon",
-  },
-  {
-    label: "Nästa 7 dagar",
-    value: "week",
-    icon: "🗓️",
-    description: "Matcher under den kommande veckan",
-  },
-];
+function isPlayerMarket(market: string) {
+  return market.startsWith("Spelare") || market.startsWith("Player");
+}
+
+function isCornerMarketValue(market: string) {
+  return market.includes("hörnor") || market.toLowerCase().includes("corner");
+}
 
 export default function BuilderPage() {
+  const { t, language } = useLanguage();
+  const markets = t.builder.markets;
+
+  const dateOptions = useMemo(
+    () => [
+      {
+        label: t.builder.dateAll,
+        value: "all",
+        icon: "📅",
+        description: t.builder.dateAllDescription,
+      },
+      {
+        label: t.builder.dateToday,
+        value: "today",
+        icon: "🔥",
+        description: t.builder.dateTodayDescription,
+      },
+      {
+        label: t.builder.dateTomorrow,
+        value: "tomorrow",
+        icon: "⏭️",
+        description: t.builder.dateTomorrowDescription,
+      },
+      {
+        label: t.builder.dateWeek,
+        value: "week",
+        icon: "🗓️",
+        description: t.builder.dateWeekDescription,
+      },
+    ],
+    [t]
+  );
   const [countries, setCountries] = useState<Country[]>([]);
   const [allLeagues, setAllLeagues] = useState<League[]>([]);
   const [leagues, setLeagues] = useState<League[]>([]);
@@ -195,13 +187,17 @@ export default function BuilderPage() {
   >({});
   const [h2hMap, setH2hMap] = useState<Record<number, H2HItem[]>>({});
 
-  const [country, setCountry] = useState("Turneringar");
+  const [country, setCountry] = useState(TOURNAMENTS_VALUE);
   const [leagueId, setLeagueId] = useState<number | null>(null);
   const [selectedFixtureId, setSelectedFixtureId] = useState<
     number | null
   >(null);
 
-  const [market, setMarket] = useState(markets[0]);
+  const [market, setMarket] = useState<string>(markets[0]);
+
+  useEffect(() => {
+    setMarket(t.builder.markets[0]);
+  }, [language]);
   const [dateFilter, setDateFilter] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -237,8 +233,8 @@ export default function BuilderPage() {
       (fixture) => fixture.fixture.id === selectedFixtureId
     );
 
-  const isPlayerProp = market.startsWith("Spelare");
-  const isCornerMarket = market.includes("hörnor");
+  const isPlayerProp = isPlayerMarket(market);
+  const isCornerMarket = isCornerMarketValue(market);
 
   const selectedPlayers =
     playerTeam === "home" ? homePlayers : awayPlayers;
@@ -271,13 +267,13 @@ export default function BuilderPage() {
     
           if (!countriesResponse.ok || countriesData.success === false) {
             throw new Error(
-              countriesData.error || "Länder kunde inte hämtas."
+              countriesData.error || t.builder.errors.countries
             );
           }
     
           if (!leaguesResponse.ok || leaguesData.success === false) {
             throw new Error(
-              leaguesData.error || "Ligor kunde inte hämtas."
+              leaguesData.error || t.builder.errors.leagues
             );
           }
     
@@ -341,7 +337,7 @@ export default function BuilderPage() {
   
         if (!response.ok || data.success !== true) {
           throw new Error(
-            data.error || "Livematcher kunde inte hämtas."
+            data.error || t.builder.errors.live
           );
         }
   
@@ -358,7 +354,7 @@ export default function BuilderPage() {
           setLiveError(
             error instanceof Error
               ? error.message
-              : "Livematcher kunde inte hämtas."
+              : t.builder.errors.live
           );
         }
       } finally {
@@ -383,7 +379,7 @@ export default function BuilderPage() {
 
     let filtered: League[];
 
-    if (country === "Turneringar") {
+    if (country === TOURNAMENTS_VALUE || country === t.builder.tournaments) {
       filtered = tournamentIds
         .map((id) => allLeagues.find((league) => league.id === id))
         .filter((league): league is League => Boolean(league));
@@ -440,7 +436,7 @@ export default function BuilderPage() {
 
         if (!response.ok || data.success === false) {
           throw new Error(
-            data.error || "Matcher kunde inte hämtas."
+            data.error || t.builder.errors.fixtures
           );
         }
 
@@ -458,8 +454,8 @@ export default function BuilderPage() {
       } catch (error: any) {
         const message =
           error?.name === "AbortError"
-            ? "Matchhämtningen tog för lång tid. Försök igen."
-            : error?.message || "Matcher kunde inte hämtas.";
+            ? t.builder.errors.fixturesTimeout
+            : error?.message || t.builder.errors.fixtures;
 
         console.error("Builder fixture error:", error);
 
@@ -648,7 +644,7 @@ export default function BuilderPage() {
 
         if (!response.ok || data.success === false) {
           throw new Error(
-            data.error || "Startelvorna kunde inte hämtas."
+            data.error || t.builder.errors.lineups
           );
         }
 
@@ -662,7 +658,7 @@ export default function BuilderPage() {
           setLineupError(
             error instanceof Error
               ? error.message
-              : "Startelvorna kunde inte hämtas."
+              : t.builder.errors.lineups
           );
         }
       } finally {
@@ -737,7 +733,7 @@ export default function BuilderPage() {
       (groups: Record<string, Fixture[]>, fixture) => {
         const date = new Date(
           fixture.fixture.date
-        ).toLocaleDateString("sv-SE", {
+        ).toLocaleDateString(getLocale(language), {
           weekday: "long",
           day: "numeric",
           month: "long",
@@ -763,7 +759,7 @@ export default function BuilderPage() {
           playerTeam === "home"
             ? fixture.teams.home.name
             : fixture.teams.away.name
-        } · ${playerName || "Okänd spelare"} · ${playerLine}`
+        } · ${playerName || t.builder.unknownPlayer} · ${playerLine}`
       : market;
 
     const item: SlipItem = {
@@ -825,16 +821,15 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
         <div className="mx-auto max-w-7xl px-3 py-6 sm:px-8 sm:py-10">
           <section className="mb-10">
             <p className="brain-title font-semibold">
-              ⚽ Brain Builder™
+              {t.builder.pageBadge}
             </p>
 
             <h1 className="mt-2 text-3xl font-black leading-tight sm:text-5xl">
-              Bygg din spelidé steg för steg.
+              {t.builder.pageTitle}
             </h1>
 
             <p className="mt-4 max-w-2xl text-[#A9A9A9]">
-              Välj land, liga, datum, match och marknad. Lägg sedan
-              till valen i BrainSlip.
+              {t.builder.pageDescription}
             </p>
           </section>
 
@@ -843,35 +838,34 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               {loadingOptions ? (
                 <div className="rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">
                   <p className="text-[#18ff6d]">
-                    Hämtar ligor och turneringar...
+                    {t.builder.loadingOptionsLong}
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
                   <BuilderPicker
-                    label="Land"
+                    label={t.builder.labels.country}
                     icon="🌍"
                     value={country}
                     onChange={setCountry}
                     options={[
                       {
-                        label: "Turneringar",
-                        value: "Turneringar",
+                        label: t.builder.tournaments,
+                        value: TOURNAMENTS_VALUE,
                         icon: "🌍",
-                        description:
-                          "Internationella cuper och mästerskap",
+                        description: t.builder.tournamentsDescription,
                       },
                       ...countries.map((item) => ({
                         label: item.name,
                         value: item.name,
                         image: item.flag || undefined,
-                        description: "Nationella ligor och cuper",
+                        description: t.builder.nationalLeaguesDescription,
                       })),
                     ]}
                   />
 
                   <BuilderPicker
-                    label="Liga"
+                    label={t.builder.labels.league}
                     icon="🏆"
                     value={leagueId || ""}
                     onChange={(value) =>
@@ -883,13 +877,15 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       image: league.logo || undefined,
                       icon: "🏆",
                       description: league.currentSeason
-                        ? `Säsong ${league.currentSeason}`
+                        ? formatTranslation(t.builder.seasonLabel, {
+                            season: league.currentSeason,
+                          })
                         : league.type,
                     }))}
                   />
 
                   <BuilderPicker
-                    label="Datum"
+                    label={t.builder.labels.date}
                     icon="📅"
                     value={dateFilter}
                     onChange={setDateFilter}
@@ -898,20 +894,22 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   />
 
                   <BuilderPicker
-                    label="Marknad"
+                    label={t.builder.labels.market}
                     icon="🎯"
                     value={market}
                     onChange={setMarket}
                     options={markets.map((marketOption) => ({
                       label: marketOption,
                       value: marketOption,
-                      icon: marketOption.startsWith("Spelare")
+                      icon: isPlayerMarket(marketOption)
                         ? "👤"
-                        : marketOption.includes("mål")
+                        : marketOption.toLowerCase().includes("goal") ||
+                            marketOption.includes("mål")
                           ? "⚽"
-                          : marketOption.includes("hörnor")
+                          : isCornerMarketValue(marketOption)
                             ? "🚩"
-                            : marketOption.includes("kort")
+                            : marketOption.toLowerCase().includes("card") ||
+                                marketOption.includes("kort")
                               ? "🟨"
                               : "🎯",
                     }))}
@@ -922,7 +920,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 {isPlayerProp && (
   <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3 sm:gap-5">
     <BuilderPicker
-      label="Lag"
+      label={t.builder.labels.team}
       icon="👕"
       value={playerTeam}
       onChange={(value) => {
@@ -936,22 +934,22 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       searchable={false}
       options={[
         {
-          label: selectedFixture?.teams.home.name || "Hemmalag",
+          label: selectedFixture?.teams.home.name || t.analyze.homeTeam,
           value: "home",
           image: selectedFixture?.teams.home.logo,
-          description: "Hemmalagets spelare",
+          description: t.builder.homePlayersDescription,
         },
         {
-          label: selectedFixture?.teams.away.name || "Bortalag",
+          label: selectedFixture?.teams.away.name || t.analyze.awayTeam,
           value: "away",
           image: selectedFixture?.teams.away.logo,
-          description: "Bortalagets spelare",
+          description: t.builder.awayPlayersDescription,
         },
       ]}
     />
 
     <BuilderPicker
-      label="Spelare"
+      label={t.builder.labels.player}
       icon="👤"
       value={playerId || ""}
       onChange={(value) => {
@@ -966,12 +964,12 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
         label: player.name,
         value: player.id,
         icon: "👤",
-        description: player.position || "Spelare",
+        description: player.position || t.builder.playerFallback,
       }))}
     />
 
     <BuilderPicker
-      label="Linje"
+      label={t.builder.labels.line}
       icon="📏"
       value={playerLine}
       onChange={setPlayerLine}
@@ -980,7 +978,9 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
         label: line,
         value: line,
         icon: "📏",
-        description: `${line} i vald spelarmarknad`,
+        description: formatTranslation(t.builder.playerLineDescription, {
+          line,
+        }),
       }))}
     />
   </div>
@@ -989,7 +989,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 {isCornerMarket && (
   <div className="mt-6">
     <label className="text-sm text-[#A9A9A9]">
-      🚩 Hörnlinje
+      🚩 {t.builder.cornerLineLabel}
     </label>
 
     <select
@@ -1014,18 +1014,18 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 disabled={!selectedFixture}
                 className="mt-6 w-full"
               >
-                Lägg vald match i BrainSlip
+                {t.builder.addSelectedToSlip}
               </Button>
 
               <section className="mt-6 rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 sm:mt-8 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
-                      Starting XI
+                      {t.builder.startingXiBadge}
                     </p>
 
                     <h2 className="mt-2 text-2xl font-black text-white">
-                      👥 Startelvor
+                      👥 {t.builder.startingXiTitle}
                     </h2>
                   </div>
 
@@ -1037,25 +1037,25 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     }`}
                   >
                     {lineups.length >= 2
-                      ? "✓ Bekräftade"
-                      : "Inväntar publicering"}
+                      ? t.analyze.confirmed
+                      : t.builder.awaitingLineups}
                   </span>
                 </div>
 
                 {!selectedFixture ? (
                   <p className="mt-5 text-sm text-[#A9A9A9]">
-                    Välj en match för att kontrollera startelvorna.
+                    {t.builder.selectMatchForLineups}
                   </p>
                 ) : loadingLineups ? (
                   <div className="mt-5 rounded-2xl border border-[#18ff6d22] bg-black/30 p-5">
                     <p className="font-semibold text-[#18ff6d]">
-                      Hämtar startelvor...
+                      {t.builder.loadingLineups}
                     </p>
                   </div>
                 ) : lineupError ? (
                   <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-5">
                     <p className="font-bold text-red-300">
-                      Startelvorna kunde inte hämtas
+                      {t.builder.lineupsErrorTitle}
                     </p>
 
                     <p className="mt-2 text-sm text-red-200/80">
@@ -1065,12 +1065,11 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 ) : lineups.length < 2 ? (
                   <div className="mt-5 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-5">
                     <p className="font-semibold text-yellow-300">
-                      Startelvorna är ännu inte publicerade.
+                      {t.analyze.lineupsNotPublished}
                     </p>
 
                     <p className="mt-2 text-sm leading-6 text-[#A9A9A9]">
-                      De publiceras vanligtvis nära matchstart. Välj matchen
-                      igen senare för att hämta den senaste informationen.
+                      {t.builder.lineupsPublishHint}
                     </p>
                   </div>
                 ) : (
@@ -1084,7 +1083,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                           {lineup.team?.logo && (
                             <img
                               src={lineup.team.logo}
-                              alt={lineup.team.name || "Lag"}
+                              alt={lineup.team?.name || t.common.teamAlt}
                               className="h-11 w-11 rounded-full bg-white p-1"
                             />
                           )}
@@ -1093,17 +1092,18 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                             <h3 className="font-black text-white">
                               {lineup.team?.name ||
                                 (teamIndex === 0
-                                  ? "Hemmalag"
-                                  : "Bortalag")}
+                                  ? t.analyze.homeTeam
+                                  : t.analyze.awayTeam)}
                             </h3>
 
                             <p className="mt-1 text-sm text-[#18ff6d]">
-                              Formation: {lineup.formation || "Ej angiven"}
+                              {t.analyze.formation}{" "}
+                              {lineup.formation || t.analyze.notSpecified}
                             </p>
 
                             {lineup.coach?.name && (
                               <p className="mt-1 text-xs text-[#A9A9A9]">
-                                Tränare: {lineup.coach.name}
+                                {t.analyze.coach} {lineup.coach.name}
                               </p>
                             )}
                           </div>
@@ -1111,7 +1111,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
                         <div className="p-5">
                           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#777]">
-                            Startande spelare
+                            {t.analyze.startingPlayers}
                           </p>
 
                           <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1 sm:max-h-96">
@@ -1130,7 +1130,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                                     </span>
 
                                     <span className="truncate font-semibold text-[#E8E8E8]">
-                                      {player.name || "Okänd spelare"}
+                                      {player.name || t.builder.unknownPlayer}
                                     </span>
                                   </div>
 
@@ -1152,23 +1152,23 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
     <div>
       <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
-        Match Center
+        {t.builder.matchCenter}
       </p>
 
       <h2 className="mt-2 text-3xl font-black">
-        ⚽ Välj match
+        {t.builder.selectMatch}
       </h2>
     </div>
 
     <div className="w-full md:w-80">
       <label className="text-sm text-[#A9A9A9]">
-        🔍 Sök match eller lag
+        {t.builder.searchMatch}
       </label>
 
       <input
         value={search}
         onChange={(event) => setSearch(event.target.value)}
-        placeholder="Sök Liverpool, Arsenal..."
+        placeholder={t.builder.searchPlaceholder}
         className="mt-2 w-full rounded-2xl border border-[#18ff6d22] bg-black/40 p-4 outline-none transition focus:border-[#18ff6d88]"
       />
     </div>
@@ -1184,7 +1184,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
           : "border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500 hover:text-white"
       }`}
     >
-      🔴 Live nu ({liveFixtures.length})
+      {t.builder.liveNow} ({liveFixtures.length})
     </button>
 
     <button
@@ -1196,13 +1196,13 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
           : "border-[#18ff6d44] bg-[#18ff6d]/10 text-[#18ff6d]"
       }`}
     >
-      📅 Kommande matcher
+      📅 {t.builder.upcomingMatches}
     </button>
   </div>
 
   {liveError && (
     <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-      Live-fel: {liveError}
+      {t.builder.liveError} {liveError}
     </div>
   )}
 </div>
@@ -1213,13 +1213,13 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   loadingLive ? (
     <div className="mt-8 rounded-3xl border border-red-500/30 bg-red-500/10 p-8 text-center">
       <p className="font-bold text-red-300">
-        Hämtar livematcher...
+        {t.builder.loadingLive}
       </p>
     </div>
   ) : liveFixtures.length === 0 ? (
     <div className="mt-8 rounded-3xl border border-white/10 bg-black/30 p-8">
       <p className="text-[#A9A9A9]">
-        Inga livematcher är tillgängliga just nu.
+        {t.builder.noLiveMatches}
       </p>
     </div>
   ) : (
@@ -1229,12 +1229,14 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
           <span className="h-3 w-3 animate-pulse rounded-full bg-red-500" />
 
           <h3 className="text-2xl font-black text-red-300">
-            Live nu
+            {t.builder.liveNowTitle}
           </h3>
         </div>
 
         <span className="rounded-full border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-300">
-          {liveFixtures.length} matcher
+          {formatTranslation(t.builder.liveMatchCount, {
+            count: liveFixtures.length,
+          })}
         </span>
       </div>
 
@@ -1260,13 +1262,13 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 ) : loadingMatches ? (
   <div className="mt-8 rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">
     <p className="font-semibold text-[#18ff6d]">
-      Hämtar kommande matcher...
+      {t.builder.loadingFixtures}
     </p>
   </div>
 ) : matchError ? (
   <div className="mt-8 rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
     <p className="font-bold text-red-300">
-      Matcher kunde inte hämtas
+      {t.builder.fixturesError}
     </p>
 
     <p className="mt-2 text-sm text-red-200/80">
@@ -1275,11 +1277,11 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   </div>
 ) : fixtures.length === 0 ? (
   <p className="mt-8 rounded-3xl border border-white/10 bg-black/30 p-6 text-[#A9A9A9]">
-    Inga kommande matcher hittades för vald liga.
+    {t.builder.noUpcomingMatches}
   </p>
 ) : filteredFixtures.length === 0 ? (
   <p className="mt-8 rounded-3xl border border-white/10 bg-black/30 p-6 text-[#A9A9A9]">
-    Inga matcher matchade filtret eller sökningen.
+    {t.builder.noFilteredMatches}
   </p>
 ) : (
   <div className="mt-8 max-h-[72vh] space-y-8 overflow-y-auto overscroll-contain pr-1 sm:max-h-none sm:space-y-10 sm:overflow-visible sm:pr-0">
@@ -1330,13 +1332,13 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
             <aside className="brain-card h-fit rounded-3xl p-4 sm:p-8 xl:sticky xl:top-6">
               <h2 className="text-2xl font-bold">
-                🧠 BrainSlip
+                {t.builder.brainSlipTitle}
               </h2>
 
               <div className="mt-6 space-y-3">
                 {slip.length === 0 ? (
                   <p className="text-[#A9A9A9]">
-                    Ingen match vald ännu.
+                    {t.builder.noMatchSelected}
                   </p>
                 ) : (
                   <>
@@ -1356,7 +1358,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
                           <p className="mt-2 text-xs text-[#A9A9A9]">
                             {new Date(item.date).toLocaleString(
-                              "sv-SE",
+                              getLocale(language),
                               {
                                 day: "numeric",
                                 month: "short",
@@ -1378,7 +1380,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                             )
                           }
                           className="ml-4 shrink-0 text-red-400 transition hover:text-red-300"
-                          title="Ta bort"
+                          title={t.builder.removeTitle}
                         >
                           ✕
                         </button>
@@ -1390,7 +1392,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       onClick={() => setSlip([])}
                       className="mt-4 w-full rounded-2xl border border-red-500/50 px-4 py-3 text-red-400 transition hover:bg-red-500 hover:text-white"
                     >
-                      Rensa BrainSlip
+                      {t.builder.clearSlip}
                     </button>
                   </>
                 )}
@@ -1401,7 +1403,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 onClick={analyze}
                 className="mt-8 w-full"
               >
-                🧠 Analysera
+                {t.builder.analyze}
               </Button>
             </aside>
           </div>

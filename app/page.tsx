@@ -1,61 +1,77 @@
+"use client";
+
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function Home() {
+  const { t } = useLanguage();
+
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
-  
+
       <div className="relative z-10">
         <Navbar />
 
-      <section className="mx-auto flex max-w-7xl flex-col items-center px-8 py-32 text-center">
-        <span className="rounded-full border border-[#E8DCC8]/20 px-5 py-2 text-sm text-[#E8DCC8]">
-          🧠 AI-driven fotbollsanalys
-        </span>
+        <section className="mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-8 sm:py-32">
+          <span className="rounded-full border border-[#E8DCC8]/20 px-5 py-2 text-sm text-[#E8DCC8]">
+            🧠 {t.home.badge}
+          </span>
 
-        <h2 className="mt-8 max-w-5xl text-6xl font-bold leading-tight">
-          Klistra in din spelidé. Få smart AI-analys.
-        </h2>
+          <h2 className="mt-8 max-w-5xl text-4xl font-bold leading-tight sm:text-6xl">
+            {t.home.title}
+          </h2>
 
-        <p className="mt-8 max-w-2xl text-lg text-[#A9A9A9]">
-          BrainStats hjälper dig att analysera matcher, statistik, form, skador
-          och risker. Tjänsten är ett analysverktyg och tar inte emot spel eller
-          pengar.
-        </p>
+          <p className="mt-8 max-w-2xl text-base leading-8 text-[#A9A9A9] sm:text-lg">
+            {t.home.description}
+          </p>
 
-        <div className="mt-12 flex flex-wrap justify-center gap-5">
-          <Link href="/analyze">
-            <Button>📝 Klistra in spelidé</Button>
-          </Link>
+          <div className="mt-12 flex w-full flex-col justify-center gap-4 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-5">
+            <Link href="/analyze" className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto">
+                📝 {t.home.pasteBet}
+              </Button>
+            </Link>
 
-          <Link href="/builder">
-            <Button variant="secondary">⚽ Bygg spelidé</Button>
-          </Link>
+            <Link href="/builder" className="w-full sm:w-auto">
+              <Button
+                variant="secondary"
+                className="w-full sm:w-auto"
+              >
+                ⚽ {t.home.buildBet}
+              </Button>
+            </Link>
 
-          <Link href="/premium">
-            <Button variant="secondary">💎 Se Premium</Button>
-          </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto grid max-w-7xl gap-6 px-8 pb-24 md:grid-cols-3">
-        {[
-          ["📋 Klistra in", "Kopiera din spelidé och låt BrainStats tolka den."],
-          [
-            "🧠 Brain Engine",
-            "Få BrainScore™, risknivå och identifierade marknader.",
-          ],
-          ["💎 Premium", "Lås upp djupare rapporter och fler analyser."],
-        ].map(([title, text]) => (
-          <div key={title} className="rounded-3xl bg-[#1A1A1A] p-8">
-            <h3 className="text-xl font-bold text-[#E8DCC8]">{title}</h3>
-            <p className="mt-4 text-[#A9A9A9]">{text}</p>
+            <Link href="/premium" className="w-full sm:w-auto">
+              <Button
+                variant="secondary"
+                className="w-full sm:w-auto"
+              >
+                💎 {t.home.seePremium}
+              </Button>
+            </Link>
           </div>
-        ))}
-      </section>
+        </section>
+
+        <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-20 sm:px-8 sm:pb-24 md:grid-cols-3">
+          {t.home.features.map((card) => (
+            <div
+              key={card.title}
+              className="rounded-3xl border border-white/5 bg-[#1A1A1A] p-6 sm:p-8"
+            >
+              <h3 className="text-xl font-bold text-[#E8DCC8]">
+                {card.title}
+              </h3>
+
+              <p className="mt-4 leading-7 text-[#A9A9A9]">
+                {card.text}
+              </p>
+            </div>
+          ))}
+        </section>
       </div>
     </main>
   );

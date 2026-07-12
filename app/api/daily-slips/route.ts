@@ -1,6 +1,15 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  attachSlipLanguage,
+  buildDailySlipsSystemPrompt,
+  buildDailySlipsUserPrompt,
+  getDailySlipsApiMessages,
+  getSlipLanguage,
+  parseRequestLanguage,
+  stripMetaPicks,
+} from "@/lib/aiPrompts";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -57,18 +66,38 @@ function calculateFairOdds(probability: number) {
   return Number((100 / safeProbability).toFixed(2));
 }
 
-function normalizeRisk(value: unknown) {
+function normalizeRisk(value: unknown, language: ReturnType<typeof parseRequestLanguage>) {
   if (
     value === "Lägre risk" ||
+    value === "Lower risk" ||
     value === "Balanserad" ||
+    value === "Balanced" ||
     value === "Value" ||
     value === "Högre risk" ||
+    value === "Higher risk" ||
     value === "Special"
   ) {
     return value;
   }
 
-  return "Balanserad";
+  return language === "en" ? "Balanced" : "Balanserad";
+}
+
+function serializeSlipsForResponse(
+  slips: Array<{
+    id: string;
+    valid_date: string;
+    slip_index: number;
+    title: string;
+    risk: string;
+    confidence: number;
+    picks: import("@/lib/aiPrompts").SlipPickMeta[];
+  }>
+) {
+  return slips.map((slip) => ({
+    ...slip,
+    picks: stripMetaPicks(slip.picks),
+  }));
 }
 
 async function fetchUpcomingFixtures() {
@@ -182,7 +211,8 @@ function cleanOpenAIJson(content: string) {
 
 function parseGeneratedSlips(
   content: string,
-  limit: number
+  limit: number,
+  language: ReturnType<typeof parseRequestLanguage>
 ): GeneratedSlip[] {
   const cleaned = cleanOpenAIJson(content);
   const parsed = JSON.parse(cleaned);
@@ -190,6 +220,13 @@ function parseGeneratedSlips(
   const rawSlips = Array.isArray(parsed?.slips)
     ? parsed.slips
     : [];
+
+  const fallbackTitle =
+    language === "en" ? "AI slip" : "AI-kupong";
+  const unknownMatch =
+    language === "en" ? "Unknown match" : "Okänd match";
+  const unknownMarket =
+    language === "en" ? "Unknown market" : "Okänd marknad";
 
   return rawSlips
     .slice(0, limit)
@@ -201,9 +238,9 @@ function parseGeneratedSlips(
         title:
           typeof slip?.title === "string"
             ? slip.title
-            : `AI-kupong ${slipIndex + 1}`,
+            : `${fallbackTitle} ${slipIndex + 1}`,
 
-        risk: normalizeRisk(slip?.risk),
+        risk: normalizeRisk(slip?.risk, language),
 
         confidence: Math.min(
           95,
@@ -220,12 +257,12 @@ function parseGeneratedSlips(
                 match:
                   typeof pick?.match === "string"
                     ? pick.match
-                    : "Okänd match",
+                    : unknownMatch,
 
                 market:
                   typeof pick?.market === "string"
                     ? pick.market
-                    : "Okänd marknad",
+                    : unknownMarket,
 
                 probability: Math.min(
                   95,
@@ -246,6 +283,10 @@ function parseGeneratedSlips(
 }
 
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const language = parseRequestLanguage(searchParams.get("lang"));
+  const messages = getDailySlipsApiMessages(language);
+
   try {
     const authHeader =
       request.headers.get("authorization");
@@ -258,7 +299,7 @@ export async function GET(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Du måste vara inloggad.",
+          error: messages.mustLogin,
         },
         { status: 401 }
       );
@@ -273,8 +314,7 @@ export async function GET(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Inloggningen kunde inte verifieras.",
+          error: messages.authFailed,
         },
         { status: 401 }
       );
@@ -324,16 +364,36 @@ export async function GET(request: Request) {
       throw existingError;
     }
 
-    if ((existing || []).length >= slipLimit) {
-      return NextResponse.json({
-        success: true,
-        plan,
-        slipLimit,
-        fixturesFound: null,
-        generatedToday: false,
-        slips:
-          existing?.slice(0, slipLimit) || [],
-      });
+    const existingSlips = existing || [];
+
+    if (existingSlips.length > 0) {
+      const storedLanguage =
+        getSlipLanguage(
+          (existingSlips[0]?.picks as Array<Record<string, unknown>>) || []
+        ) ?? "sv";
+
+      if (storedLanguage !== language) {
+        const { error: deleteError } = await supabaseAdmin
+          .from("daily_slips")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("valid_date", today);
+
+        if (deleteError) {
+          throw deleteError;
+        }
+      } else if (existingSlips.length >= slipLimit) {
+        return NextResponse.json({
+          success: true,
+          plan,
+          slipLimit,
+          fixturesFound: null,
+          generatedToday: false,
+          slips: serializeSlipsForResponse(
+            existingSlips.slice(0, slipLimit)
+          ),
+        });
+      }
     }
 
     const fixtures =
@@ -348,8 +408,7 @@ export async function GET(request: Request) {
         {
           success: false,
           fixturesFound: fixtures.length,
-          error:
-            "Det finns inte tillräckligt många kommande matcher för att skapa dagens kuponger.",
+          error: messages.notEnoughFixtures,
         },
         { status: 404 }
       );
@@ -365,84 +424,16 @@ export async function GET(request: Request) {
         messages: [
           {
             role: "system",
-            content:
-              "Du skapar neutrala, datadrivna fotbollskuponger. Du får aldrig kalla ett spel säkert, garanterat eller riskfritt. Använd endast matcher som finns i listan. Svara endast med giltig JSON.",
+            content: buildDailySlipsSystemPrompt(language),
           },
           {
             role: "user",
-            content: `
-Skapa exakt ${slipLimit} separata AI-kuponger.
-
-Användarens plan är:
-${plan}
-
-Kupongprofiler i denna ordning:
-
-1. Lägre risk
-2. Balanserad
-3. Value
-4. Högre risk
-5. Special
-
-Regler:
-
-- Varje kupong ska innehålla exakt 3 val.
-- Varje val ska komma från en match i listan.
-- Använd inte samma match mer än en gång i samma kupong.
-- Använd inte exakt samma kombination i flera kuponger.
-- Probability ska vara ett heltal mellan 10 och 95.
-- Inget spel får beskrivas som säkert eller garanterat.
-
-Varje val måste innehålla:
-
-- match
-- market
-- probability
-
-Använd bara dessa marknader:
-
-- Hemmalag vinner
-- Bortalag vinner
-- Dubbelchans
-- Draw No Bet
-- Över 1.5 mål
-- Över 2.5 mål
-- Under 3.5 mål
-- Båda lagen gör mål
-
-Använd endast dessa kommande matcher:
-
-${JSON.stringify(fixtures, null, 2)}
-
-Svara exakt enligt denna JSON-struktur:
-
-{
-  "slips": [
-    {
-      "title": "Lägre risk",
-      "risk": "Lägre risk",
-      "confidence": 78,
-      "picks": [
-        {
-          "match": "Lag A - Lag B",
-          "market": "Dubbelchans Lag A eller oavgjort",
-          "probability": 72
-        },
-        {
-          "match": "Lag C - Lag D",
-          "market": "Över 1.5 mål",
-          "probability": 70
-        },
-        {
-          "match": "Lag E - Lag F",
-          "market": "Under 3.5 mål",
-          "probability": 68
-        }
-      ]
-    }
-  ]
-}
-`,
+            content: buildDailySlipsUserPrompt(
+              language,
+              slipLimit,
+              plan,
+              fixtures
+            ),
           },
         ],
       });
@@ -451,17 +442,15 @@ Svara exakt enligt denna JSON-struktur:
       completion.choices[0]?.message
         ?.content || "{}";
 
-    const generatedSlips =
-      parseGeneratedSlips(
-        content,
-        slipLimit
-      );
+    const generatedSlips = parseGeneratedSlips(
+      content,
+      slipLimit,
+      language
+    );
 
-    if (
-      generatedSlips.length < slipLimit
-    ) {
+    if (generatedSlips.length < slipLimit) {
       throw new Error(
-        `AI skapade endast ${generatedSlips.length} av ${slipLimit} kuponger. Försök igen.`
+        messages.regenerateFailed(generatedSlips.length, slipLimit)
       );
     }
 
@@ -474,15 +463,15 @@ Svara exakt enligt denna JSON-struktur:
         risk: slip.risk,
         confidence: slip.confidence,
 
-        picks: slip.picks.map((pick) => ({
-          match: pick.match,
-          market: pick.market,
-          probability: pick.probability,
-          estimatedOdds:
-            calculateFairOdds(
-              pick.probability
-            ),
-        })),
+        picks: attachSlipLanguage(
+          slip.picks.map((pick) => ({
+            match: pick.match,
+            market: pick.market,
+            probability: pick.probability,
+            estimatedOdds: calculateFairOdds(pick.probability),
+          })),
+          language
+        ),
       })
     );
 
@@ -512,7 +501,7 @@ Svara exakt enligt denna JSON-struktur:
       slipLimit,
       fixturesFound: fixtures.length,
       generatedToday: true,
-      slips: inserted || [],
+      slips: serializeSlipsForResponse(inserted || []),
     });
   } catch (error: unknown) {
     console.error(
@@ -520,13 +509,18 @@ Svara exakt enligt denna JSON-struktur:
       error
     );
 
+    const fallbackLanguage = parseRequestLanguage(
+      new URL(request.url).searchParams.get("lang")
+    );
+    const fallbackMessages = getDailySlipsApiMessages(fallbackLanguage);
+
     return NextResponse.json(
       {
         success: false,
         error:
           error instanceof Error
             ? error.message
-            : "Dagens kuponger kunde inte skapas.",
+            : fallbackMessages.createFailed,
       },
       { status: 500 }
     );

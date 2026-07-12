@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type Option = {
   label: string;
@@ -21,6 +22,7 @@ export default function BrainDropdown({
   options,
   onChange,
 }: Props) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const ref = useRef<HTMLDivElement>(null);
@@ -53,7 +55,7 @@ export default function BrainDropdown({
       >
         <span>
           {selected?.icon ? `${selected.icon} ` : ""}
-          {selected?.label || "Välj"}
+          {selected?.label || t.brainDropdown.select}
         </span>
 
         <span className="text-[#18ff6d]">▼</span>
@@ -64,13 +66,15 @@ export default function BrainDropdown({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Sök..."
+            placeholder={t.brainDropdown.search}
             className="mb-3 w-full rounded-2xl border border-[#18ff6d22] bg-black/40 px-4 py-3 text-white outline-none placeholder:text-[#666] focus:border-[#18ff6d88]"
           />
 
           <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
             {filtered.length === 0 ? (
-              <p className="p-3 text-sm text-[#A9A9A9]">Inga resultat</p>
+              <p className="p-3 text-sm text-[#A9A9A9]">
+                {t.brainDropdown.noResults}
+              </p>
             ) : (
               filtered.map((option) => (
                 <button

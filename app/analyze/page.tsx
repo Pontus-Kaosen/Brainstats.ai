@@ -7,6 +7,11 @@ import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
 import BrainCard from "@/components/BrainCard";
+import { useLanguage } from "@/components/LanguageProvider";
+import {
+  translateBreakdownKey,
+  translateRiskLevel,
+} from "@/lib/locale";
 
 
 type ScoreBreakdown = {
@@ -119,17 +124,18 @@ function matchText(match: LastMatch) {
   } ${match.teams.away.name}`;
 }
 
-function injuryReason(injury: Injury) {
+function injuryReason(injury: Injury, fallback: string) {
   return (
     injury.reason ||
     injury.player?.reason ||
     injury.player?.type ||
     injury.type ||
-    "Ingen orsak angiven"
+    fallback
   );
 }
 
 function AnalyzePageContent() {
+  const { t, language } = useLanguage();
   const searchParams = useSearchParams();
 
   const [betText, setBetText] = useState("");
@@ -163,7 +169,7 @@ function AnalyzePageContent() {
           ? { Authorization: `Bearer ${session.access_token}` }
           : {}),
       },
-      body: JSON.stringify({ text: betText }),
+      body: JSON.stringify({ text: betText, language }),
     });
 
     const data = await response.json();
@@ -181,7 +187,7 @@ setShowReport(true);}
 
   const score = aiResult?.brainScore ?? 0;
   const confidence = aiResult?.confidence ?? 0;
-  const risk = aiResult?.riskLevel ?? "Unknown";
+  const risk = translateRiskLevel(aiResult?.riskLevel, t);
   const breakdown = aiResult?.scoreBreakdown || {};
   const homeLastMatches = usedData?.lastMatches?.home || [];
   const awayLastMatches = usedData?.lastMatches?.away || [];
@@ -205,35 +211,35 @@ const referee = usedData?.referee;
         <div className="mx-auto max-w-6xl px-8 py-10">
         <section className="mt-14 overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-10 backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)]">
   <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
-    ⚽ Live Football Intelligence
+    {t.analyze.badge}
   </div>
 
   <p className={`mt-8 text-sm uppercase tracking-[0.45em] ${titleGradient}`}>
-    Brain Engine™
+    {t.analyze.subtitle}
   </p>
 
   <h2 className="mt-4 max-w-5xl text-6xl font-black leading-tight">
-    Analysera din spelidé med AI.
+    {t.analyze.title}
   </h2>
 
   <p className="mt-6 max-w-2xl text-lg leading-8 text-[#A9A9A9]">
-    BrainStats analyserar form, tabell, H2H, skador, väder och matchdata för att ge dig en tydligare bild innan du tar beslut.
+    {t.analyze.description}
   </p>
 
   <div className="mt-8 grid gap-4 md:grid-cols-3">
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">AI Engine</p>
-      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">Online</p>
+      <p className="text-sm text-[#A9A9A9]">{t.analyze.aiEngine}</p>
+      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.online}</p>
     </div>
 
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">Data Sources</p>
-      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">Live</p>
+      <p className="text-sm text-[#A9A9A9]">{t.analyze.dataSources}</p>
+      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.live}</p>
     </div>
 
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">Risk Model</p>
-      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">Active</p>
+      <p className="text-sm text-[#A9A9A9]">{t.analyze.riskModel}</p>
+      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.active}</p>
     </div>
   </div>
 </section>
@@ -245,7 +251,7 @@ const referee = usedData?.referee;
                 setBetText(e.target.value);
                 setShowReport(false);
               }}
-              placeholder="Liverpool - Arsenal&#10;Över 2.5 mål"
+              placeholder={t.analyze.placeholder}
               className="min-h-64 w-full resize-none rounded-2xl border border-[#18ff6d22] bg-black/40 p-5 text-white outline-none placeholder:text-[#666]"
             />
 
@@ -254,20 +260,20 @@ const referee = usedData?.referee;
               disabled={!betText.trim() || loading}
               className="mt-5 w-full py-4"
             >
-              {loading ? "Analyserar..." : "🧠 Kör Brain Engine"}
+              {loading ? t.analyze.analyzing : t.analyze.runEngine}
             </Button>
           </section>
 
           {loading && (
             <section className="mt-8 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 backdrop-blur-xl">
-              <p className={titleGradient}>Brain Engine analyserar data...</p>
+              <p className={titleGradient}>{t.analyze.loadingReport}</p>
             </section>
           )}
 
 {premiumError && (
   <section className="mt-8 rounded-3xl border border-yellow-500/40 bg-yellow-500/10 p-8 text-center">
     <h2 className="text-3xl font-bold text-yellow-300">
-      Premium krävs
+      {t.analyze.premiumRequired}
     </h2>
 
     <p className="mt-4 text-[#D8D8D8]">
@@ -280,7 +286,7 @@ const referee = usedData?.referee;
         window.location.href = "/premium";
       }}
     >
-      🚀 Uppgradera till Pro
+      {t.analyze.upgradePro}
     </Button>
   </section>
 )}
@@ -311,31 +317,31 @@ const referee = usedData?.referee;
         <div className="text-7xl font-black text-[#18ff6d] drop-shadow-[0_0_40px_rgba(24,255,109,.75)]">
           {score}
         </div>
-        <p className="mt-1 text-sm text-[#A9A9A9]">/100 BrainScore™</p>
+        <p className="mt-1 text-sm text-[#A9A9A9]">{t.analyze.brainScore}</p>
       </div>
     </div>
   </div>
 
   <div className="mt-10 grid gap-5 md:grid-cols-3">
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">Risknivå</p>
+      <p className="text-sm text-[#A9A9A9]">{t.analyze.riskLevel}</p>
       <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{risk}</p>
     </div>
 
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">Confidence</p>
+      <p className="text-sm text-[#A9A9A9]">{t.analyze.confidence}</p>
       <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{confidence}%</p>
     </div>
 
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">Analysis Mode</p>
-      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">Live AI</p>
+      <p className="text-sm text-[#A9A9A9]">{t.analyze.analysisMode}</p>
+      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.liveAi}</p>
     </div>
   </div>
 
   <div className="mt-8">
     <div className="mb-3 flex justify-between text-sm">
-      <span className="text-[#A9A9A9]">BrainScore Power</span>
+      <span className="text-[#A9A9A9]">{t.analyze.brainScorePower}</span>
       <span className="font-semibold text-[#18ff6d]">{score}%</span>
     </div>
 
@@ -353,12 +359,12 @@ const referee = usedData?.referee;
     <p
       className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}
     >
-      Score Breakdown
+      {t.analyze.scoreBreakdownBadge}
     </p>
 
     <h3 className="mt-2 text-2xl font-bold text-white">
       <span className="mr-2">📊</span>
-      Datapoäng
+      {t.analyze.scoreBreakdownTitle}
     </h3>
 
     <div className="mt-6 space-y-5">
@@ -366,7 +372,7 @@ const referee = usedData?.referee;
         <div key={key}>
           <div className="mb-2 flex justify-between text-sm">
             <span className="capitalize text-[#A9A9A9]">
-              {key}
+              {translateBreakdownKey(key, t)}
             </span>
 
             <span className="font-semibold text-[#18ff6d]">
@@ -393,12 +399,12 @@ const referee = usedData?.referee;
         <p
           className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}
         >
-          Starting XI
+          {t.analyze.startingXiBadge}
         </p>
 
         <h3 className="mt-2 text-2xl font-bold text-white">
           <span className="mr-2">👥</span>
-          Startelvor
+          {t.analyze.startingXi}
         </h3>
       </div>
 
@@ -410,21 +416,19 @@ const referee = usedData?.referee;
         }`}
       >
         {confirmedLineups
-          ? "✓ Bekräftade"
-          : "Inväntar publicering"}
+          ? t.analyze.confirmed
+          : t.analyze.awaiting}
       </span>
     </div>
 
     {!confirmedLineups ? (
       <div className="mt-6 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-5">
         <p className="font-semibold text-yellow-200">
-          Startelvorna är ännu inte publicerade
+          {t.analyze.lineupsNotPublished}
         </p>
 
         <p className="mt-2 text-sm leading-6 text-[#A9A9A9]">
-          Bekräftade startelvor publiceras vanligtvis nära
-          matchstart. Gör analysen igen senare för att hämta den
-          senaste informationen.
+          {t.analyze.lineupsHint}
         </p>
       </div>
     ) : (
@@ -438,7 +442,7 @@ const referee = usedData?.referee;
               {lineup?.team?.logo && (
                 <img
                   src={lineup.team.logo}
-                  alt={lineup.team.name || "Lag"}
+                  alt={lineup.team.name || t.common.teamAlt}
                   className="h-12 w-12 rounded-full bg-white p-1"
                 />
               )}
@@ -447,18 +451,18 @@ const referee = usedData?.referee;
                 <p className="text-lg font-black text-white">
                   {lineup?.team?.name ||
                     (teamIndex === 0
-                      ? "Hemmalag"
-                      : "Bortalag")}
+                      ? t.analyze.homeTeam
+                      : t.analyze.awayTeam)}
                 </p>
 
                 <p className="mt-1 text-sm text-[#18ff6d]">
-                  Formation:{" "}
-                  {lineup?.formation || "Ej angiven"}
+                  {t.analyze.formation}{" "}
+                  {lineup?.formation || t.analyze.notSpecified}
                 </p>
 
                 {lineup?.coach?.name && (
                   <p className="mt-1 text-xs text-[#A9A9A9]">
-                    Tränare: {lineup.coach.name}
+                    {t.analyze.coach} {lineup.coach.name}
                   </p>
                 )}
               </div>
@@ -466,7 +470,7 @@ const referee = usedData?.referee;
 
             <div className="p-5">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#777]">
-                Startande spelare
+                {t.analyze.startingPlayers}
               </p>
 
               <div className="mt-4 space-y-2">
@@ -485,7 +489,7 @@ const referee = usedData?.referee;
                         </span>
 
                         <span className="truncate font-semibold text-[#E8E8E8]">
-                          {player.name || "Okänd spelare"}
+                          {player.name || t.builder.unknownPlayer}
                         </span>
                       </div>
 
@@ -509,19 +513,19 @@ const referee = usedData?.referee;
                 {weather && (
                   <div className={cardClass}>
                     <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-                      Match Conditions
+                      {t.analyze.matchConditions}
                     </p>
                     <h3 className="mt-2 text-2xl font-bold text-white">
                       <span className="mr-2">🌦️</span>
-                      Väder
+                      {t.analyze.weather}
                     </h3>
 
                     <div className="mt-6 grid gap-4 sm:grid-cols-2">
                       {[
-                        ["Temperatur", `${weather.temperature ?? "-"}°C`],
-                        ["Väder", weather.description ?? "-"],
-                        ["Vind", `${weather.wind ?? "-"} km/h`],
-                        ["Luftfuktighet", `${weather.humidity ?? "-"}%`],
+                        [t.analyze.temperature, `${weather.temperature ?? "-"}°C`],
+                        [t.analyze.weatherDesc, weather.description ?? "-"],
+                        [t.analyze.wind, `${weather.wind ?? "-"} km/h`],
+                        [t.analyze.humidity, `${weather.humidity ?? "-"}%`],
                       ].map(([label, value]) => (
                         <div
                           key={label}
@@ -540,15 +544,17 @@ const referee = usedData?.referee;
                 {referee && (
                   <div className={cardClass}>
                     <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-                      Match Official
+                      {t.analyze.matchOfficial}
                     </p>
                     <h3 className="mt-2 text-2xl font-bold text-white">
                       <span className="mr-2">👨‍⚖️</span>
-                      Domare
+                      {t.analyze.referee}
                     </h3>
 
                     <div className="mt-6 rounded-2xl border border-[#18ff6d11] bg-black/35 p-6">
-                      <p className="text-sm text-[#A9A9A9]">Matchdomare</p>
+                      <p className="text-sm text-[#A9A9A9]">
+                        {t.analyze.matchOfficial}
+                      </p>
                       <p className="mt-3 text-3xl font-bold text-[#18ff6d]">
                         {referee}
                       </p>
@@ -559,17 +565,17 @@ const referee = usedData?.referee;
 
               <div className={cardClass}>
                 <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-                  Team Form
+                  {t.analyze.teamFormBadge}
                 </p>
                 <h3 className="mt-2 text-2xl font-bold text-white">
                   <span className="mr-2">📈</span>
-                  Senaste 5 matcher
+                  {t.analyze.lastFiveMatches}
                 </h3>
 
                 <div className="mt-6 grid gap-6 md:grid-cols-2">
                   {[
-                    ["Hemmalag", homeLastMatches],
-                    ["Bortalag", awayLastMatches],
+                    [t.analyze.homeTeam, homeLastMatches],
+                    [t.analyze.awayTeam, awayLastMatches],
                   ].map(([label, matches]) => (
                     <div
                       key={label as string}
@@ -582,7 +588,7 @@ const referee = usedData?.referee;
                       <div className="mt-4 space-y-3">
                         {(matches as LastMatch[]).length === 0 ? (
                           <p className="text-sm text-[#A9A9A9]">
-                            Ingen matchdata tillgänglig.
+                            {t.analyze.noMatchData}
                           </p>
                         ) : (
                           (matches as LastMatch[]).map((match) => (
@@ -604,13 +610,13 @@ const referee = usedData?.referee;
               <div className={cardClass}>
                 <h3 className="text-2xl font-bold text-white">
                   <span className="mr-2">🏥</span>
-                  Skador & frånvaro
+                  {t.analyze.injuries}
                 </h3>
 
                 <div className="mt-6 space-y-3">
                   {injuries.length === 0 ? (
                     <p className="text-sm text-[#A9A9A9]">
-                      Inga rapporterade skador för den här matchen.
+                      {t.analyze.noInjuries}
                     </p>
                   ) : (
                     injuries.map((injury, index) => (
@@ -621,20 +627,20 @@ const referee = usedData?.referee;
                         {injury.team?.logo && (
                           <img
                             src={injury.team.logo}
-                            alt={injury.team.name || "Lag"}
+                            alt={injury.team.name || t.common.teamAlt}
                             className="h-9 w-9 rounded-full bg-white p-1"
                           />
                         )}
 
                         <div>
                           <p className="font-semibold text-[#18ff6d]">
-                            {injury.player?.name || "Okänd spelare"}
+                            {injury.player?.name || t.builder.unknownPlayer}
                           </p>
                           <p className="mt-1 text-[#D8D8D8]">
-                            {injury.team?.name || "Okänt lag"}
+                            {injury.team?.name || t.analyze.unknownTeam}
                           </p>
                           <p className="mt-1 text-[#A9A9A9]">
-                            {injuryReason(injury)}
+                            {injuryReason(injury, t.analyze.noInjuryReason)}
                           </p>
                         </div>
                       </div>
@@ -645,7 +651,7 @@ const referee = usedData?.referee;
 
               <div className={cardClass}>
                 <h3 className="text-2xl font-bold text-white">
-                  Din spelidé
+                  {t.analyze.yourBetIdea}
                 </h3>
                 <pre className="mt-5 whitespace-pre-wrap rounded-2xl bg-black/40 p-5 text-sm text-[#D8D8D8]">
                   {betText}
@@ -656,7 +662,7 @@ const referee = usedData?.referee;
                 <div className={cardClass}>
                   <h3 className="text-2xl font-bold text-white">
                     <span className="mr-2">👍</span>
-                    Styrkor
+                    {t.analyze.strengths}
                   </h3>
                   <ul className="mt-5 space-y-3 text-[#D8D8D8]">
                     {aiResult.strengths.map((item) => (
@@ -668,7 +674,7 @@ const referee = usedData?.referee;
                 <div className={cardClass}>
                   <h3 className="text-2xl font-bold text-white">
                     <span className="mr-2">⚠</span>
-                    Risker
+                    {t.analyze.risks}
                   </h3>
                   <ul className="mt-5 space-y-3 text-[#D8D8D8]">
                     {aiResult.risks.map((item) => (
@@ -681,7 +687,7 @@ const referee = usedData?.referee;
               <div className={cardClass}>
                 <h3 className="text-2xl font-bold text-white">
                   <span className="mr-2">💡</span>
-                  Rekommendation
+                  {t.analyze.recommendation}
                 </h3>
                 <p className="mt-5 leading-8 text-[#D8D8D8]">
                   {aiResult.recommendation}
@@ -695,21 +701,25 @@ const referee = usedData?.referee;
   );
 }
 
+function AnalyzeLoadingFallback() {
+  const { t } = useLanguage();
+
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+      <FootballBackground />
+      <div className="relative z-10">
+        <Navbar />
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <p className="text-[#A9A9A9]">{t.analyze.suspenseLoading}</p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 export default function AnalyzePage() {
   return (
-    <Suspense
-      fallback={
-        <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
-          <FootballBackground />
-          <div className="relative z-10">
-            <Navbar />
-            <div className="flex min-h-[60vh] items-center justify-center">
-              <p className="text-[#A9A9A9]">Laddar...</p>
-            </div>
-          </div>
-        </main>
-      }
-    >
+    <Suspense fallback={<AnalyzeLoadingFallback />}>
       <AnalyzePageContent />
     </Suspense>
   );

@@ -1,6 +1,12 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  buildAnalyzeSystemPrompt,
+  buildAnalyzeUserPrompt,
+  getAnalyzeApiMessages,
+  parseRequestLanguage,
+} from "@/lib/aiPrompts";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -261,66 +267,6 @@ async function getPlayerStats(
   );
 
   return data?.[0] || null;
-}
-
-function summarizePlayerStats(player: any) {
-  if (!player) {
-    return "Ingen spelarstatistik tillgänglig.";
-  }
-
-  const stats = player.statistics?.[0];
-
-  if (!stats) {
-    return "Ingen spelarstatistik tillgänglig.";
-  }
-
-  return `
-Spelare: ${player.player?.name || "Okänd"}
-Position: ${player.player?.position || "Okänd"}
-Matcher: ${stats.games?.appearences ?? "Saknas"}
-Starter: ${stats.games?.lineups ?? "Saknas"}
-Minuter: ${stats.games?.minutes ?? "Saknas"}
-Mål: ${stats.goals?.total ?? "Saknas"}
-Assist: ${stats.goals?.assists ?? "Saknas"}
-Skott: ${stats.shots?.total ?? "Saknas"}
-Skott på mål: ${stats.shots?.on ?? "Saknas"}
-Passningsprocent: ${stats.passes?.accuracy ?? "Saknas"}
-Betyg: ${stats.games?.rating ?? "Saknas"}
-`;
-}
-
-function summarizeLineups(lineups: any[]) {
-  if (
-    !Array.isArray(lineups) ||
-    lineups.length < 2
-  ) {
-    return (
-      "Bekräftade startelvor är ännu inte " +
-      "publicerade."
-    );
-  }
-
-  return lineups
-    .map((lineup) => {
-      const players = (
-        lineup.startXI || []
-      )
-        .map(
-          (player: any) =>
-            `${player.number ?? "-"} ${
-              player.name || "Okänd spelare"
-            } (${player.position || "-"})`
-        )
-        .join(", ");
-
-      return `
-Lag: ${lineup.team?.name || "Okänt lag"}
-Formation: ${lineup.formation || "Ej angiven"}
-Tränare: ${lineup.coach?.name || "Ej angiven"}
-Startelva: ${players || "Ej tillgänglig"}
-`;
-    })
-    .join("\n");
 }
 
 function calculateBrainScore(input: {
@@ -596,8 +542,10 @@ function safeAnalysis(
 }
 
 function parseAIResponse(
-  content: string
+  content: string,
+  language: ReturnType<typeof parseRequestLanguage>
 ) {
+  const messages = getAnalyzeApiMessages(language);
   const cleaned = content
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
@@ -610,16 +558,11 @@ function parseAIResponse(
     return {
       summary: content,
 
-      strengths: [
-        "AI kunde genomföra analysen.",
-      ],
+      strengths: [messages.parseFallbackStrength],
 
-      risks: [
-        "AI-svaret kunde inte struktureras helt.",
-      ],
+      risks: [messages.parseFallbackRisk],
 
-      recommendation:
-        "Kontrollera analysen kritiskt.",
+      recommendation: messages.parseFallbackRecommendation,
 
       brainPicks: [],
     };
@@ -629,6 +572,10 @@ function parseAIResponse(
 export async function POST(
   req: Request
 ) {
+  const requestBody = await req.json().catch(() => ({}));
+  const language = parseRequestLanguage(requestBody?.language);
+  const messages = getAnalyzeApiMessages(language);
+
   try {
     const authHeader =
       req.headers.get("authorization");
@@ -642,8 +589,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Du måste vara inloggad för att skapa en analys.",
+          error: messages.mustLogin,
         },
         {
           status: 401,
@@ -663,8 +609,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Inloggningen kunde inte verifieras.",
+          error: messages.authFailed,
         },
         {
           status: 401,
@@ -704,12 +649,8 @@ export async function POST(
     const brainPickLimit =
       getBrainPickLimit(userPlan);
 
-    const requestBody =
-      await req.json();
-
     const text =
-      typeof requestBody?.text ===
-      "string"
+      typeof requestBody?.text === "string"
         ? requestBody.text.trim()
         : "";
 
@@ -717,8 +658,7 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Ingen spelidé skickades.",
+          error: messages.noBetIdea,
         },
         {
           status: 400,
@@ -758,8 +698,7 @@ export async function POST(
           {
             success: false,
             premiumRequired: true,
-            error:
-              "Free-planen tillåter 3 analyser per dag. Uppgradera till Pro för obegränsade analyser.",
+            error: messages.freeLimit,
           },
           {
             status: 403,
@@ -899,154 +838,28 @@ export async function POST(
         messages: [
           {
             role: "system",
-            content:
-              "Du är Brain Engine, AI-motorn bakom BrainStats. Analysera fotboll objektivt och datadrivet. Lova aldrig resultat, kalla aldrig ett spel säkert och uppmuntra aldrig oansvarigt spelande. Använd endast data som finns i underlaget och säg tydligt när data saknas. Svara endast med giltig JSON.",
+            content: buildAnalyzeSystemPrompt(language),
           },
 
           {
             role: "user",
-            content: `
-Analysera följande fotbollsidé:
-
-${text}
-
-Match:
-${fixture?.teams?.home?.name || "Hemmalag"} - ${
-              fixture?.teams?.away
-                ?.name || "Bortalag"
-            }
-
-Liga:
-${fixture?.league?.name || "Okänd liga"}
-
-Datum:
-${fixture?.fixture?.date || "Okänt datum"}
-
-Arena:
-${
-  fixture?.fixture?.venue?.name ||
-  "Ej tillgänglig"
-}
-
-Användarplan:
-${userPlan}
-
-Skapa exakt ${brainPickLimit} olika Brain Picks.
-
-Free får 1 förslag.
-Pro får 3 förslag.
-Elite får 5 förslag.
-
-Varje Brain Pick måste innehålla:
-- market
-- probability som heltal mellan 1 och 99
-- riskLevel: Low, Medium eller High
-- reason med minst två konkreta datapunkter
-
-Om den valda marknaden gäller en spelare ska förslagen fokusera på samma spelare och samma typ av spelarmarknad.
-
-Bekräftade startelvor:
-${summarizeLineups(lineups)}
-
-Viktigt om startelvor:
-- Om startelvor finns ska de användas i analysen.
-- Nämn om viktiga spelare startar eller saknas.
-- Om en vald spelare inte startar ska det tydligt påverka risk och sannolikhet.
-- Om startelvor saknas får du inte gissa vilka som startar.
-
-Tabell hemmalag:
-${JSON.stringify(
-  homeStanding || null,
-  null,
-  2
-)}
-
-Tabell bortalag:
-${JSON.stringify(
-  awayStanding || null,
-  null,
-  2
-)}
-
-Hemmalag statistik:
-${JSON.stringify(
-  homeStats,
-  null,
-  2
-)}
-
-Bortalag statistik:
-${JSON.stringify(
-  awayStats,
-  null,
-  2
-)}
-
-Head-to-head:
-${JSON.stringify(h2h, null, 2)}
-
-Hemmalag senaste fem:
-${JSON.stringify(
-  homeLastMatches,
-  null,
-  2
-)}
-
-Bortalag senaste fem:
-${JSON.stringify(
-  awayLastMatches,
-  null,
-  2
-)}
-
-Skador och frånvaro:
-${JSON.stringify(
-  injuries,
-  null,
-  2
-)}
-
-Spelarstatistik:
-${summarizePlayerStats(
-  playerStats
-)}
-
-Svara i exakt denna JSON-struktur:
-
-{
-  "summary": "Professionell sammanfattning",
-  "strengths": [
-    "styrka 1",
-    "styrka 2",
-    "styrka 3"
-  ],
-  "risks": [
-    "risk 1",
-    "risk 2",
-    "risk 3"
-  ],
-  "recommendation": "Neutral rekommendation",
-  "brainScore": 75,
-  "riskLevel": "Medium",
-  "confidence": 75,
-  "scoreBreakdown": {
-    "form": 15,
-    "table": 15,
-    "h2h": 10,
-    "stats": 20,
-    "market": 15,
-    "confidence": 10
-  },
-  "brainPicks": [
-    {
-      "market": "Förslagets marknad",
-      "probability": 64,
-      "riskLevel": "Medium",
-      "reason": "Motivering med minst två konkreta datapunkter"
-    }
-  ]
-}
-`,
+            content: buildAnalyzeUserPrompt(language, {
+              text,
+              fixture,
+              userPlan,
+              brainPickLimit,
+              lineups,
+              homeStanding,
+              awayStanding,
+              homeStats,
+              awayStats,
+              h2h,
+              homeLastMatches,
+              awayLastMatches,
+              injuries,
+              playerStats,
+              playerId,
+            }),
           },
         ],
       });
@@ -1055,8 +868,7 @@ Svara i exakt denna JSON-struktur:
       completion.choices[0]
         ?.message?.content || "{}";
 
-    const parsedAnalysis =
-      parseAIResponse(content);
+    const parsedAnalysis = parseAIResponse(content, language);
 
     const aiAnalysis =
       safeAnalysis(
@@ -1088,8 +900,7 @@ Svara i exakt denna JSON-struktur:
       )
       .filter(Boolean);
 
-    const match =
-      lines[0] || "Okänd match";
+    const match = lines[0] || messages.unknownMatch;
 
     const markets = lines.slice(1);
 

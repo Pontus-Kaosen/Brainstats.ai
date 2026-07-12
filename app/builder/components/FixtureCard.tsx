@@ -1,3 +1,8 @@
+"use client";
+
+import { useLanguage } from "@/components/LanguageProvider";
+import { getLocale } from "@/lib/locale";
+
 type Fixture = {
   fixture: {
     id: number;
@@ -80,15 +85,17 @@ export default function FixtureCard({
   homeStanding,
   awayStanding,
 }: FixtureCardProps) {
+  const { t, language } = useLanguage();
+  const locale = getLocale(language);
   const matchDate = new Date(fixture.fixture.date);
 
-  const date = matchDate.toLocaleDateString("sv-SE", {
+  const date = matchDate.toLocaleDateString(locale, {
     weekday: "short",
     day: "numeric",
     month: "short",
   });
 
-  const time = matchDate.toLocaleTimeString("sv-SE", {
+  const time = matchDate.toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -129,7 +136,7 @@ export default function FixtureCard({
         </div>
 
         <span className="rounded-full border border-[#18ff6d]/30 bg-[#18ff6d]/10 px-3 py-2 text-xs font-bold text-[#18ff6d]">
-          {selected ? "VALD" : "VÄLJ"}
+          {selected ? t.fixtureCard.selected : t.fixtureCard.select}
         </span>
       </div>
 
@@ -150,7 +157,7 @@ export default function FixtureCard({
           <p className="mt-2 text-xs text-[#18ff6d]">
             {homeStanding
               ? `#${homeStanding.rank} · ${homeStanding.points}p`
-              : "Tabell saknas"}
+              : t.fixtureCard.noStandings}
           </p>
 
           <div className="mt-3 flex flex-wrap justify-center gap-1">
@@ -168,7 +175,7 @@ export default function FixtureCard({
         </div>
 
         <div className="rounded-full border border-white/10 bg-black/40 px-3 py-2 text-xs font-bold text-[#A9A9A9]">
-          VS
+          {t.common.vs}
         </div>
 
         <div className="min-w-0 text-center">
@@ -187,7 +194,7 @@ export default function FixtureCard({
           <p className="mt-2 text-xs text-[#18ff6d]">
             {awayStanding
               ? `#${awayStanding.rank} · ${awayStanding.points}p`
-              : "Tabell saknas"}
+              : t.fixtureCard.noStandings}
           </p>
 
           <div className="mt-3 flex flex-wrap justify-center gap-1">
@@ -207,7 +214,9 @@ export default function FixtureCard({
 
       <div className="mt-5 rounded-2xl bg-black/30 p-4 text-center">
         <p className="text-sm font-semibold text-[#18ff6d]">
-          {selected ? "✓ Matchen är vald" : "Tryck för att välja matchen"}
+          {selected
+            ? t.fixtureCard.matchSelected
+            : t.fixtureCard.tapToSelect}
         </p>
       </div>
     </button>

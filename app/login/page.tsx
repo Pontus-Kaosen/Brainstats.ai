@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +29,7 @@ export default function LoginPage() {
           return;
         }
 
-        setMessage("Kontot skapades! Du kan nu logga in.");
+        setMessage(t.login.accountCreated);
         setMode("login");
         setLoading(false);
         return;
@@ -47,7 +49,7 @@ export default function LoginPage() {
       window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
-      setMessage("Något gick fel.");
+      setMessage(t.login.somethingWrong);
       setLoading(false);
     }
   }
@@ -55,21 +57,21 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#0E0E0E] px-6">
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#1A1A1A] p-8">
-        <p className="text-[#E8DCC8]">BrainStats Account</p>
+        <p className="text-[#E8DCC8]">{t.login.accountLabel}</p>
 
         <h1 className="mt-3 text-5xl font-bold text-white">
-          {mode === "login" ? "Logga in" : "Skapa konto"}
+          {mode === "login" ? t.login.loginTitle : t.login.signupTitle}
         </h1>
 
         <p className="mt-4 text-[#A9A9A9]">
           {mode === "login"
-            ? "Logga in med e-post och lösenord."
-            : "Skapa ett konto för att spara dina analyser."}
+            ? t.login.loginDescription
+            : t.login.signupDescription}
         </p>
 
         <input
           type="email"
-          placeholder="E-post"
+          placeholder={t.login.email}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="mt-8 w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 text-white outline-none"
@@ -77,7 +79,7 @@ export default function LoginPage() {
 
         <input
           type="password"
-          placeholder="Lösenord"
+          placeholder={t.login.password}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="mt-4 w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 text-white outline-none"
@@ -89,10 +91,10 @@ export default function LoginPage() {
           className="mt-6 w-full rounded-full bg-[#E8DCC8] py-4 font-bold text-black disabled:opacity-40"
         >
           {loading
-            ? "Vänta..."
+            ? t.login.wait
             : mode === "login"
-            ? "Logga in"
-            : "Skapa konto"}
+              ? t.login.login
+              : t.login.signup}
         </button>
 
         <button
@@ -103,8 +105,8 @@ export default function LoginPage() {
           className="mt-5 w-full text-[#E8DCC8]"
         >
           {mode === "login"
-            ? "Har du inget konto? Skapa konto"
-            : "Har du redan konto? Logga in"}
+            ? t.login.switchToSignup
+            : t.login.switchToLogin}
         </button>
 
         {message && (

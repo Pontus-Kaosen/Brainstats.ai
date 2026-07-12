@@ -11,8 +11,9 @@ import {
 import {
   Language,
   translations,
-  Translations,
 } from "@/lib/translations";
+
+import type { Translations } from "@/lib/translations";
 
 type LanguageContextValue = {
   language: Language;

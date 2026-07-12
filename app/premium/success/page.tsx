@@ -5,10 +5,13 @@ import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 import Button from "@/components/Button";
+import { useLanguage } from "@/components/LanguageProvider";
+import { formatTranslation } from "@/lib/locale";
 
 type Status = "loading" | "success" | "error";
 
 function PremiumSuccessPageContent() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -18,7 +21,7 @@ function PremiumSuccessPageContent() {
   useEffect(() => {
     if (!sessionId) {
       setStatus("error");
-      setMessage("Checkout-sessionen saknas.");
+      setMessage(t.premiumSuccess.missingSession);
       return;
     }
 
@@ -42,39 +45,39 @@ function PremiumSuccessPageContent() {
         try {
           data = JSON.parse(text);
         } catch {
-          throw new Error(
-            "Servern returnerade ett ogiltigt svar när betalningen skulle kontrolleras."
-          );
+          throw new Error(t.premiumSuccess.invalidResponse);
         }
 
         if (!response.ok || !data.success) {
           throw new Error(
-            data.error || "Betalningen kunde inte verifieras."
+            data.error || t.premiumSuccess.verifyFailed
           );
         }
 
         if (!data.paid) {
-          throw new Error("Betalningen är ännu inte bekräftad.");
+          throw new Error(t.premiumSuccess.notPaid);
         }
 
         setStatus("success");
         setMessage(
           data.plan
-            ? `Din ${data.plan}-plan är aktiverad.`
-            : "Din plan är aktiverad."
+            ? formatTranslation(t.premiumSuccess.planActivated, {
+                plan: data.plan,
+              })
+            : t.premiumSuccess.planActivatedGeneric
         );
       } catch (error) {
         setStatus("error");
         setMessage(
           error instanceof Error
             ? error.message
-            : "Betalningen kunde inte verifieras."
+            : t.premiumSuccess.verifyFailed
         );
       }
     }
 
     verifyCheckout();
-  }, [sessionId]);
+  }, [sessionId, t.premiumSuccess]);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
@@ -92,11 +95,11 @@ function PremiumSuccessPageContent() {
                 </div>
 
                 <h1 className="mt-6 text-3xl font-black sm:text-5xl">
-                  Kontrollerar betalningen...
+                  {t.premiumSuccess.loadingTitle}
                 </h1>
 
                 <p className="mt-4 text-[#A9A9A9]">
-                  Vänta medan Stripe-sessionen verifieras.
+                  {t.premiumSuccess.loadingText}
                 </p>
               </>
             )}
@@ -108,11 +111,11 @@ function PremiumSuccessPageContent() {
                 </div>
 
                 <p className="brain-title mt-6 font-semibold">
-                  Betalningen lyckades
+                  {t.premiumSuccess.successBadge}
                 </p>
 
                 <h1 className="mt-3 text-4xl font-black sm:text-6xl">
-                  Välkommen till Premium.
+                  {t.premiumSuccess.successTitle}
                 </h1>
 
                 <p className="mx-auto mt-5 max-w-xl text-lg text-[#D8D8D8]">
@@ -120,8 +123,7 @@ function PremiumSuccessPageContent() {
                 </p>
 
                 <p className="mx-auto mt-3 max-w-xl text-sm text-[#888]">
-                  Detta är fortfarande Stripes testläge. Inga riktiga pengar
-                  har dragits.
+                  {t.premiumSuccess.testModeNote}
                 </p>
 
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -131,7 +133,7 @@ function PremiumSuccessPageContent() {
                     }}
                     className="w-full"
                   >
-                    Öppna Brain Builder
+                    {t.premiumSuccess.openBuilder}
                   </Button>
 
                   <Button
@@ -141,7 +143,7 @@ function PremiumSuccessPageContent() {
                     }}
                     className="w-full"
                   >
-                    Gå till Dashboard
+                    {t.premiumSuccess.goDashboard}
                   </Button>
                 </div>
               </>
@@ -154,7 +156,7 @@ function PremiumSuccessPageContent() {
                 </div>
 
                 <h1 className="mt-6 text-3xl font-black sm:text-5xl">
-                  Betalningen kunde inte verifieras
+                  {t.premiumSuccess.errorTitle}
                 </h1>
 
                 <p className="mx-auto mt-5 max-w-xl text-red-200/80">
@@ -168,7 +170,7 @@ function PremiumSuccessPageContent() {
                     }}
                     className="w-full"
                   >
-                    Tillbaka till Premium
+                    {t.premiumSuccess.backPremium}
                   </Button>
 
                   <Button
@@ -176,7 +178,7 @@ function PremiumSuccessPageContent() {
                     onClick={() => window.location.reload()}
                     className="w-full"
                   >
-                    Försök igen
+                    {t.premiumSuccess.retry}
                   </Button>
                 </div>
               </>
@@ -189,6 +191,8 @@ function PremiumSuccessPageContent() {
 }
 
 export default function PremiumSuccessPage() {
+  const { t } = useLanguage();
+
   return (
     <Suspense
       fallback={
@@ -197,7 +201,7 @@ export default function PremiumSuccessPage() {
           <div className="relative z-10">
             <Navbar />
             <div className="flex min-h-[75vh] items-center justify-center">
-              <p className="text-[#A9A9A9]">Laddar...</p>
+              <p className="text-[#A9A9A9]">{t.login.wait}</p>
             </div>
           </div>
         </main>

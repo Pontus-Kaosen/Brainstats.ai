@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AIBetSlip from "@/components/AIBetSlip";
+import { useLanguage } from "@/components/LanguageProvider";
+import { formatTranslation } from "@/lib/locale";
 
 type SlipPick = {
-    fixture?: string;
-    match?: string;
-    market?: string;
-    probability?: number;
-    estimatedOdds?: number;
-    reason?: string;
-  };
+  fixture?: string;
+  match?: string;
+  market?: string;
+  probability?: number;
+  estimatedOdds?: number;
+  reason?: string;
+};
 
 type DailySlip = {
   id: string;
@@ -32,6 +34,7 @@ type DailySlipsResponse = {
 };
 
 export default function DailySlipsSection() {
+  const { t, language } = useLanguage();
   const [slips, setSlips] = useState<DailySlip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -50,23 +53,22 @@ export default function DailySlipsSection() {
         } = await supabase.auth.getSession();
 
         if (!session?.access_token) {
-          throw new Error("Du måste vara inloggad.");
+          throw new Error(t.dailySlips.mustLogin);
         }
 
-        const response = await fetch("/api/daily-slips", {
+        const response = await fetch(
+          `/api/daily-slips?lang=${language}`,
+          {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
           cache: "no-store",
         });
 
-        const data =
-          (await response.json()) as DailySlipsResponse;
+        const data = (await response.json()) as DailySlipsResponse;
 
         if (!response.ok || data.success === false) {
-          throw new Error(
-            data.error || "Kupongerna kunde inte hämtas."
-          );
+          throw new Error(data.error || t.dailySlips.errorDefault);
         }
 
         if (cancelled) return;
@@ -80,7 +82,7 @@ export default function DailySlipsSection() {
           setError(
             loadError instanceof Error
               ? loadError.message
-              : "Kupongerna kunde inte hämtas."
+              : t.dailySlips.errorDefault
           );
         }
       } finally {
@@ -95,64 +97,57 @@ export default function DailySlipsSection() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [language, t.dailySlips.errorDefault, t.dailySlips.mustLogin]);
 
   return (
     <section className="mt-14">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="brain-title text-sm font-bold uppercase tracking-[0.3em]">
-            Daily Intelligence
+            {t.dailySlips.subtitle}
           </p>
 
-          <h2 className="mt-3 text-4xl font-black">
-            🧠 Dagens AI-kuponger
-          </h2>
+          <h2 className="mt-3 text-4xl font-black">{t.dailySlips.title}</h2>
 
           <p className="mt-3 max-w-2xl text-[#A9A9A9]">
-            Färdiga AI-kuponger med olika riskprofil och
-            estimerade fair odds.
+            {t.dailySlips.description}
           </p>
         </div>
 
         <div className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d]">
-          {slips.length} av {slipLimit} tillgängliga
+          {formatTranslation(t.dailySlips.available, {
+            count: slips.length,
+            limit: slipLimit,
+          })}
         </div>
       </div>
 
-      <p className="mt-4 text-sm text-[#777]">
-        AI-estimerade fair odds. Inte liveodds och inga resultat
-        är garanterade.
-      </p>
+      <p className="mt-4 text-sm text-[#777]">{t.dailySlips.disclaimer}</p>
 
       {loading && (
         <div className="mt-8 rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">
           <p className="font-semibold text-[#18ff6d]">
-            Skapar dagens AI-kuponger...
+            {t.dailySlips.loading}
           </p>
 
           <p className="mt-2 text-sm text-[#A9A9A9]">
-            Första laddningen kan ta några sekunder.
+            {t.dailySlips.loadingHint}
           </p>
         </div>
       )}
 
       {!loading && error && (
         <div className="mt-8 rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
-          <p className="font-bold text-red-300">
-            Kupongerna kunde inte laddas
-          </p>
+          <p className="font-bold text-red-300">{t.dailySlips.errorTitle}</p>
 
-          <p className="mt-2 text-sm text-red-200/80">
-            {error}
-          </p>
+          <p className="mt-2 text-sm text-red-200/80">{error}</p>
 
           <button
             type="button"
             onClick={() => window.location.reload()}
             className="mt-5 rounded-2xl border border-red-400/40 px-5 py-3 font-bold text-red-200"
           >
-            Försök igen
+            {t.dailySlips.retry}
           </button>
         </div>
       )}
@@ -166,8 +161,9 @@ export default function DailySlipsSection() {
               confidence={slip.confidence}
               risk={slip.risk}
               picks={slip.picks.map((pick) => ({
-                fixture: pick.fixture || pick.match || "Okänd match",
-                market: pick.market || "Okänd marknad",
+                fixture:
+                  pick.fixture || pick.match || t.dailySlips.unknownMatch,
+                market: pick.market || t.dailySlips.unknownMarket,
                 odds: Number(pick.estimatedOdds || 1),
                 reason: pick.reason,
               }))}
@@ -178,8 +174,7 @@ export default function DailySlipsSection() {
 
       {!loading && !error && slips.length < slipLimit && (
         <p className="mt-6 text-sm text-yellow-200">
-          Färre kuponger än väntat skapades. Ladda om sidan för
-          ett nytt försök.
+          {t.dailySlips.fewerThanExpected}
         </p>
       )}
     </section>

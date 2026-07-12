@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/components/LanguageProvider";
+import { formatTranslation } from "@/lib/locale";
 
 type PaidPlan = "pro" | "elite";
 
@@ -14,61 +16,38 @@ type Plan = {
   price: string;
   tag: string;
   description: string;
-  features: string[];
+  features: readonly string[];
   popular?: boolean;
   elite?: boolean;
 };
 
-const plans: Plan[] = [
-  {
-    id: "free",
-    name: "Free",
-    price: "0 kr",
-    tag: "Start",
-    description: "För dig som vill testa BrainStats.",
-    features: [
-      "3 analyser per dag",
-      "BrainScore™",
-      "Grundrapport",
-      "Enkel risknivå",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "99 kr/mån",
-    tag: "Mest populär",
-    description: "För dig som vill analysera mer seriöst.",
-    popular: true,
-    features: [
-      "Obegränsade analyser",
-      "Djupare AI-rapporter",
-      "Full Brain Builder",
-      "Sparad historik",
-      "Form och statistik",
-    ],
-  },
-  {
-    id: "elite",
-    name: "Elite",
-    price: "149 kr/mån",
-    tag: "Max",
-    description: "För dig som vill ha maximal insikt.",
-    elite: true,
-    features: [
-      "Allt i Pro",
-      "AI Match of the Day",
-      "Daily Brain Picks",
-      "Value Bets",
-      "Prioriterad AI",
-      "Tidiga nya funktioner",
-    ],
-  },
-];
-
 export default function PremiumPage() {
+  const { t } = useLanguage();
   const [loadingPlan, setLoadingPlan] = useState<PaidPlan | null>(null);
   const [error, setError] = useState("");
+
+  const plans: Plan[] = useMemo(
+    () => [
+      {
+        id: "free",
+        ...t.premium.plans.free,
+        features: t.premium.plans.free.features,
+      },
+      {
+        id: "pro",
+        ...t.premium.plans.pro,
+        features: t.premium.plans.pro.features,
+        popular: true,
+      },
+      {
+        id: "elite",
+        ...t.premium.plans.elite,
+        features: t.premium.plans.elite.features,
+        elite: true,
+      },
+    ],
+    [t]
+  );
 
   async function startCheckout(plan: PaidPlan) {
     setLoadingPlan(plan);
@@ -81,7 +60,7 @@ export default function PremiumPage() {
       } = await supabase.auth.getSession();
 
       if (sessionError) {
-        throw new Error("Kunde inte kontrollera din inloggning.");
+        throw new Error(t.premium.sessionError);
       }
 
       if (!session?.user) {
@@ -103,27 +82,22 @@ export default function PremiumPage() {
 
       const responseText = await response.text();
 
-let data: {
-  success?: boolean;
-  url?: string;
-  error?: string;
-};
+      let data: {
+        success?: boolean;
+        url?: string;
+        error?: string;
+      };
 
-try {
-  data = JSON.parse(responseText);
-} catch {
-  console.error("Stripe returnerade inte JSON:", responseText);
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        console.error("Stripe returnerade inte JSON:", responseText);
+        throw new Error(t.premium.checkoutInvalid);
+      }
 
-  throw new Error(
-    "Checkout-routen kunde inte öppnas. Kontrollera terminalen och att route.ts ligger i rätt mapp."
-  );
-}
-
-if (!response.ok || !data.success || !data.url) {
-  throw new Error(
-    data.error || "Stripe Checkout kunde inte startas."
-  );
-}
+      if (!response.ok || !data.success || !data.url) {
+        throw new Error(data.error || t.premium.checkoutError);
+      }
 
       window.location.assign(data.url);
     } catch (checkoutError) {
@@ -132,7 +106,7 @@ if (!response.ok || !data.success || !data.url) {
       setError(
         checkoutError instanceof Error
           ? checkoutError.message
-          : "Något gick fel när betalningen skulle startas."
+          : t.premium.paymentFailed
       );
 
       setLoadingPlan(null);
@@ -153,33 +127,29 @@ if (!response.ok || !data.success || !data.url) {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-16">
           <section className="text-center">
             <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-2 text-sm font-semibold text-[#18ff6d]">
-              💎 BrainStats Plans
+              {t.premium.badge}
             </div>
 
             <h1 className="mt-6 text-4xl font-black sm:text-6xl">
-              Välj din analysnivå.
+              {t.premium.title}
             </h1>
 
             <p className="mx-auto mt-5 max-w-2xl leading-8 text-[#A9A9A9]">
-              Börja gratis eller lås upp fler analyser, djupare rapporter och
-              avancerade AI-insikter.
+              {t.premium.description}
             </p>
 
             <p className="mx-auto mt-3 max-w-2xl text-sm text-[#747474]">
-              BrainStats erbjuder analys och information. Vi tar inte emot
-              spel, insatser eller utbetalningar.
+              {t.premium.disclaimer}
             </p>
           </section>
 
           {error && (
             <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-center">
               <p className="font-semibold text-red-300">
-                Betalningen kunde inte startas
+                {t.premium.paymentErrorTitle}
               </p>
 
-              <p className="mt-2 text-sm text-red-200/80">
-                {error}
-              </p>
+              <p className="mt-2 text-sm text-red-200/80">{error}</p>
             </div>
           )}
 
@@ -209,7 +179,7 @@ if (!response.ok || !data.success || !data.url) {
 
                   {plan.popular && (
                     <div className="absolute right-6 top-6 rounded-full bg-[#18ff6d] px-4 py-2 text-xs font-black text-black">
-                      POPULÄR
+                      {t.premium.popular}
                     </div>
                   )}
 
@@ -224,9 +194,7 @@ if (!response.ok || !data.success || !data.url) {
                       {plan.tag}
                     </div>
 
-                    <h2 className="mt-7 text-4xl font-black">
-                      {plan.name}
-                    </h2>
+                    <h2 className="mt-7 text-4xl font-black">{plan.name}</h2>
 
                     <p className="mt-3 min-h-12 text-[#A9A9A9]">
                       {plan.description}
@@ -250,7 +218,7 @@ if (!response.ok || !data.success || !data.url) {
                           onClick={openFreePlan}
                           disabled={loadingPlan !== null}
                         >
-                          Börja gratis
+                          {t.premium.startFree}
                         </Button>
                       ) : (
                         <Button
@@ -266,8 +234,10 @@ if (!response.ok || !data.success || !data.url) {
                           disabled={loadingPlan !== null}
                         >
                           {isLoading
-                            ? "Öppnar Checkout..."
-                            : `Välj ${plan.name}`}
+                            ? t.premium.openingCheckout
+                            : formatTranslation(t.premium.choosePlan, {
+                                plan: plan.name,
+                              })}
                         </Button>
                       )}
                     </div>
@@ -275,7 +245,7 @@ if (!response.ok || !data.success || !data.url) {
                     <div className="my-8 h-px bg-white/10" />
 
                     <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#747474]">
-                      Detta ingår
+                      {t.premium.includes}
                     </p>
 
                     <ul className="mt-5 space-y-4 text-sm text-[#D8D8D8]">
@@ -305,13 +275,10 @@ if (!response.ok || !data.success || !data.url) {
           </section>
 
           <section className="mt-12 rounded-[2rem] border border-white/10 bg-black/30 p-7 text-center backdrop-blur-xl sm:p-10">
-            <h2 className="text-2xl font-black">
-              Every match deserves a BrainScore™
-            </h2>
+            <h2 className="text-2xl font-black">{t.premium.footerTitle}</h2>
 
             <p className="mx-auto mt-4 max-w-2xl text-[#A9A9A9]">
-              Du kan börja gratis och uppgradera när du behöver fler analyser.
-              Prenumerationerna förnyas månadsvis.
+              {t.premium.footerText}
             </p>
           </section>
         </div>

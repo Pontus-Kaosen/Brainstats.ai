@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
+import { formatTranslation } from "@/lib/locale";
 
 type PickerOption = {
   label: string;
@@ -27,6 +29,7 @@ export default function BuilderPicker({
   onChange,
   searchable = true,
 }: BuilderPickerProps) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,7 +94,7 @@ export default function BuilderPicker({
               )}
 
               <p className="min-w-0 truncate text-sm font-black text-white">
-                {selectedOption?.label || "Välj"}
+                {selectedOption?.label || t.builderPicker.select}
               </p>
             </div>
           </div>
@@ -163,7 +166,7 @@ export default function BuilderPicker({
                 )}
 
                 <p className="min-w-0 truncate text-xl font-black text-white">
-                  {selectedOption?.label || "Välj"}
+                  {selectedOption?.label || t.builderPicker.select}
                 </p>
               </div>
 
@@ -184,7 +187,10 @@ export default function BuilderPicker({
                   autoFocus
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder={`Sök ${label.toLowerCase()}...`}
+                  placeholder={formatTranslation(
+                    t.builderPicker.searchPlaceholder,
+                    { label: label.toLowerCase() }
+                  )}
                   className="w-full rounded-2xl border border-[#18ff6d33] bg-black/60 px-4 py-4 text-base text-white outline-none placeholder:text-[#667069] focus:border-[#18ff6d]"
                 />
               </div>
@@ -193,7 +199,7 @@ export default function BuilderPicker({
             <div className="max-h-[420px] space-y-2 overflow-y-auto pr-2">
               {filteredOptions.length === 0 ? (
                 <p className="p-4 text-center text-sm text-[#A9A9A9]">
-                  Inga alternativ hittades.
+                  {t.builderPicker.noOptions}
                 </p>
               ) : (
                 filteredOptions.map((option) => {
