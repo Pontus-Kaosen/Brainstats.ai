@@ -17,9 +17,9 @@ export default async function Home() {
         <Navbar />
 
         <section className="mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-8 sm:py-32">
-          <BrainStatsLogo variant="hero" />
+          <BrainStatsLogo variant="hero" className="drop-shadow-[0_0_40px_rgba(24,255,109,0.25)]" />
 
-          <h1 className="mt-6 max-w-5xl text-4xl font-bold leading-tight sm:mt-8 sm:text-6xl">
+          <h1 className="mt-8 max-w-5xl text-4xl font-bold leading-tight sm:mt-10 sm:text-6xl">
             {t.title}
           </h1>
 
