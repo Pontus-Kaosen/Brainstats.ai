@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/LanguageProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import BrainStatsLogo from "@/components/BrainStatsLogo";
 
 export default function Navbar() {
   const [email, setEmail] =
@@ -131,24 +132,9 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <Link
           href="/"
-          className="flex min-w-0 items-center gap-2 sm:gap-3"
+          className="flex min-w-0 items-center"
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#18ff6d44] bg-[#18ff6d]/10 shadow-[0_0_30px_rgba(24,255,109,.25)] sm:h-11 sm:w-11 sm:rounded-2xl">
-            🧠
-          </div>
-
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-black tracking-tight sm:text-2xl">
-              BrainStats
-            </h1>
-
-            <p className="hidden text-xs text-[#18ff6d] sm:block">
-              {
-                t.navbar
-                  .footballIntelligence
-              }
-            </p>
-          </div>
+          <BrainStatsLogo variant="nav" />
         </Link>
 
         <div className="hidden items-center gap-2 lg:flex">

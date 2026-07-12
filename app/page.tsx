@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 import HomeCtaLink from "@/components/HomeCtaLink";
+import BrainStatsLogo from "@/components/BrainStatsLogo";
 import { getHomeContent } from "@/lib/homeContent";
 import { detectLanguage } from "@/lib/locale.server";
 
@@ -16,11 +17,9 @@ export default async function Home() {
         <Navbar />
 
         <section className="mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-8 sm:py-32">
-          <span className="rounded-full border border-[#E8DCC8]/20 px-5 py-2 text-sm text-[#E8DCC8]">
-            🧠 {t.badge}
-          </span>
+          <BrainStatsLogo variant="hero" />
 
-          <h1 className="mt-8 max-w-5xl text-4xl font-bold leading-tight sm:text-6xl">
+          <h1 className="mt-6 max-w-5xl text-4xl font-bold leading-tight sm:mt-8 sm:text-6xl">
             {t.title}
           </h1>
 

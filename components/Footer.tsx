@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { legalSlugs } from "@/lib/legalSlugs";
+import BrainStatsLogo from "@/components/BrainStatsLogo";
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -18,7 +19,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 md:grid-cols-[1.2fr_1fr]">
           <div>
-            <p className="text-2xl font-black">🧠 BrainStats</p>
+            <BrainStatsLogo variant="footer" />
 
             <p className="mt-3 max-w-md leading-7 text-[#A9A9A9]">
               {t.footer.tagline}
