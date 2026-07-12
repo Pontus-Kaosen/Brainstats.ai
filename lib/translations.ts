@@ -553,7 +553,7 @@ export const translations = {
       legalHeading: "Juridiskt",
       allLegal: "All juridisk information",
       copyright: "© 2026 BrainStats. Alla rättigheter förbehållna.",
-      sellerLine: "Pontus Kaosén · Org.nr 030610-1056 · support@brainstats.ai",
+      sellerLine: "Pontus Kaosén · Stockholm, Sverige · support@brainstats.ai",
       responsibleGambling: "Spelar du för mycket? Sök hjälp på stodlinjen.se",
     },
 
@@ -1119,7 +1119,7 @@ export const translations = {
       legalHeading: "Legal",
       allLegal: "All legal information",
       copyright: "© 2026 BrainStats. All rights reserved.",
-      sellerLine: "Pontus Kaosén · Org. no 030610-1056 · support@brainstats.ai",
+      sellerLine: "Pontus Kaosén · Stockholm, Sweden · support@brainstats.ai",
       responsibleGambling:
         "Gambling too much? Get help at BeGambleAware.org",
     },
