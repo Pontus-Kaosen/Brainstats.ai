@@ -2,6 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 
+export const dynamic = "force-dynamic";
+
 type ReportProps = {
   params: Promise<{
     id: string;

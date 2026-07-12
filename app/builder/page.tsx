@@ -186,8 +186,8 @@ export default function BuilderPage() {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [liveFixtures, setLiveFixtures] = useState<Fixture[]>([]);
-const [loadingLive, setLoadingLive] = useState(true);
-const [liveError, setLiveError] = useState("");
+  const [loadingLive, setLoadingLive] = useState(true);
+  const [liveError, setLiveError] = useState("");
 
   const [forms, setForms] = useState<Record<number, FormItem[]>>({});
   const [standings, setStandings] = useState<
@@ -229,7 +229,7 @@ const [liveError, setLiveError] = useState("");
   const selectedSeason =
     selectedLeague?.currentSeason || new Date().getFullYear();
 
-    const selectedFixture =
+  const selectedFixture =
     fixtures.find(
       (fixture) => fixture.fixture.id === selectedFixtureId
     ) ||
@@ -816,19 +816,19 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
 
       <div className="relative z-10">
         <Navbar />
 
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
+        <div className="mx-auto max-w-7xl px-3 py-6 sm:px-8 sm:py-10">
           <section className="mb-10">
             <p className="brain-title font-semibold">
               ⚽ Brain Builder™
             </p>
 
-            <h1 className="mt-2 text-4xl font-black sm:text-5xl">
+            <h1 className="mt-2 text-3xl font-black leading-tight sm:text-5xl">
               Bygg din spelidé steg för steg.
             </h1>
 
@@ -838,8 +838,8 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
             </p>
           </section>
 
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <section className="brain-card min-w-0 rounded-3xl p-5 sm:p-8">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-8">
+            <section className="brain-card min-w-0 rounded-3xl p-4 sm:p-8">
               {loadingOptions ? (
                 <div className="rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">
                   <p className="text-[#18ff6d]">
@@ -847,7 +847,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   </p>
                 </div>
               ) : (
-                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
                   <BuilderPicker
                     label="Land"
                     icon="🌍"
@@ -920,7 +920,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               )}
 
 {isPlayerProp && (
-  <div className="mt-8 grid gap-5 md:grid-cols-3">
+  <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3 sm:gap-5">
     <BuilderPicker
       label="Lag"
       icon="👕"
@@ -1017,7 +1017,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 Lägg vald match i BrainSlip
               </Button>
 
-              <section className="mt-8 rounded-3xl border border-[#18ff6d22] bg-black/25 p-5 sm:p-6">
+              <section className="mt-6 rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 sm:mt-8 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
@@ -1074,7 +1074,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     </p>
                   </div>
                 ) : (
-                  <div className="mt-6 grid gap-5 xl:grid-cols-2">
+                  <div className="mt-5 grid gap-4 xl:grid-cols-2">
                     {lineups.map((lineup, teamIndex) => (
                       <div
                         key={lineup.team?.id || teamIndex}
@@ -1114,7 +1114,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                             Startande spelare
                           </p>
 
-                          <div className="mt-4 space-y-2">
+                          <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1 sm:max-h-96">
                             {(lineup.startXI || []).map(
                               (player, playerIndex) => (
                                 <div
@@ -1148,7 +1148,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 )}
               </section>
 
-              <div className="mt-10">
+              <div className="mt-8 sm:mt-10">
   <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
     <div>
       <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
@@ -1174,7 +1174,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
     </div>
   </div>
 
-  <div className="mt-6 grid grid-cols-2 gap-3">
+  <div className="mt-5 grid grid-cols-2 gap-2 sm:gap-3">
     <button
       type="button"
       onClick={() => setDateFilter("live")}
@@ -1238,7 +1238,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
         </span>
       </div>
 
-      <div className="max-h-[900px] space-y-5 overflow-y-auto pr-2">
+      <div className="max-h-[68vh] space-y-4 overflow-y-auto overscroll-contain pr-1 sm:max-h-[900px] sm:space-y-5 sm:pr-2">
         {liveFixtures.map((fixture) => (
           <FixtureCard
             key={fixture.fixture.id}
@@ -1282,7 +1282,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
     Inga matcher matchade filtret eller sökningen.
   </p>
 ) : (
-  <div className="mt-8 space-y-10">
+  <div className="mt-8 max-h-[72vh] space-y-8 overflow-y-auto overscroll-contain pr-1 sm:max-h-none sm:space-y-10 sm:overflow-visible sm:pr-0">
     {Object.entries(groupedFixtures).map(([date, matches]) => (
       <div key={date}>
         <div className="mb-5 flex items-center gap-4">
@@ -1328,7 +1328,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 )}   
             </section>
 
-            <aside className="brain-card h-fit rounded-3xl p-5 sm:p-8 xl:sticky xl:top-6">
+            <aside className="brain-card h-fit rounded-3xl p-4 sm:p-8 xl:sticky xl:top-6">
               <h2 className="text-2xl font-bold">
                 🧠 BrainSlip
               </h2>
