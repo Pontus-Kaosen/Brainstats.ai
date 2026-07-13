@@ -37,7 +37,10 @@ type ScoreBreakdown = {
 
 type BrainPick = {
   market: string;
-  confidence: number;
+  confidence?: number;
+  probability?: number;
+  estimatedOdds?: number;
+  riskLevel?: string;
   reason: string;
 };
 
@@ -97,6 +100,7 @@ type AIResult = {
   confidence?: number;
   scoreBreakdown?: ScoreBreakdown;
   brainPick?: BrainPick | null;
+  brainPicks?: BrainPick[];
 };
 
 type Weather = {
@@ -140,6 +144,18 @@ function matchText(match: LastMatch) {
   return `${match.teams.home.name} ${match.goals.home ?? "-"}-${
     match.goals.away ?? "-"
   } ${match.teams.away.name}`;
+}
+
+function riskColor(risk?: string) {
+  if (risk === "Low" || risk === "Lägre risk" || risk === "Lower risk") {
+    return "border-green-500/30 bg-green-500/10 text-green-300";
+  }
+
+  if (risk === "High" || risk === "Högre risk" || risk === "Higher risk") {
+    return "border-red-500/30 bg-red-500/10 text-red-300";
+  }
+
+  return "border-yellow-500/30 bg-yellow-500/10 text-yellow-200";
 }
 
 function injuryReason(injury: Injury, fallback: string) {
@@ -327,6 +343,16 @@ const scheduleStatusMessage =
       : scheduleContext === "no_fixture"
         ? t.analyze.scheduleNoFixture
         : "";
+
+const brainPicks = useMemo(() => {
+  if (!aiResult) return [];
+
+  if (Array.isArray(aiResult.brainPicks) && aiResult.brainPicks.length > 0) {
+    return aiResult.brainPicks;
+  }
+
+  return aiResult.brainPick ? [aiResult.brainPick] : [];
+}, [aiResult]);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
@@ -893,6 +919,84 @@ const scheduleStatusMessage =
                   {betText}
                 </pre>
               </div>
+
+              <section className="mt-8">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
+                      {t.report.picksSubtitle}
+                    </p>
+                    <h3 className="mt-2 text-2xl font-black text-white sm:text-3xl">
+                      {t.report.picksTitle}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-[#A9A9A9]">{t.report.fairOddsNote}</p>
+                </div>
+
+                {brainPicks.length === 0 ? (
+                  <div className="mt-6 rounded-3xl border border-white/10 bg-black/30 p-8">
+                    <p className="text-[#A9A9A9]">{t.report.noPicks}</p>
+                  </div>
+                ) : (
+                  <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                    {brainPicks.map((pick, index) => (
+                      <article
+                        key={`${pick.market}-${index}`}
+                        className="brain-card relative overflow-hidden rounded-3xl border border-[#18ff6d22] p-6 sm:p-7"
+                      >
+                        <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#18ff6d]/10 blur-[70px]" />
+
+                        <div className="relative">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <span className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-black text-[#18ff6d]">
+                              {formatTranslation(t.report.pickNumber, {
+                                n: index + 1,
+                              })}
+                            </span>
+
+                            <span
+                              className={`rounded-full border px-4 py-2 text-sm font-bold ${riskColor(
+                                pick.riskLevel
+                              )}`}
+                            >
+                              {translateRiskLevel(pick.riskLevel, t)}{" "}
+                              {t.common.riskSuffix}
+                            </span>
+                          </div>
+
+                          <h4 className="mt-6 text-2xl font-black text-white sm:text-3xl">
+                            {pick.market || t.report.unknownMarket}
+                          </h4>
+
+                          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                            <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
+                              <p className="text-sm text-[#A9A9A9]">
+                                {t.report.aiProbability}
+                              </p>
+                              <p className="mt-2 text-3xl font-black text-[#18ff6d]">
+                                {pick.probability ?? pick.confidence ?? 0}%
+                              </p>
+                            </div>
+
+                            <div className="rounded-2xl border border-[#2fbfff33] bg-black/35 p-5">
+                              <p className="text-sm text-[#A9A9A9]">
+                                {t.report.estimatedFairOdds}
+                              </p>
+                              <p className="mt-2 text-3xl font-black text-[#72d5ff]">
+                                {Number(pick.estimatedOdds || 0).toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+
+                          <p className="mt-6 leading-8 text-[#D8D8D8]">
+                            {pick.reason || t.report.noReason}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
 
               <div className="grid gap-6 md:grid-cols-2">
                 <div className={cardClass}>
