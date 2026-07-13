@@ -30,8 +30,12 @@ import {
   getStockholmDateKey,
 } from "@/lib/stockholmDate";
 import {
-  isCornerMarketLabel,
+  isCornerOverUnderMarketLabel,
+  isCardOverUnderMarketLabel,
   isPlayerMarketLabel,
+  CORNER_LINE_OPTIONS,
+  CARD_LINE_OPTIONS,
+  formatMarketWithLine,
 } from "@/lib/builderMarkets";
 
 const TOURNAMENTS_VALUE = "__tournaments__";
@@ -174,10 +178,6 @@ function isPlayerMarket(market: string) {
   return isPlayerMarketLabel(market);
 }
 
-function isCornerMarketValue(market: string) {
-  return isCornerMarketLabel(market);
-}
-
 export default function BuilderPage() {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
@@ -227,6 +227,7 @@ export default function BuilderPage() {
   const [playerId, setPlayerId] = useState<number | null>(null);
   const [playerLine, setPlayerLine] = useState("1+");
   const [cornerLine, setCornerLine] = useState("8.5");
+  const [cardLine, setCardLine] = useState("3.5");
   const [playerTeam, setPlayerTeam] = useState<"home" | "away">("home");
   const [homePlayers, setHomePlayers] = useState<Player[]>([]);
   const [awayPlayers, setAwayPlayers] = useState<Player[]>([]);
@@ -260,7 +261,14 @@ export default function BuilderPage() {
 
   const isPlayerProp = isPlayerMarket(market);
   const hasPlayerPickDrafts = playerPickDrafts.length > 0;
-  const hasSelectedCornerMarkets = selectedMarkets.some(isCornerMarketValue);
+  const hasSelectedCornerLineMarkets = selectedMarkets.some(
+    isCornerOverUnderMarketLabel
+  );
+  const hasSelectedCardLineMarkets = selectedMarkets.some(
+    isCardOverUnderMarketLabel
+  );
+  const isActiveCornerLineMarket = isCornerOverUnderMarketLabel(market);
+  const isActiveCardLineMarket = isCardOverUnderMarketLabel(market);
   const totalPendingPicks =
     selectedMarkets.length + playerPickDrafts.length;
 
@@ -997,6 +1005,23 @@ export default function BuilderPage() {
     return slip.some((item) => item.fixtureId === fixture.fixture.id);
   }
 
+  function getMarketDisplayLabel(marketName: string) {
+    if (
+      isCornerOverUnderMarketLabel(marketName) ||
+      isCardOverUnderMarketLabel(marketName)
+    ) {
+      if (
+        selectedMarkets.includes(marketName) ||
+        isMarketInSlip(marketName) ||
+        market === marketName
+      ) {
+        return buildMarketTextFor(marketName);
+      }
+    }
+
+    return marketName;
+  }
+
   function buildMarketTextFor(
     marketName: string,
     fixture?: Fixture,
@@ -1004,6 +1029,8 @@ export default function BuilderPage() {
       playerTeam?: "home" | "away";
       playerName?: string;
       playerLine?: string;
+      cornerLine?: string;
+      cardLine?: string;
     }
   ) {
     const targetFixture = fixture || selectedFixture;
@@ -1019,6 +1046,20 @@ export default function BuilderPage() {
           ? targetFixture.teams.home.name
           : targetFixture.teams.away.name
       } · ${name || t.builder.unknownPlayer} · ${line}`;
+    }
+
+    if (isCornerOverUnderMarketLabel(marketName)) {
+      return formatMarketWithLine(
+        marketName,
+        options?.cornerLine ?? cornerLine
+      );
+    }
+
+    if (isCardOverUnderMarketLabel(marketName)) {
+      return formatMarketWithLine(
+        marketName,
+        options?.cardLine ?? cardLine
+      );
     }
 
     return marketName;
@@ -1359,6 +1400,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       onSelectPlayerMarket={selectPlayerMarket}
                       playerDraftCountForMarket={playerDraftCountForMarket}
                       isMarketInSlip={isMarketInSlip}
+                      getMarketDisplayLabel={getMarketDisplayLabel}
                     />
                   </div>
 
@@ -1525,26 +1567,45 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   </section>
 ) : null}
 
-{selectedFixture && hasSelectedCornerMarkets && (
+{selectedFixture &&
+  (hasSelectedCornerLineMarkets || isActiveCornerLineMarket) && (
   <div className="mt-6">
-    <label className="text-sm text-[#A9A9A9]">
-      🚩 {t.builder.cornerLineLabel}
-    </label>
-
-    <select
+    <BuilderPicker
+      label={t.builder.cornerLineLabel}
+      icon="🚩"
       value={cornerLine}
-      onChange={(e) => setCornerLine(e.target.value)}
-      className="mt-2 w-full rounded-2xl bg-black/40 p-4"
-    >
-      <option>5.5</option>
-      <option>6.5</option>
-      <option>7.5</option>
-      <option>8.5</option>
-      <option>9.5</option>
-      <option>10.5</option>
-      <option>11.5</option>
-      <option>12.5</option>
-    </select>
+      onChange={setCornerLine}
+      searchable={false}
+      options={CORNER_LINE_OPTIONS.map((line) => ({
+        label: line,
+        value: line,
+        icon: "🚩",
+        description: formatTranslation(t.builder.cornerLineDescription, {
+          line,
+        }),
+      }))}
+    />
+  </div>
+)}
+
+{selectedFixture &&
+  (hasSelectedCardLineMarkets || isActiveCardLineMarket) && (
+  <div className="mt-6">
+    <BuilderPicker
+      label={t.builder.cardLineLabel}
+      icon="🟨"
+      value={cardLine}
+      onChange={setCardLine}
+      searchable={false}
+      options={CARD_LINE_OPTIONS.map((line) => ({
+        label: line,
+        value: line,
+        icon: "🟨",
+        description: formatTranslation(t.builder.cardLineDescription, {
+          line,
+        }),
+      }))}
+    />
   </div>
 )}
 

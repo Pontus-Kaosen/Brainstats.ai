@@ -16,6 +16,7 @@ type BuilderMarketGridProps = {
   onSelectPlayerMarket?: (market: string) => void;
   playerDraftCountForMarket?: (market: string) => number;
   isMarketInSlip?: (market: string) => boolean;
+  getMarketDisplayLabel?: (market: string) => string;
 };
 
 const groupOrder: MarketGroupId[] = [
@@ -34,6 +35,7 @@ export default function BuilderMarketGrid({
   onSelectPlayerMarket,
   playerDraftCountForMarket,
   isMarketInSlip,
+  getMarketDisplayLabel,
 }: BuilderMarketGridProps) {
   const { t } = useLanguage();
   const grouped = groupMarkets(markets);
@@ -70,6 +72,8 @@ export default function BuilderMarketGrid({
                 const selected = isPlayerRow
                   ? activePlayerMarket === marketOption || draftCount > 0
                   : inSlip || selectedMarkets.includes(marketOption);
+                const displayLabel =
+                  getMarketDisplayLabel?.(marketOption) ?? marketOption;
 
                 return (
                   <button
@@ -102,7 +106,7 @@ export default function BuilderMarketGrid({
                           selected ? "text-white" : "text-[#E8E8E8]"
                         }`}
                       >
-                        {marketOption}
+                        {displayLabel}
                       </span>
                     </div>
 

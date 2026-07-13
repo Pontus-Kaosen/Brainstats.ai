@@ -105,7 +105,15 @@ function isNeutralMarket(text: string) {
     /^över gula kort$/i.test(text.trim()) ||
     /^under gula kort$/i.test(text.trim()) ||
     /^over yellow cards$/i.test(text.trim()) ||
-    /^under yellow cards$/i.test(text.trim())
+    /^under yellow cards$/i.test(text.trim()) ||
+    /över\s+[\d.]+\s*hörnor/i.test(text) ||
+    /under\s+[\d.]+\s*hörnor/i.test(text) ||
+    /over\s+[\d.]+\s*corners/i.test(text) ||
+    /under\s+[\d.]+\s*corners/i.test(text) ||
+    /över\s+[\d.]+\s*gula kort/i.test(text) ||
+    /under\s+[\d.]+\s*gula kort/i.test(text) ||
+    /over\s+[\d.]+\s*yellow cards/i.test(text) ||
+    /under\s+[\d.]+\s*yellow cards/i.test(text)
   );
 }
 
