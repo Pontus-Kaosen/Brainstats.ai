@@ -162,6 +162,7 @@ export default function Navbar() {
     { title: t.navbar.home, href: "/" },
     { title: t.navbar.analyze, href: "/analyze" },
     { title: t.navbar.builder, href: "/builder" },
+    { title: t.navbar.aiTips, href: "/dashboard#ai-tips", highlight: true },
     { title: t.navbar.dashboard, href: "/dashboard" },
     { title: t.navbar.premium, href: "/premium" },
     { title: t.navbar.legal, href: "/legal" },
@@ -198,8 +199,13 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-2xl border border-transparent px-4 py-3 text-sm font-semibold text-[#D8D8D8] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 hover:text-[#18ff6d]"
+              className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${
+                link.highlight
+                  ? "border-[#E8DCC8]/30 bg-gradient-to-r from-[#18ff6d]/10 via-[#E8DCC8]/10 to-[#2fbfff]/10 text-[#E8DCC8] hover:border-[#E8DCC8]/50 hover:bg-[#18ff6d]/15"
+                  : "border-transparent text-[#D8D8D8] hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 hover:text-[#18ff6d]"
+              }`}
             >
+              {link.highlight ? "🎯 " : ""}
               {link.title}
             </Link>
           ))}
@@ -344,11 +350,16 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#18ff6d]/10 ${
-                  pathname === link.href
+                  pathname === link.href ||
+                  (link.href.includes("#") &&
+                    pathname === link.href.split("#")[0])
                     ? "bg-[#18ff6d]/10 text-[#18ff6d]"
-                    : "text-[#D8D8D8]"
+                    : link.highlight
+                      ? "text-[#E8DCC8]"
+                      : "text-[#D8D8D8]"
                 }`}
               >
+                {link.highlight ? "🎯 " : ""}
                 {link.title}
               </Link>
             ))}

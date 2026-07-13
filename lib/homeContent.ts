@@ -8,6 +8,10 @@ export type HomeContent = {
   pasteBet: string;
   buildBet: string;
   seePremium: string;
+  aiTipsBadge: string;
+  aiTipsTitle: string;
+  aiTipsText: string;
+  aiTipsCta: string;
   features: Array<{ title: string; text: string }>;
 };
 
@@ -22,6 +26,11 @@ const homeContent: Record<Language, HomeContent> = {
     pasteBet: "Klistra in spelidé",
     buildBet: "Bygg spelidé",
     seePremium: "Se Premium",
+    aiTipsBadge: "Dagliga AI-kuponger",
+    aiTipsTitle: "Färdiga AI-speltips varje dag",
+    aiTipsText:
+      "BrainStats skapar dagliga AI-kuponger med olika riskprofil, matcher och estimerade fair odds — direkt i din dashboard.",
+    aiTipsCta: "Se dagens AI-tips",
     features: [
       {
         title: "📋 Klistra in",
@@ -32,8 +41,8 @@ const homeContent: Record<Language, HomeContent> = {
         text: "Få BrainScore™, risknivå och identifierade marknader.",
       },
       {
-        title: "💎 Premium",
-        text: "Lås upp djupare rapporter och fler analyser.",
+        title: "🎯 AI-tips",
+        text: "Färdiga dagliga AI-kuponger med riskprofil och estimerade fair odds.",
       },
     ],
   },
@@ -47,6 +56,11 @@ const homeContent: Record<Language, HomeContent> = {
     pasteBet: "Paste bet idea",
     buildBet: "Build bet idea",
     seePremium: "See Premium",
+    aiTipsBadge: "Daily AI slips",
+    aiTipsTitle: "Ready-made AI bet tips every day",
+    aiTipsText:
+      "BrainStats creates daily AI slips with different risk profiles, matches and estimated fair odds — right in your dashboard.",
+    aiTipsCta: "See today's AI tips",
     features: [
       {
         title: "📋 Paste in",
@@ -57,8 +71,8 @@ const homeContent: Record<Language, HomeContent> = {
         text: "Get BrainScore™, risk level and identified markets.",
       },
       {
-        title: "💎 Premium",
-        text: "Unlock deeper reports and more analyses.",
+        title: "🎯 AI tips",
+        text: "Ready-made daily AI slips with risk profile and estimated fair odds.",
       },
     ],
   },

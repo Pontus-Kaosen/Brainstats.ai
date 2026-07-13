@@ -59,6 +59,27 @@ export default async function Home() {
           >
             💎 {t.seePremium}
           </Link>
+
+          <Link
+            href="/dashboard#ai-tips"
+            className="mt-8 block w-full max-w-3xl rounded-[2rem] border border-[#E8DCC8]/20 bg-gradient-to-br from-[#18ff6d]/10 via-[#E8DCC8]/5 to-[#2fbfff]/10 p-5 text-left transition hover:border-[#E8DCC8]/35 hover:shadow-[0_0_50px_rgba(232,220,200,.12)] sm:mt-10 sm:p-8"
+          >
+            <p className="inline-flex rounded-full border border-[#E8DCC8]/25 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
+              🎯 {t.aiTipsBadge}
+            </p>
+
+            <h2 className="mt-4 text-2xl font-black text-white sm:text-3xl">
+              {t.aiTipsTitle}
+            </h2>
+
+            <p className="mt-3 text-sm leading-7 text-[#A9A9A9] sm:text-base">
+              {t.aiTipsText}
+            </p>
+
+            <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#18ff6d] sm:text-base">
+              {t.aiTipsCta} →
+            </span>
+          </Link>
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-8 sm:pb-24">

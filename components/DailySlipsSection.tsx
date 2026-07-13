@@ -100,7 +100,10 @@ export default function DailySlipsSection() {
   }, [language, t.dailySlips.errorDefault, t.dailySlips.mustLogin]);
 
   return (
-    <section className="mt-8 sm:mt-14">
+    <section
+      id="ai-tips"
+      className="mt-6 scroll-mt-28 rounded-[2rem] border border-[#18ff6d33] bg-gradient-to-br from-[#18ff6d]/8 via-black/20 to-[#2fbfff]/8 p-4 shadow-[0_0_60px_rgba(24,255,109,.08)] sm:mt-8 sm:p-8"
+    >
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between sm:gap-4">
         <div>
           <p className="brain-title text-xs font-bold uppercase tracking-[0.3em] sm:text-sm">

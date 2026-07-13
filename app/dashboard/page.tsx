@@ -23,6 +23,7 @@ type Analysis = {
 };
 
 const quickActions = [
+  { key: "aiTips" as const, icon: "🎯", href: "/dashboard#ai-tips" },
   { key: "home" as const, icon: "🏠", href: "/" },
   { key: "builder" as const, icon: "⚽", href: "/builder" },
   { key: "analyze" as const, icon: "🧠", href: "/analyze" },
@@ -66,7 +67,11 @@ export default function DashboardPage() {
         } = await supabase.auth.getUser();
 
         if (userError || !user) {
-          window.location.href = "/login?next=/dashboard";
+          const nextTarget = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+          window.location.href = `/login?next=${encodeURIComponent(
+            nextTarget || "/dashboard"
+          )}`;
           return;
         }
 
@@ -158,10 +163,27 @@ export default function DashboardPage() {
     };
   }, [t.dashboard.loadErrorDefault]);
 
+  useEffect(() => {
+    if (loading || window.location.hash !== "#ai-tips") {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      document
+        .getElementById("ai-tips")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [loading]);
+
   const quickActionLabels: Record<
     (typeof quickActions)[number]["key"],
     string
   > = {
+    aiTips: t.navbar.aiTips,
     home: t.dashboard.quickHome,
     builder: t.navbar.builder,
     analyze: t.dashboard.newAnalysis,
@@ -207,9 +229,21 @@ export default function DashboardPage() {
               {t.dashboard.title}
             </h1>
 
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[#A9A9A9] md:hidden sm:text-base">
+              {t.dashboard.aiTipsHero}
+            </p>
+
             <p className="mt-4 hidden max-w-2xl text-lg leading-8 text-[#A9A9A9] md:block sm:mt-6">
               {t.dashboard.description}
             </p>
+
+            <a
+              href="#ai-tips"
+              className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-[#E8DCC8]/30 bg-gradient-to-r from-[#18ff6d]/10 via-[#E8DCC8]/10 to-[#2fbfff]/10 px-5 py-3 text-sm font-bold text-[#E8DCC8] transition hover:border-[#E8DCC8]/50 hover:bg-[#18ff6d]/15 sm:mt-8 sm:px-6 sm:text-base"
+            >
+              🎯 {t.dashboard.viewAiTips}
+              <span aria-hidden>↓</span>
+            </a>
           </section>
 
           {dashboardError && (
@@ -232,6 +266,8 @@ export default function DashboardPage() {
             </section>
           ) : (
             <>
+              <DailySlipsSection />
+
               <section className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 xl:grid-cols-4">
                 {[
                   [t.dashboard.totalAnalyses, total],
@@ -250,9 +286,6 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </section>
-
-              <DailySlipsSection />
-
 
               <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] sm:mt-14">
                 <div className={cardClass}>
