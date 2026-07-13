@@ -7,6 +7,12 @@ import {
   getAnalyzeApiMessages,
   parseRequestLanguage,
 } from "@/lib/aiPrompts";
+import {
+  findRotationRisks,
+  getScheduleContextStatus,
+  resolveBetSides,
+  type RotationRisk,
+} from "@/lib/matchImportance";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -151,6 +157,17 @@ async function getLastMatches(
 
   return apiFootball(
     `/fixtures?team=${teamId}&last=5`
+  );
+}
+
+async function getUpcomingMatches(
+  teamId: string | null,
+  next = 12
+) {
+  if (!teamId) return [];
+
+  return apiFootball(
+    `/fixtures?team=${teamId}&next=${next}`
   );
 }
 
@@ -798,6 +815,62 @@ export async function POST(
       getLineups(fixtureId),
     ]);
 
+    const homeName = fixture?.teams?.home?.name ?? "";
+    const awayName = fixture?.teams?.away?.name ?? "";
+    const betSides = resolveBetSides(text, homeName, awayName);
+    const betTeams: Array<{ id: number; name: string }> = [];
+
+    if (betSides.has("home") && homeTeamId) {
+      betTeams.push({
+        id: Number(homeTeamId),
+        name: homeName || "Home",
+      });
+    }
+
+    if (betSides.has("away") && awayTeamId) {
+      betTeams.push({
+        id: Number(awayTeamId),
+        name: awayName || "Away",
+      });
+    }
+
+    const upcomingLists = await Promise.all(
+      betTeams.map((team) =>
+        getUpcomingMatches(String(team.id), 12)
+      )
+    );
+
+    const upcomingFixturesByTeam = new Map<number, any[]>();
+
+    betTeams.forEach((team, index) => {
+      upcomingFixturesByTeam.set(
+        team.id,
+        upcomingLists[index] || []
+      );
+    });
+
+    const rotationRisks = fixture
+      ? findRotationRisks({
+          currentFixture: fixture,
+          upcomingFixturesByTeam,
+          recentFixturesByTeam: new Map([
+            ...(homeTeamId && betSides.has("home")
+              ? [[Number(homeTeamId), homeLastMatches] as const]
+              : []),
+            ...(awayTeamId && betSides.has("away")
+              ? [[Number(awayTeamId), awayLastMatches] as const]
+              : []),
+          ]),
+          betTeams,
+        })
+      : [];
+
+    const scheduleContext = getScheduleContextStatus({
+      hasFixture: Boolean(fixture),
+      betTeams,
+      rotationRisks,
+    });
+
     const homeStanding =
       standings.find(
         (item: any) =>
@@ -859,6 +932,7 @@ export async function POST(
               injuries,
               playerStats,
               playerId,
+              rotationRisks,
             }),
           },
         ],
@@ -1015,6 +1089,10 @@ export async function POST(
         referee:
           fixture?.fixture?.referee ||
           null,
+
+        rotationRisks,
+        scheduleContext,
+        scheduleTeamsChecked: betTeams.map((team) => team.name),
       },
 
       analysis: cleanAnalysis,

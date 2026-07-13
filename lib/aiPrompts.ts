@@ -1,4 +1,8 @@
 import type { Language } from "@/lib/translations";
+import {
+  summarizeRotationRisksForPrompt,
+  type RotationRisk,
+} from "@/lib/matchImportance";
 
 export function parseRequestLanguage(value: unknown): Language {
   return value === "en" ? "en" : "sv";
@@ -150,6 +154,7 @@ type AnalyzePromptInput = {
   injuries: any[];
   playerStats: any;
   playerId: string | null;
+  rotationRisks: RotationRisk[];
 };
 
 export function buildAnalyzeSystemPrompt(language: Language) {
@@ -249,6 +254,14 @@ ${JSON.stringify(input.injuries, null, 2)}
 
 Player statistics:
 ${summarizePlayerStatsForPrompt(input.playerStats, language)}
+
+Schedule / rotation context (next 7 days for bet-relevant team(s)):
+${summarizeRotationRisksForPrompt(input.rotationRisks || [], "en")}
+
+Schedule rules:
+- If a bet team has a more important match shortly before or after this fixture, mention possible rotation, rest or reduced intensity.
+- This is especially important for team-win, team performance and player markets on that team.
+- Adjust risks and probability accordingly, but do not name specific rested players unless lineups confirm it.
 
 Respond in exactly this JSON structure:
 
@@ -351,6 +364,14 @@ ${JSON.stringify(input.injuries, null, 2)}
 
 Spelarstatistik:
 ${summarizePlayerStatsForPrompt(input.playerStats, language)}
+
+Matchschema / rotationskontext (7 dagar för lag som spelidén gäller):
+${summarizeRotationRisksForPrompt(input.rotationRisks || [], "sv")}
+
+Regler för matchschema:
+- Om ett lag har en viktigare match strax före eller efter denna fixture ska möjlig rotation, vila eller lägre intensitet nämnas.
+- Detta är särskilt viktigt vid lagvinst, lagprestation och spelarmarknader för det laget.
+- Justera risker och sannolikhet därefter, men gissa inte vilka spelare som vilar om startelvor inte bekräftar det.
 
 Svara i exakt denna JSON-struktur:
 

@@ -15,6 +15,11 @@ import {
   translateRiskLevel,
 } from "@/lib/locale";
 import { ANALYZE_DRAFT_KEY } from "@/lib/safeRedirect";
+import {
+  summarizeRotationRisksForUi,
+  type RotationRisk,
+  type ScheduleContextStatus,
+} from "@/lib/matchImportance";
 
 
 type ScoreBreakdown = {
@@ -107,6 +112,9 @@ type UsedData = {
   confirmedLineups?: boolean;
   weather?: Weather | null;
   referee?: string | null;
+  rotationRisks?: RotationRisk[];
+  scheduleContext?: ScheduleContextStatus;
+  scheduleTeamsChecked?: string[];
 };
 
 const cardClass =
@@ -289,6 +297,23 @@ const confirmedLineups =
 
 const weather = usedData?.weather;
 const referee = usedData?.referee;
+const rotationRisks = usedData?.rotationRisks || [];
+const scheduleContext = usedData?.scheduleContext;
+const scheduleTeamsChecked = usedData?.scheduleTeamsChecked || [];
+const rotationSummaries = summarizeRotationRisksForUi(
+  rotationRisks,
+  language
+);
+const scheduleStatusMessage =
+  scheduleContext === "checked_clear"
+    ? formatTranslation(t.analyze.scheduleCheckedClear, {
+        teams: scheduleTeamsChecked.join(", "),
+      })
+    : scheduleContext === "no_team"
+      ? t.analyze.scheduleNoTeam
+      : scheduleContext === "no_fixture"
+        ? t.analyze.scheduleNoFixture
+        : "";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
@@ -458,8 +483,41 @@ const referee = usedData?.referee;
         </div>
         <p className="mt-1 text-sm text-[#A9A9A9]">{t.analyze.brainScore}</p>
       </div>
-    </div>
   </div>
+</div>
+
+              {(rotationSummaries.length > 0 || scheduleStatusMessage) && (
+                <div
+                  className={`rounded-3xl border p-6 sm:p-8 ${
+                    rotationSummaries.length > 0
+                      ? "border-yellow-500/30 bg-yellow-500/10"
+                      : "border-white/10 bg-black/30"
+                  }`}
+                >
+                  <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
+                    {t.analyze.scheduleContextTitle}
+                  </p>
+                  <p className="mt-2 text-sm text-[#A9A9A9]">
+                    {t.analyze.scheduleContextHint}
+                  </p>
+                  {rotationSummaries.length > 0 ? (
+                    <ul className="mt-4 space-y-3">
+                      {rotationSummaries.map((item) => (
+                        <li
+                          key={item}
+                          className="rounded-2xl border border-yellow-500/20 bg-black/30 px-4 py-3 text-sm leading-6 text-[#E8E8E8]"
+                        >
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-[#A9A9A9]">
+                      {scheduleStatusMessage}
+                    </p>
+                  )}
+                </div>
+              )}
 
   <div className="mt-10 grid gap-5 md:grid-cols-3">
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">

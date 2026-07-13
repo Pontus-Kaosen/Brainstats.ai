@@ -302,6 +302,15 @@ export const translations = {
       remainingAnalysesLow:
         "Bara {remaining} analys kvar idag — överväg Pro för obegränsat.",
       analysisFailed: "Analysen kunde inte slutföras. Försök igen.",
+      scheduleContextTitle: "Matchschema & rotationsrisk",
+      scheduleContextHint:
+        "Viktiga matcher före eller efter kan påverka lagets intensitet och startelva.",
+      scheduleCheckedClear:
+        "Ingen viktigare match hittades inom 7 dagar för {teams}. Schema har kontrollerats.",
+      scheduleNoTeam:
+        "Schema kunde inte kopplas till ett lag. Använd marknader som Hemmalag/Bortalag vinner via Builder.",
+      scheduleNoFixture:
+        "Ingen match hittades i underlaget. Bygg spelet via Builder för schemaanalys.",
       reportSubtitle: "Brain Engine™ Report",
       reportTitle: "AI Match Analysis",
       brainScore: "/100 BrainScore™",
@@ -894,6 +903,15 @@ export const translations = {
       remainingAnalysesLow:
         "Only {remaining} analysis left today — consider Pro for unlimited.",
       analysisFailed: "The analysis could not be completed. Try again.",
+      scheduleContextTitle: "Schedule & rotation risk",
+      scheduleContextHint:
+        "Important fixtures before or after may affect intensity and the starting lineup.",
+      scheduleCheckedClear:
+        "No more important fixture was found within 7 days for {teams}. Schedule was checked.",
+      scheduleNoTeam:
+        "Schedule could not be linked to a team. Use markets like Home/Away win via Builder.",
+      scheduleNoFixture:
+        "No match was found in the input. Build the bet via Builder for schedule analysis.",
       reportSubtitle: "Brain Engine™ Report",
       reportTitle: "AI Match Analysis",
       brainScore: "/100 BrainScore™",
