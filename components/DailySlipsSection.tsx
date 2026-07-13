@@ -100,16 +100,16 @@ export default function DailySlipsSection() {
   }, [language, t.dailySlips.errorDefault, t.dailySlips.mustLogin]);
 
   return (
-    <section className="mt-14">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <section className="mt-8 sm:mt-14">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between sm:gap-4">
         <div>
-          <p className="brain-title text-sm font-bold uppercase tracking-[0.3em]">
+          <p className="brain-title text-xs font-bold uppercase tracking-[0.3em] sm:text-sm">
             {t.dailySlips.subtitle}
           </p>
 
-          <h2 className="mt-3 text-4xl font-black">{t.dailySlips.title}</h2>
+          <h2 className="mt-2 text-2xl font-black sm:mt-3 sm:text-4xl">{t.dailySlips.title}</h2>
 
-          <p className="mt-3 max-w-2xl text-[#A9A9A9]">
+          <p className="mt-2 hidden max-w-2xl text-sm text-[#A9A9A9] md:block sm:mt-3">
             {t.dailySlips.description}
           </p>
         </div>
@@ -122,7 +122,7 @@ export default function DailySlipsSection() {
         </div>
       </div>
 
-      <p className="mt-4 text-sm text-[#777]">{t.dailySlips.disclaimer}</p>
+      <p className="mt-3 hidden text-sm text-[#777] md:block sm:mt-4">{t.dailySlips.disclaimer}</p>
 
       {loading && (
         <div className="mt-8 rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">

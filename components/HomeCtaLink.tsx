@@ -24,7 +24,7 @@ export default function HomeCtaLink({
     <Link
       href={href}
       prefetch={false}
-      className={`inline-flex items-center justify-center rounded-2xl px-7 py-4 text-center font-bold tracking-wide transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center rounded-2xl px-6 py-3 text-center text-sm font-bold tracking-wide transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] max-md:py-3 sm:px-7 sm:py-4 sm:text-base ${variants[variant]} ${className}`}
     >
       {children}
     </Link>

@@ -133,21 +133,21 @@ export default function PremiumPage() {
       <div className="relative z-10">
         <Navbar />
 
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-16">
           <section className="text-center">
             <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-2 text-sm font-semibold text-[#18ff6d]">
               {t.premium.badge}
             </div>
 
-            <h1 className="mt-6 text-4xl font-black sm:text-6xl">
+            <h1 className="mt-4 text-3xl font-black max-md:leading-snug sm:mt-6 sm:text-6xl">
               {t.premium.title}
             </h1>
 
-            <p className="mx-auto mt-5 max-w-2xl leading-8 text-[#A9A9A9]">
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#A9A9A9] max-md:line-clamp-3 sm:mt-5 sm:text-base sm:leading-8">
               {t.premium.description}
             </p>
 
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-[#747474]">
+            <p className="mx-auto mt-2 hidden max-w-2xl text-sm text-[#747474] md:block sm:mt-3">
               {t.premium.disclaimer}
             </p>
           </section>
@@ -203,7 +203,7 @@ export default function PremiumPage() {
             </div>
           )}
 
-          <section className="mt-12 grid gap-6 lg:grid-cols-3">
+          <section className="mt-8 flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory max-md:scrollbar-none sm:mt-12 lg:grid lg:grid-cols-3 lg:gap-6 lg:overflow-visible">
             {plans.map((plan) => {
               const isLoading =
                 plan.id !== "free" && loadingPlan === plan.id;
@@ -211,7 +211,7 @@ export default function PremiumPage() {
               return (
                 <article
                   key={plan.id}
-                  className={`relative flex min-h-[560px] flex-col overflow-hidden rounded-[2rem] border p-7 max-md:backdrop-blur-none max-md:hover:translate-y-0 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 sm:p-8 ${
+                  className={`relative flex min-h-0 w-[85vw] shrink-0 snap-center flex-col overflow-hidden rounded-[2rem] border p-5 max-md:backdrop-blur-none max-md:hover:translate-y-0 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 sm:min-h-[560px] sm:w-auto sm:shrink sm:p-8 lg:min-h-[560px] ${
                     plan.popular
                       ? "border-[#18ff6d] bg-[#07140d]/90 shadow-[0_0_65px_rgba(24,255,109,0.2)]"
                       : plan.elite

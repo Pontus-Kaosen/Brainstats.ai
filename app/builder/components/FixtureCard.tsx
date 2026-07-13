@@ -105,7 +105,7 @@ export default function FixtureCard({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full rounded-3xl border p-5 text-left transition-all duration-200 ${
+      className={`w-full rounded-3xl border p-3 text-left transition-all duration-200 max-md:p-4 sm:p-5 ${
         selected
           ? "border-[#18ff6d] bg-[#18ff6d]/10"
           : "border-white/10 bg-black/30 hover:border-[#18ff6d]/50"
@@ -145,7 +145,7 @@ export default function FixtureCard({
         </span>
       </div>
 
-      <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+      <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 max-md:mt-3 sm:mt-6 sm:gap-3">
         <div className="min-w-0 text-center">
           {fixture.teams.home.logo && (
             <Image
@@ -169,7 +169,7 @@ export default function FixtureCard({
               : t.fixtureCard.noStandings}
           </p>
 
-          <div className="mt-3 flex flex-wrap justify-center gap-1">
+          <div className="mt-2 hidden flex-wrap justify-center gap-1 max-md:hidden sm:mt-3 sm:flex">
             {homeForm.slice(0, 5).map((item, index) => (
               <span
                 key={`${item.result}-${index}`}
@@ -210,7 +210,7 @@ export default function FixtureCard({
               : t.fixtureCard.noStandings}
           </p>
 
-          <div className="mt-3 flex flex-wrap justify-center gap-1">
+          <div className="mt-2 hidden flex-wrap justify-center gap-1 max-md:hidden sm:mt-3 sm:flex">
             {awayForm.slice(0, 5).map((item, index) => (
               <span
                 key={`${item.result}-${index}`}

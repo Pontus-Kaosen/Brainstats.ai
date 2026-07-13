@@ -128,7 +128,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="border-b border-[#18ff6d22] bg-black/95 px-3 py-4 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
+    <nav className="border-b border-[#18ff6d22] bg-black/95 px-3 py-3 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <Link
           href="/"

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import FixtureCard from "./components/FixtureCard";
+import BuilderSlipPanel from "./components/BuilderSlipPanel";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
@@ -145,7 +146,7 @@ export default function BuilderPage() {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const fixturePreviewLimit = isMobile ? 4 : 8;
-  const groupedFixtureLimit = isMobile ? 10 : 20;
+  const groupedFixtureLimit = isMobile ? 6 : 20;
   const liveRefreshMs = isMobile ? 120_000 : 60_000;
   const markets = t.builder.markets;
 
@@ -822,17 +823,17 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       <div className="relative z-10">
         <Navbar />
 
-        <div className="mx-auto max-w-7xl px-3 py-6 sm:px-8 sm:py-10">
-          <section className="mb-10">
-            <p className="brain-title font-semibold">
+        <div className="mx-auto max-w-7xl px-3 py-4 sm:px-8 sm:py-10">
+          <section className="mb-4 max-md:mb-3 sm:mb-10">
+            <p className="brain-title text-sm font-semibold max-md:text-xs">
               {t.builder.pageBadge}
             </p>
 
-            <h1 className="mt-2 text-3xl font-black leading-tight sm:text-5xl">
+            <h1 className="mt-1 text-2xl font-black leading-tight max-md:mt-0 sm:mt-2 sm:text-5xl">
               {t.builder.pageTitle}
             </h1>
 
-            <p className="mt-4 max-w-2xl text-[#A9A9A9]">
+            <p className="mt-4 hidden max-w-2xl text-[#A9A9A9] md:block">
               {t.builder.pageDescription}
             </p>
           </section>
@@ -989,7 +990,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
     />
   </div>
         )}
-                  
+
 {isCornerMarket && (
   <div className="mt-6">
     <label className="text-sm text-[#A9A9A9]">
@@ -1013,6 +1014,20 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   </div>
 )}
 
+              <div className="mt-5 brain-card rounded-3xl p-4 xl:hidden">
+                <BuilderSlipPanel
+                  compact
+                  slip={slip}
+                  onRemove={(index) =>
+                    setSlip((current) =>
+                      current.filter((_, itemIndex) => itemIndex !== index)
+                    )
+                  }
+                  onClear={() => setSlip([])}
+                  onAnalyze={analyze}
+                />
+              </div>
+
               <Button
                 onClick={addSelectedToSlip}
                 disabled={!selectedFixture}
@@ -1021,7 +1036,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 {t.builder.addSelectedToSlip}
               </Button>
 
-              <section className="mt-6 rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 sm:mt-8 sm:p-6">
+              <section className="mt-5 hidden rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 md:block sm:mt-8 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
@@ -1152,14 +1167,14 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 )}
               </section>
 
-              <div className="mt-8 sm:mt-10">
+              <div className="mt-5 max-md:mt-4 sm:mt-8">
   <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
     <div>
       <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
         {t.builder.matchCenter}
       </p>
 
-      <h2 className="mt-2 text-3xl font-black">
+      <h2 className="mt-1 text-xl font-black max-md:text-lg sm:mt-2 sm:text-3xl">
         {t.builder.selectMatch}
       </h2>
     </div>
@@ -1288,7 +1303,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
     {t.builder.noFilteredMatches}
   </p>
 ) : (
-  <div className="mt-8 max-h-[72vh] space-y-8 overflow-y-auto overscroll-contain pr-1 sm:max-h-none sm:space-y-10 sm:overflow-visible sm:pr-0">
+  <div className="mt-5 max-h-[48vh] space-y-4 overflow-y-auto overscroll-contain pr-1 max-md:max-h-[42vh] sm:mt-8 sm:max-h-[72vh] sm:space-y-8 md:max-h-none md:space-y-10 md:overflow-visible md:pr-0">
     {Object.entries(groupedFixtures).map(([date, matches]) => (
       <div key={date}>
         <div className="mb-5 flex items-center gap-4">
@@ -1334,81 +1349,17 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 )}   
             </section>
 
-            <aside className="brain-card h-fit rounded-3xl p-4 sm:p-8 xl:sticky xl:top-6">
-              <h2 className="text-2xl font-bold">
-                {t.builder.brainSlipTitle}
-              </h2>
-
-              <div className="mt-6 space-y-3">
-                {slip.length === 0 ? (
-                  <p className="text-[#A9A9A9]">
-                    {t.builder.noMatchSelected}
-                  </p>
-                ) : (
-                  <>
-                    {slip.map((item, index) => (
-                      <div
-                        key={`${item.fixtureId}-${item.market}-${index}`}
-                        className="flex items-start justify-between rounded-2xl border border-[#18ff6d11] bg-black/30 p-4"
-                      >
-                        <div className="min-w-0">
-                          <p className="font-semibold">
-                            {item.homeTeam} – {item.awayTeam}
-                          </p>
-
-                          <p className="mt-2 text-[#18ff6d]">
-                            {item.market}
-                          </p>
-
-                          <p className="mt-2 text-xs text-[#A9A9A9]">
-                            {new Date(item.date).toLocaleString(
-                              getLocale(language),
-                              {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
-                          </p>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSlip((current) =>
-                              current.filter(
-                                (_, itemIndex) =>
-                                  itemIndex !== index
-                              )
-                            )
-                          }
-                          className="ml-4 shrink-0 text-red-400 transition hover:text-red-300"
-                          title={t.builder.removeTitle}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={() => setSlip([])}
-                      className="mt-4 w-full rounded-2xl border border-red-500/50 px-4 py-3 text-red-400 transition hover:bg-red-500 hover:text-white"
-                    >
-                      {t.builder.clearSlip}
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <Button
-                disabled={slip.length === 0}
-                onClick={analyze}
-                className="mt-8 w-full"
-              >
-                {t.builder.analyze}
-              </Button>
+            <aside className="brain-card hidden h-fit rounded-3xl p-4 sm:p-8 xl:sticky xl:top-6 xl:block">
+              <BuilderSlipPanel
+                slip={slip}
+                onRemove={(index) =>
+                  setSlip((current) =>
+                    current.filter((_, itemIndex) => itemIndex !== index)
+                  )
+                }
+                onClear={() => setSlip([])}
+                onAnalyze={analyze}
+              />
             </aside>
           </div>
         </div>

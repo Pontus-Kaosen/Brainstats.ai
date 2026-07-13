@@ -15,31 +15,31 @@ export default function Footer() {
   }));
 
   return (
-    <footer className="relative z-10 border-t border-[#18ff6d22] bg-black/95 px-4 py-10 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8">
+    <footer className="relative z-10 border-t border-[#18ff6d22] bg-black/95 px-4 py-6 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-10">
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-8 md:grid-cols-[1.2fr_1fr]">
+        <div className="grid gap-6 md:grid-cols-[1.2fr_1fr] md:gap-8">
           <div>
             <BrainStatsLogo variant="footer" />
 
-            <p className="mt-3 max-w-md leading-7 text-[#A9A9A9]">
+            <p className="mt-2 max-w-md text-sm leading-6 text-[#A9A9A9] sm:mt-3 sm:leading-7">
               {t.footer.tagline}
             </p>
 
-            <p className="mt-4 text-sm leading-6 text-[#777]">
+            <p className="mt-3 text-xs leading-5 text-[#777] sm:mt-4 sm:text-sm sm:leading-6">
               {t.footer.disclaimer}
             </p>
 
-            <p className="mt-3 text-sm text-[#888]">
+            <p className="mt-2 text-xs text-[#888] sm:mt-3 sm:text-sm">
               {t.footer.sellerLine}
             </p>
           </div>
 
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#18ff6d]">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#18ff6d] sm:text-sm">
               {t.footer.legalHeading}
             </p>
 
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 sm:mt-4 sm:space-y-2 sm:block">
               <li>
                 <Link
                   href="/legal"

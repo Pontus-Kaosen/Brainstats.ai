@@ -208,25 +208,25 @@ const referee = usedData?.referee;
       <div className="relative z-10">
         <Navbar />
 
-        <div className="mx-auto max-w-6xl px-8 py-10">
-          <section className="mt-14 overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-6 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
+          <section className="mt-4 overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-5 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:mt-14 sm:p-10">
   <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
     {t.analyze.badge}
   </div>
 
-  <p className={`mt-8 text-sm uppercase tracking-[0.45em] ${titleGradient}`}>
+  <p className={`mt-4 text-sm uppercase tracking-[0.45em] max-md:hidden sm:mt-8 ${titleGradient}`}>
     {t.analyze.subtitle}
   </p>
 
-  <h2 className="mt-4 max-w-5xl text-6xl font-black leading-tight">
+  <h2 className="mt-3 max-w-5xl text-3xl font-black leading-tight max-md:leading-snug sm:mt-4 sm:text-6xl">
     {t.analyze.title}
   </h2>
 
-  <p className="mt-6 max-w-2xl text-lg leading-8 text-[#A9A9A9]">
+  <p className="mt-4 max-w-2xl text-sm leading-7 text-[#A9A9A9] max-md:line-clamp-3 sm:mt-6 sm:text-lg sm:leading-8">
     {t.analyze.description}
   </p>
 
-  <div className="mt-8 grid gap-4 md:grid-cols-3">
+  <div className="mt-6 hidden gap-4 md:grid md:grid-cols-3">
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
       <p className="text-sm text-[#A9A9A9]">{t.analyze.aiEngine}</p>
       <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.online}</p>
@@ -244,7 +244,7 @@ const referee = usedData?.referee;
   </div>
 </section>
 
-          <section className="mt-10 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 max-md:backdrop-blur-none backdrop-blur-xl">
+          <section className="mt-6 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-4 max-md:backdrop-blur-none backdrop-blur-xl sm:mt-10 sm:p-6">
             <textarea
               value={betText}
               onChange={(e) => {
@@ -252,7 +252,7 @@ const referee = usedData?.referee;
                 setShowReport(false);
               }}
               placeholder={t.analyze.placeholder}
-              className="min-h-64 w-full resize-none rounded-2xl border border-[#18ff6d22] bg-black/40 p-5 text-white outline-none placeholder:text-[#666]"
+              className="min-h-40 w-full resize-none rounded-2xl border border-[#18ff6d22] bg-black/40 p-4 text-white outline-none placeholder:text-[#666] sm:min-h-64 sm:p-5"
             />
 
             <Button

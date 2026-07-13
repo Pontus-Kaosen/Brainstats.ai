@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/components/LanguageProvider";
 import ManageSubscriptionButton from "@/components/ManageSubscriptionButton";
 import DailySlipsSection from "@/components/DailySlipsSection";
+import { useIsMobile } from "@/lib/useMediaQuery";
 import type { Translations } from "@/lib/translations";
 
 type UserPlan = "free" | "pro" | "elite";
@@ -32,7 +33,7 @@ const titleGradient =
   "bg-gradient-to-r from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] bg-clip-text text-transparent";
 
 const cardClass =
-  "brain-card rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1";
+  "brain-card rounded-3xl p-4 transition-all duration-300 hover:-translate-y-1 sm:p-8";
 
 function planLabel(plan: UserPlan, t: Translations) {
   if (plan === "elite") return t.common.planElite;
@@ -43,6 +44,7 @@ function planLabel(plan: UserPlan, t: Translations) {
 
 export default function DashboardPage() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [plan, setPlan] = useState<UserPlan>("free");
   const [total, setTotal] = useState(0);
@@ -189,23 +191,23 @@ export default function DashboardPage() {
       <div className="relative z-10">
         <Navbar />
 
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
-          <section className="overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-5 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-10">
+          <section className="overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-4 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10">
             <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
               {t.dashboard.badge}
             </div>
 
             <p
-              className={`mt-8 text-sm uppercase tracking-[0.45em] ${titleGradient}`}
+              className={`mt-4 text-sm uppercase tracking-[0.45em] max-md:hidden sm:mt-8 ${titleGradient}`}
             >
               {t.dashboard.subtitle}
             </p>
 
-            <h1 className="mt-4 max-w-5xl text-4xl font-black leading-tight sm:text-6xl">
+            <h1 className="mt-3 max-w-5xl text-3xl font-black leading-tight max-md:leading-snug sm:mt-4 sm:text-6xl">
               {t.dashboard.title}
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#A9A9A9]">
+            <p className="mt-4 hidden max-w-2xl text-lg leading-8 text-[#A9A9A9] md:block sm:mt-6">
               {t.dashboard.description}
             </p>
           </section>
@@ -230,7 +232,7 @@ export default function DashboardPage() {
             </section>
           ) : (
             <>
-              <section className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              <section className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 xl:grid-cols-4">
                 {[
                   [t.dashboard.totalAnalyses, total],
                   [t.dashboard.averageScore, averageScore],
@@ -242,7 +244,7 @@ export default function DashboardPage() {
                       {title}
                     </p>
 
-                    <h3 className="mt-3 text-4xl font-black text-[#18ff6d] drop-shadow-[0_0_30px_rgba(24,255,109,.45)]">
+                    <h3 className="mt-2 text-2xl font-black text-[#18ff6d] drop-shadow-[0_0_30px_rgba(24,255,109,.45)] sm:mt-3 sm:text-4xl">
                       {value}
                     </h3>
                   </div>
@@ -252,7 +254,7 @@ export default function DashboardPage() {
               <DailySlipsSection />
 
 
-              <section className="mt-14 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] sm:mt-14">
                 <div className={cardClass}>
                   <p
                     className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}
@@ -270,7 +272,7 @@ export default function DashboardPage() {
                         {t.dashboard.noAnalyses}
                       </p>
                     ) : (
-                      analyses.slice(0, 10).map((analysis) => (
+                      analyses.slice(0, isMobile ? 5 : 10).map((analysis) => (
                         <a
                           key={analysis.id}
                           href={`/report/${analysis.id}`}
@@ -295,7 +297,7 @@ export default function DashboardPage() {
                           </div>
 
                           {analysis.summary && (
-                            <p className="mt-4 line-clamp-4 text-sm leading-6 text-[#CFCFCF]">
+                            <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#CFCFCF] sm:mt-4 sm:line-clamp-4">
                               {analysis.summary}
                             </p>
                           )}
@@ -350,12 +352,12 @@ export default function DashboardPage() {
                       {t.dashboard.quickActions}
                     </h3>
 
-                    <div className="mt-5 space-y-3">
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:space-y-3 lg:grid-cols-1 lg:gap-0">
                       {quickActions.map((action) => (
                         <a
                           key={action.key}
                           href={action.href}
-                          className="flex items-center justify-between rounded-2xl border border-[#18ff6d11] bg-black/35 p-4 transition hover:border-[#18ff6d55] hover:bg-black/50"
+                          className="flex items-center justify-between rounded-2xl border border-[#18ff6d11] bg-black/35 p-3 text-sm transition hover:border-[#18ff6d55] hover:bg-black/50 sm:p-4 sm:text-base"
                         >
                           <span>
                             {action.icon}{" "}
