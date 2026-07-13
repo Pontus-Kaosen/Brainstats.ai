@@ -212,6 +212,10 @@ export const translations = {
         "Jag begär omedelbar tillgång till premium och förstår att ångerrätten upphör när tjänsten har aktiverats.",
       acceptPurchaseRequired:
         "Du måste godkänna köpvillkoren och omedelbar digital leverans innan betalning.",
+      purchaseTermsTab: "Köpvillkor",
+      hidePurchaseTerms: "Dölj köpvillkor",
+      purchaseTermsHint:
+        "Läs och godkänn köpvillkoren innan du betalar för Pro eller Elite.",
       plans: {
         free: {
           name: "Free",
@@ -842,6 +846,10 @@ export const translations = {
         "I request immediate premium access and understand that my withdrawal right ends once the service is activated.",
       acceptPurchaseRequired:
         "You must accept the Purchase Terms and immediate digital delivery before payment.",
+      purchaseTermsTab: "Purchase terms",
+      hidePurchaseTerms: "Hide purchase terms",
+      purchaseTermsHint:
+        "Read and accept the purchase terms before paying for Pro or Elite.",
       plans: {
         free: {
           name: "Free",

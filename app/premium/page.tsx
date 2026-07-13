@@ -29,6 +29,7 @@ export default function PremiumPage() {
   const [error, setError] = useState("");
   const [acceptedPurchaseTerms, setAcceptedPurchaseTerms] = useState(false);
   const [acceptedImmediateAccess, setAcceptedImmediateAccess] = useState(false);
+  const [showPurchaseTerms, setShowPurchaseTerms] = useState(false);
 
   const plans: Plan[] = useMemo(
     () => [
@@ -55,6 +56,7 @@ export default function PremiumPage() {
 
   async function startCheckout(plan: PaidPlan) {
     if (!acceptedPurchaseTerms || !acceptedImmediateAccess) {
+      setShowPurchaseTerms(true);
       setError(t.premium.acceptPurchaseRequired);
       return;
     }
@@ -151,47 +153,6 @@ export default function PremiumPage() {
               {t.premium.disclaimer}
             </p>
           </section>
-
-          <div className="mx-auto mt-10 max-w-3xl">
-            <PurchasePreContractBox />
-
-            <div className="mt-6 space-y-4 rounded-[2rem] border border-white/10 bg-black/30 p-6">
-              <label className="flex items-start gap-3 text-sm leading-6 text-[#D8D8D8]">
-                <input
-                  type="checkbox"
-                  checked={acceptedPurchaseTerms}
-                  onChange={(event) =>
-                    setAcceptedPurchaseTerms(event.target.checked)
-                  }
-                  className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
-                />
-
-                <span>
-                  {t.premium.acceptPurchaseTerms}{" "}
-                  <Link
-                    href="/legal/purchase"
-                    className="font-semibold text-[#18ff6d] hover:underline"
-                  >
-                    {t.legal.links.purchase}
-                  </Link>
-                  .
-                </span>
-              </label>
-
-              <label className="flex items-start gap-3 text-sm leading-6 text-[#D8D8D8]">
-                <input
-                  type="checkbox"
-                  checked={acceptedImmediateAccess}
-                  onChange={(event) =>
-                    setAcceptedImmediateAccess(event.target.checked)
-                  }
-                  className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
-                />
-
-                <span>{t.premium.acceptImmediateAccess}</span>
-              </label>
-            </div>
-          </div>
 
           {error && (
             <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-center">
@@ -323,6 +284,69 @@ export default function PremiumPage() {
               );
             })}
           </section>
+
+          <div className="mx-auto mt-8 max-w-3xl">
+            <button
+              type="button"
+              onClick={() => setShowPurchaseTerms((current) => !current)}
+              className={`w-full rounded-2xl border px-5 py-4 text-sm font-bold transition sm:text-base ${
+                showPurchaseTerms
+                  ? "border-[#18ff6d] bg-[#18ff6d] text-black"
+                  : "border-[#18ff6d44] bg-[#18ff6d]/10 text-[#18ff6d] hover:border-[#18ff6d]"
+              }`}
+            >
+              {showPurchaseTerms
+                ? t.premium.hidePurchaseTerms
+                : t.premium.purchaseTermsTab}
+            </button>
+
+            {showPurchaseTerms ? (
+              <div className="mt-5 space-y-5">
+                <p className="text-center text-sm text-[#A9A9A9]">
+                  {t.premium.purchaseTermsHint}
+                </p>
+
+                <PurchasePreContractBox />
+
+                <div className="space-y-4 rounded-[2rem] border border-white/10 bg-black/30 p-6">
+                  <label className="flex items-start gap-3 text-sm leading-6 text-[#D8D8D8]">
+                    <input
+                      type="checkbox"
+                      checked={acceptedPurchaseTerms}
+                      onChange={(event) =>
+                        setAcceptedPurchaseTerms(event.target.checked)
+                      }
+                      className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
+                    />
+
+                    <span>
+                      {t.premium.acceptPurchaseTerms}{" "}
+                      <Link
+                        href="/legal/purchase"
+                        className="font-semibold text-[#18ff6d] hover:underline"
+                      >
+                        {t.legal.links.purchase}
+                      </Link>
+                      .
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 text-sm leading-6 text-[#D8D8D8]">
+                    <input
+                      type="checkbox"
+                      checked={acceptedImmediateAccess}
+                      onChange={(event) =>
+                        setAcceptedImmediateAccess(event.target.checked)
+                      }
+                      className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
+                    />
+
+                    <span>{t.premium.acceptImmediateAccess}</span>
+                  </label>
+                </div>
+              </div>
+            ) : null}
+          </div>
 
           <section className="mt-12 rounded-[2rem] border border-white/10 bg-black/30 p-7 text-center backdrop-blur-xl sm:p-10">
             <h2 className="text-2xl font-black">{t.premium.footerTitle}</h2>
