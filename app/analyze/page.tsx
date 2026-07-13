@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
@@ -9,9 +10,11 @@ import FootballBackground from "@/components/FootballBackground";
 import BrainCard from "@/components/BrainCard";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
+  formatTranslation,
   translateBreakdownKey,
   translateRiskLevel,
 } from "@/lib/locale";
+import { ANALYZE_DRAFT_KEY } from "@/lib/safeRedirect";
 
 
 type ScoreBreakdown = {
@@ -144,11 +147,73 @@ function AnalyzePageContent() {
   const [aiResult, setAiResult] = useState<AIResult | null>(null);
   const [usedData, setUsedData] = useState<UsedData | null>(null);
   const [premiumError, setPremiumError] = useState("");
+  const [analysisError, setAnalysisError] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [plan, setPlan] = useState<"free" | "pro" | "elite">("free");
+  const [remainingToday, setRemainingToday] = useState<number | null>(null);
 
   useEffect(() => {
     const text = searchParams.get("text");
-    if (text) setBetText(text);
+    const draft = sessionStorage.getItem(ANALYZE_DRAFT_KEY);
+
+    if (text) {
+      setBetText(text);
+    } else if (draft) {
+      setBetText(draft);
+      sessionStorage.removeItem(ANALYZE_DRAFT_KEY);
+    }
   }, [searchParams]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadUsage() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (cancelled) return;
+
+      if (!user) {
+        setIsLoggedIn(false);
+        setRemainingToday(null);
+        return;
+      }
+
+      setIsLoggedIn(true);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const [todayResult, profileResult] = await Promise.all([
+        supabase
+          .from("analyses")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .gte("created_at", today.toISOString()),
+        supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle(),
+      ]);
+
+      if (cancelled) return;
+
+      const userPlan = profileResult.data?.plan;
+      const resolvedPlan =
+        userPlan === "pro" || userPlan === "elite" ? userPlan : "free";
+
+      setPlan(resolvedPlan);
+      setRemainingToday(
+        resolvedPlan === "free"
+          ? Math.max(0, 3 - (todayResult.count ?? 0))
+          : null
+      );
+    }
+
+    void loadUsage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleAnalyze() {
     setLoading(true);
@@ -156,34 +221,58 @@ function AnalyzePageContent() {
     setAiResult(null);
     setUsedData(null);
     setPremiumError("");
+    setAnalysisError("");
 
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
+    if (!session) {
+      sessionStorage.setItem(ANALYZE_DRAFT_KEY, betText);
+      window.location.href = `/login?next=${encodeURIComponent("/analyze")}`;
+      return;
+    }
+
     const response = await fetch("/api/analyze", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(session?.access_token
-          ? { Authorization: `Bearer ${session.access_token}` }
-          : {}),
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ text: betText, language }),
     });
 
     const data = await response.json();
 
-if (data.premiumRequired) {
-  setLoading(false);
-  setPremiumError(data.error);
-  return;
-}
+    if (data.premiumRequired) {
+      setLoading(false);
+      setPremiumError(data.error);
+      setRemainingToday(0);
+      return;
+    }
 
-setAiResult(data.analysis);
-setUsedData(data.usedData || null);
-setLoading(false);
-setShowReport(true);}
+    if (!response.ok || !data.success || !data.analysis) {
+      setLoading(false);
+      setAnalysisError(data.error || t.analyze.analysisFailed);
+
+      if (response.status === 401) {
+        sessionStorage.setItem(ANALYZE_DRAFT_KEY, betText);
+      }
+
+      return;
+    }
+
+    setAiResult(data.analysis);
+    setUsedData(data.usedData || null);
+    setLoading(false);
+    setShowReport(true);
+
+    if (plan === "free") {
+      setRemainingToday((current) =>
+        current === null ? null : Math.max(0, current - 1)
+      );
+    }
+  }
 
   const score = aiResult?.brainScore ?? 0;
   const confidence = aiResult?.confidence ?? 0;
@@ -245,6 +334,42 @@ const referee = usedData?.referee;
 </section>
 
           <section className="mt-6 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-4 max-md:backdrop-blur-none backdrop-blur-xl sm:mt-10 sm:p-6">
+            {isLoggedIn === false && (
+              <div className="mb-5 rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 p-4">
+                <h3 className="font-bold text-[#18ff6d]">
+                  {t.analyze.loginRequiredTitle}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[#A9A9A9]">
+                  {t.analyze.loginRequiredDescription}
+                </p>
+                <Link
+                  href={`/login?next=${encodeURIComponent("/analyze")}`}
+                  className="mt-4 inline-flex rounded-full bg-[#18ff6d] px-5 py-2.5 text-sm font-bold text-black transition hover:opacity-90"
+                >
+                  {t.analyze.loginToAnalyze}
+                </Link>
+              </div>
+            )}
+
+            {isLoggedIn && plan === "free" && remainingToday !== null && (
+              <div
+                className={`mb-5 rounded-2xl border px-4 py-3 text-sm ${
+                  remainingToday <= 1
+                    ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-200"
+                    : "border-[#18ff6d33] bg-black/30 text-[#A9A9A9]"
+                }`}
+              >
+                {remainingToday <= 1 && remainingToday > 0
+                  ? formatTranslation(t.analyze.remainingAnalysesLow, {
+                      remaining: remainingToday,
+                    })
+                  : formatTranslation(t.analyze.remainingAnalyses, {
+                      remaining: remainingToday,
+                      limit: 3,
+                    })}
+              </div>
+            )}
+
             <textarea
               value={betText}
               onChange={(e) => {
@@ -257,12 +382,26 @@ const referee = usedData?.referee;
 
             <Button
               onClick={handleAnalyze}
-              disabled={!betText.trim() || loading}
+              disabled={!betText.trim() || loading || remainingToday === 0}
               className="mt-5 w-full py-4"
             >
               {loading ? t.analyze.analyzing : t.analyze.runEngine}
             </Button>
           </section>
+
+          {analysisError && (
+            <section className="mt-8 rounded-3xl border border-red-500/40 bg-red-500/10 p-6 text-center">
+              <p className="font-bold text-red-300">{analysisError}</p>
+              {analysisError && isLoggedIn === false ? (
+                <Link
+                  href={`/login?next=${encodeURIComponent("/analyze")}`}
+                  className="mt-4 inline-flex rounded-full bg-[#18ff6d] px-5 py-2.5 text-sm font-bold text-black"
+                >
+                  {t.analyze.loginToAnalyze}
+                </Link>
+              ) : null}
+            </section>
+          )}
 
           {loading && (
             <section className="mt-8 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 max-md:backdrop-blur-none backdrop-blur-xl">

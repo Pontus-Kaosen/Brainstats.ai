@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import LegalLinksSection from "@/components/LegalLinksSection";
 import { useLanguage } from "@/components/LanguageProvider";
+import { getSafeRedirectPath } from "@/lib/safeRedirect";
 
-export default function LoginPage() {
+function LoginForm() {
   const { t } = useLanguage();
+  const searchParams = useSearchParams();
+  const nextPath = getSafeRedirectPath(searchParams.get("next"));
+
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,7 +61,7 @@ export default function LoginPage() {
         return;
       }
 
-      window.location.href = "/dashboard";
+      window.location.href = nextPath;
     } catch (err) {
       console.error(err);
       setMessage(t.login.somethingWrong);
@@ -165,5 +170,13 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

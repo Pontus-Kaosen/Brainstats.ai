@@ -38,6 +38,7 @@ export const translations = {
 
     navbar: {
       home: "Startsida",
+      analyze: "Analysera",
       builder: "Builder",
       dashboard: "Dashboard",
       premium: "Premium",
@@ -46,6 +47,8 @@ export const translations = {
       logout: "Logga ut",
       loggedInAs: "Inloggad som",
       footballIntelligence: "Fotbollsintelligens",
+      menuOpen: "Öppna meny",
+      menuClose: "Stäng meny",
     },
 
     home: {
@@ -291,6 +294,14 @@ export const translations = {
       loadingReport: "Brain Engine analyserar data...",
       premiumRequired: "Premium krävs",
       upgradePro: "🚀 Uppgradera till Pro",
+      loginRequiredTitle: "Logga in för att analysera",
+      loginRequiredDescription:
+        "Skapa ett gratis konto för att köra Brain Engine. Free-planen inkluderar 3 analyser per dag.",
+      loginToAnalyze: "Logga in och analysera",
+      remainingAnalyses: "{remaining} av {limit} analyser kvar idag",
+      remainingAnalysesLow:
+        "Bara {remaining} analys kvar idag — överväg Pro för obegränsat.",
+      analysisFailed: "Analysen kunde inte slutföras. Försök igen.",
       reportSubtitle: "Brain Engine™ Report",
       reportTitle: "AI Match Analysis",
       brainScore: "/100 BrainScore™",
@@ -619,6 +630,7 @@ export const translations = {
 
     navbar: {
       home: "Home",
+      analyze: "Analyze",
       builder: "Builder",
       dashboard: "Dashboard",
       premium: "Premium",
@@ -627,6 +639,8 @@ export const translations = {
       logout: "Log out",
       loggedInAs: "Signed in as",
       footballIntelligence: "Football Intelligence",
+      menuOpen: "Open menu",
+      menuClose: "Close menu",
     },
 
     home: {
@@ -872,6 +886,14 @@ export const translations = {
       loadingReport: "Brain Engine is analyzing data...",
       premiumRequired: "Premium required",
       upgradePro: "🚀 Upgrade to Pro",
+      loginRequiredTitle: "Log in to analyze",
+      loginRequiredDescription:
+        "Create a free account to run Brain Engine. The Free plan includes 3 analyses per day.",
+      loginToAnalyze: "Log in and analyze",
+      remainingAnalyses: "{remaining} of {limit} analyses left today",
+      remainingAnalysesLow:
+        "Only {remaining} analysis left today — consider Pro for unlimited.",
+      analysisFailed: "The analysis could not be completed. Try again.",
       reportSubtitle: "Brain Engine™ Report",
       reportTitle: "AI Match Analysis",
       brainScore: "/100 BrainScore™",

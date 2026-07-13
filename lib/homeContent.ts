@@ -4,6 +4,7 @@ export type HomeContent = {
   badge: string;
   title: string;
   description: string;
+  trustStrip: string;
   pasteBet: string;
   buildBet: string;
   seePremium: string;
@@ -16,6 +17,8 @@ const homeContent: Record<Language, HomeContent> = {
     title: "Klistra in din spelidé. Få smart AI-analys.",
     description:
       "BrainStats hjälper dig att analysera matcher, statistik, form, skador och risker. Tjänsten är ett analysverktyg och tar inte emot spel eller pengar.",
+    trustStrip:
+      "AI-analysverktyg · Inte ett spelbolag · Vi tar inte emot spel eller pengar",
     pasteBet: "Klistra in spelidé",
     buildBet: "Bygg spelidé",
     seePremium: "Se Premium",
@@ -39,6 +42,8 @@ const homeContent: Record<Language, HomeContent> = {
     title: "Paste your bet idea. Get smart AI analysis.",
     description:
       "BrainStats helps you analyze matches, stats, form, injuries and risk. This is an analysis tool — we do not accept bets or money.",
+    trustStrip:
+      "AI analysis tool · Not a bookmaker · We do not accept bets or money",
     pasteBet: "Paste bet idea",
     buildBet: "Build bet idea",
     seePremium: "See Premium",
