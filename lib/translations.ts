@@ -400,7 +400,22 @@ export const translations = {
       pageBadge: "⚽ Brain Builder™",
       pageTitle: "Bygg din spelidé steg för steg.",
       pageDescription:
-        "Välj land, liga, datum, match och marknad. Lägg sedan till i din kupong och analysera.",
+        "Välj match, bygg din marknad och lägg till i BrainSlip — som en bet builder, fast med BrainStats AI.",
+      viewTabToday: "Idag",
+      viewTabTomorrow: "Imorgon",
+      viewTabLive: "Live",
+      viewTabLeague: "Liga",
+      buildPickTitle: "Bygg ditt spel",
+      buildPickHint:
+        "Välj marknad nedan och lägg till i BrainSlip när du är nöjd.",
+      buildPickCta: "Vald",
+      matchFinished: "Spelad",
+      matchUpcoming: "Kommande",
+      loadingTodayFixtures: "Hämtar dagens matcher...",
+      noTodayMatches: "Inga matcher hittades för idag.",
+      noTomorrowMatches: "Inga matcher hittades för imorgon.",
+      selectMatchFirst: "Välj en match i listan ovan för att bygga ditt spel.",
+      selectLeagueFirst: "Välj land och liga ovan för att se matcher.",
       selectMatch: "⚽ Välj match",
       searchMatch: "🔍 Sök match eller lag",
       liveNow: "🔴 Live nu",
@@ -434,9 +449,9 @@ export const translations = {
       brainSlipTitle: "🧠 BrainSlip",
       noMatchSelected: "Ingen match vald ännu.",
       slipEmptyHint:
-        "Tryck på en match i listan nedan — den läggs till här med din valda marknad.",
+        "Välj en match, bygg din marknad och lägg till här — precis som en bet builder.",
       matchTapHint:
-        "Steg 2: Tryck på en match i listan nedan för att lägga till den i BrainSlip.",
+        "Tryck på en match för att välja den, välj marknad och lägg till i BrainSlip.",
       slipReadyHint:
         "Matcher tillagda! Lägg till fler om du vill, eller tryck Analysera.",
       steps: {
@@ -1015,7 +1030,22 @@ export const translations = {
       pageBadge: "⚽ Brain Builder™",
       pageTitle: "Build your bet idea step by step.",
       pageDescription:
-        "Choose country, league, date, match and market. Then add to your slip and analyze.",
+        "Pick a match, build your market, and add it to BrainSlip — like a bet builder, powered by BrainStats AI.",
+      viewTabToday: "Today",
+      viewTabTomorrow: "Tomorrow",
+      viewTabLive: "Live",
+      viewTabLeague: "League",
+      buildPickTitle: "Build your pick",
+      buildPickHint:
+        "Choose a market below and add it to BrainSlip when you're ready.",
+      buildPickCta: "Selected",
+      matchFinished: "Finished",
+      matchUpcoming: "Upcoming",
+      loadingTodayFixtures: "Loading today's matches...",
+      noTodayMatches: "No matches found for today.",
+      noTomorrowMatches: "No matches found for tomorrow.",
+      selectMatchFirst: "Select a match from the list above to build your pick.",
+      selectLeagueFirst: "Choose country and league above to browse fixtures.",
       selectMatch: "⚽ Select match",
       searchMatch: "🔍 Search match or team",
       liveNow: "🔴 Live now",
@@ -1049,9 +1079,9 @@ export const translations = {
       brainSlipTitle: "🧠 BrainSlip",
       noMatchSelected: "No match selected yet.",
       slipEmptyHint:
-        "Tap a match in the list below — it will be added here with your selected market.",
+        "Select a match, build your market, and add it here — just like a bet builder.",
       matchTapHint:
-        "Step 2: Tap a match in the list below to add it to BrainSlip.",
+        "Tap a match to select it, choose a market, and add it to BrainSlip.",
       slipReadyHint:
         "Matches added! Add more if you like, or tap Analyze.",
       steps: {
