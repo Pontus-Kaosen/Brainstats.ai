@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/components/LanguageProvider";
 
-export type BuilderViewMode = "today" | "tomorrow" | "live" | "league";
+export type BuilderViewMode = "today" | "tomorrow" | "week" | "live";
 
 type BuilderViewTabsProps = {
   value: BuilderViewMode;
@@ -35,14 +35,14 @@ export default function BuilderViewTabs({
       label: t.builder.viewTabTomorrow,
     },
     {
+      id: "week",
+      label: t.builder.viewTabWeek,
+    },
+    {
       id: "live",
       label: t.builder.viewTabLive,
       count: liveCount,
       accent: "live",
-    },
-    {
-      id: "league",
-      label: t.builder.viewTabLeague,
     },
   ];
 

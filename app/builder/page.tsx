@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import BuilderSlipPanel from "./components/BuilderSlipPanel";
 import BuilderHowItWorks from "./components/BuilderHowItWorks";
 import BuilderViewTabs, {
@@ -8,6 +8,7 @@ import BuilderViewTabs, {
 } from "./components/BuilderViewTabs";
 import BuilderLeagueGroups from "./components/BuilderLeagueGroups";
 import BuilderMatchRow from "./components/BuilderMatchRow";
+import BuilderMarketGrid from "./components/BuilderMarketGrid";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
@@ -28,8 +29,13 @@ import {
   getFixtureStockholmDateKey,
   getStockholmDateKey,
 } from "@/lib/stockholmDate";
+import {
+  isCornerMarketLabel,
+  isPlayerMarketLabel,
+} from "@/lib/builderMarkets";
 
 const TOURNAMENTS_VALUE = "__tournaments__";
+const ALL_LEAGUES_VALUE = "__all_leagues__";
 
 type Country = {
   name: string;
@@ -156,11 +162,11 @@ type SlipItem = {
 const tournamentIds = [1, 2, 3, 4, 5, 9, 848];
 
 function isPlayerMarket(market: string) {
-  return market.startsWith("Spelare") || market.startsWith("Player");
+  return isPlayerMarketLabel(market);
 }
 
 function isCornerMarketValue(market: string) {
-  return market.includes("hörnor") || market.toLowerCase().includes("corner");
+  return isCornerMarketLabel(market);
 }
 
 export default function BuilderPage() {
@@ -169,36 +175,7 @@ export default function BuilderPage() {
   const fixturePreviewLimit = isMobile ? 4 : 8;
   const liveRefreshMs = isMobile ? 120_000 : 60_000;
   const markets = t.builder.markets;
-
-  const dateOptions = useMemo(
-    () => [
-      {
-        label: t.builder.dateAll,
-        value: "all",
-        icon: "📅",
-        description: t.builder.dateAllDescription,
-      },
-      {
-        label: t.builder.dateToday,
-        value: "today",
-        icon: "🔥",
-        description: t.builder.dateTodayDescription,
-      },
-      {
-        label: t.builder.dateTomorrow,
-        value: "tomorrow",
-        icon: "⏭️",
-        description: t.builder.dateTomorrowDescription,
-      },
-      {
-        label: t.builder.dateWeek,
-        value: "week",
-        icon: "🗓️",
-        description: t.builder.dateWeekDescription,
-      },
-    ],
-    [t]
-  );
+  const builderPanelRef = useRef<HTMLElement | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
   const [allLeagues, setAllLeagues] = useState<League[]>([]);
   const [leagues, setLeagues] = useState<League[]>([]);
@@ -214,7 +191,9 @@ export default function BuilderPage() {
   const [h2hMap, setH2hMap] = useState<Record<number, H2HItem[]>>({});
 
   const [country, setCountry] = useState(TOURNAMENTS_VALUE);
-  const [leagueId, setLeagueId] = useState<number | null>(null);
+  const [leagueId, setLeagueId] = useState<number | typeof ALL_LEAGUES_VALUE>(
+    ALL_LEAGUES_VALUE
+  );
   const [selectedFixtureId, setSelectedFixtureId] = useState<
     number | null
   >(null);
@@ -225,21 +204,6 @@ export default function BuilderPage() {
     setMarket(t.builder.markets[0]);
   }, [language]);
   const [viewMode, setViewMode] = useState<BuilderViewMode>("today");
-  const [dateFilter, setDateFilter] = useState("all");
-
-  const fixtureFetchDate = useMemo(() => {
-    const todayKey = getStockholmDateKey();
-
-    if (viewMode === "today" || dateFilter === "today") {
-      return todayKey;
-    }
-
-    if (viewMode === "tomorrow" || dateFilter === "tomorrow") {
-      return addDaysToDateKey(todayKey, 1);
-    }
-
-    return null;
-  }, [viewMode, dateFilter]);
   const [search, setSearch] = useState("");
 
   const [playerName, setPlayerName] = useState("");
@@ -259,9 +223,12 @@ export default function BuilderPage() {
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [matchError, setMatchError] = useState("");
 
-  const selectedLeague = leagues.find(
-    (league) => league.id === leagueId
-  );
+  const specificLeagueId =
+    typeof leagueId === "number" ? leagueId : null;
+
+  const selectedLeague =
+    allLeagues.find((league) => league.id === specificLeagueId) ||
+    leagues.find((league) => league.id === specificLeagueId);
 
   const selectedSeason =
     selectedLeague?.currentSeason || new Date().getFullYear();
@@ -472,11 +439,11 @@ export default function BuilderPage() {
     setSearch("");
 
     if (filtered.length > 0) {
-      setLeagueId(filtered[0].id);
+      setLeagueId(ALL_LEAGUES_VALUE);
     } else {
-      setLeagueId(null);
+      setLeagueId(ALL_LEAGUES_VALUE);
     }
-  }, [country, allLeagues]);
+  }, [country, allLeagues, t.builder.tournaments]);
 
   const loadExtraMatchData = useCallback(
     async (items: Fixture[], currentLeagueId: number, season: number) => {
@@ -571,72 +538,40 @@ export default function BuilderPage() {
   );
 
   useEffect(() => {
-    if (viewMode !== "today" && viewMode !== "tomorrow") {
+    if (viewMode === "live") {
       return;
     }
 
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 20000);
-    const date =
-      viewMode === "today"
-        ? getStockholmDateKey()
-        : addDaysToDateKey(getStockholmDateKey(), 1);
+    const timeout = window.setTimeout(() => controller.abort(), 25000);
 
-    async function loadByDate() {
-      setLoadingMatches(true);
-      setMatchError("");
-      setFixtures([]);
-      setForms({});
-      setStandings({});
-      setH2hMap({});
+    async function loadByDates(dates: string[]) {
+      const responses = await Promise.all(
+        dates.map(async (date) => {
+          const response = await fetch(
+            `/api/football/fixtures/by-date?date=${date}`,
+            { signal: controller.signal }
+          );
+          const data = await response.json();
 
-      try {
-        const response = await fetch(
-          `/api/football/fixtures/by-date?date=${date}`,
-          { signal: controller.signal }
-        );
+          if (!response.ok || data.success === false) {
+            throw new Error(data.error || t.builder.errors.fixtures);
+          }
 
-        const data = await response.json();
+          return (data.fixtures || []) as Fixture[];
+        })
+      );
 
-        if (!response.ok || data.success === false) {
-          throw new Error(data.error || t.builder.errors.fixtures);
-        }
+      const unique = Array.from(
+        new Map(
+          responses
+            .flat()
+            .map((fixture) => [fixture.fixture.id, fixture] as const)
+        ).values()
+      );
 
-        const items: Fixture[] = data.fixtures || [];
-        setFixtures(items);
-      } catch (error: any) {
-        const message =
-          error?.name === "AbortError"
-            ? t.builder.errors.fixturesTimeout
-            : error?.message || t.builder.errors.fixtures;
-
-        console.error("Builder by-date error:", error);
-        setMatchError(message);
-        setFixtures([]);
-      } finally {
-        setLoadingMatches(false);
-        window.clearTimeout(timeout);
-      }
+      return unique;
     }
-
-    loadByDate();
-
-    return () => {
-      controller.abort();
-      window.clearTimeout(timeout);
-    };
-  }, [viewMode, t.builder.errors.fixtures, t.builder.errors.fixturesTimeout]);
-
-  useEffect(() => {
-    if (viewMode !== "league" || !leagueId || !selectedSeason) {
-      return;
-    }
-
-    const currentLeagueId = leagueId;
-    const season = selectedSeason;
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 15000);
 
     async function loadFixtures() {
       setLoadingMatches(true);
@@ -645,40 +580,50 @@ export default function BuilderPage() {
       setForms({});
       setStandings({});
       setH2hMap({});
-      setSelectedFixtureId(null);
 
       try {
-        const dateQuery = fixtureFetchDate
-          ? `&date=${fixtureFetchDate}`
-          : "";
+        let items: Fixture[] = [];
+        const todayKey = getStockholmDateKey();
 
-        const response = await fetch(
-          `/api/football/fixtures?league=${currentLeagueId}&season=${season}${dateQuery}`,
-          {
-            signal: controller.signal,
+        if (specificLeagueId) {
+          let dateQuery = "";
+
+          if (viewMode === "today") {
+            dateQuery = `&date=${todayKey}`;
+          } else if (viewMode === "tomorrow") {
+            dateQuery = `&date=${addDaysToDateKey(todayKey, 1)}`;
           }
-        );
 
-        const data = await response.json();
+          const response = await fetch(
+            `/api/football/fixtures?league=${specificLeagueId}&season=${selectedSeason}${dateQuery}`,
+            { signal: controller.signal }
+          );
 
-        if (!response.ok || data.success === false) {
-          throw new Error(data.error || t.builder.errors.fixtures);
+          const data = await response.json();
+
+          if (!response.ok || data.success === false) {
+            throw new Error(data.error || t.builder.errors.fixtures);
+          }
+
+          items = data.fixtures || [];
+
+          void loadExtraMatchData(
+            items.slice(0, fixturePreviewLimit),
+            specificLeagueId,
+            selectedSeason
+          );
+        } else if (viewMode === "week") {
+          const dates = Array.from({ length: 7 }, (_, index) =>
+            addDaysToDateKey(todayKey, index)
+          );
+          items = await loadByDates(dates);
+        } else if (viewMode === "today") {
+          items = await loadByDates([todayKey]);
+        } else if (viewMode === "tomorrow") {
+          items = await loadByDates([addDaysToDateKey(todayKey, 1)]);
         }
-
-        const items: Fixture[] = data.fixtures || [];
 
         setFixtures(items);
-        setLoadingMatches(false);
-
-        if (items.length === 0) {
-          return;
-        }
-
-        void loadExtraMatchData(
-          items.slice(0, fixturePreviewLimit),
-          currentLeagueId,
-          season
-        );
       } catch (error: any) {
         const message =
           error?.name === "AbortError"
@@ -686,12 +631,10 @@ export default function BuilderPage() {
             : error?.message || t.builder.errors.fixtures;
 
         console.error("Builder fixture error:", error);
-
         setMatchError(message);
         setFixtures([]);
-        setSelectedFixtureId(null);
-        setLoadingMatches(false);
       } finally {
+        setLoadingMatches(false);
         window.clearTimeout(timeout);
       }
     }
@@ -704,9 +647,8 @@ export default function BuilderPage() {
     };
   }, [
     viewMode,
-    leagueId,
+    specificLeagueId,
     selectedSeason,
-    fixtureFetchDate,
     fixturePreviewLimit,
     loadExtraMatchData,
     t.builder.errors.fixtures,
@@ -818,6 +760,21 @@ export default function BuilderPage() {
     };
   }, [selectedFixtureId]);
 
+  const allowedLeagueIds = useMemo(() => {
+    if (specificLeagueId) {
+      return new Set([specificLeagueId]);
+    }
+
+    if (
+      country === TOURNAMENTS_VALUE ||
+      country === t.builder.tournaments
+    ) {
+      return new Set(tournamentIds);
+    }
+
+    return new Set(leagues.map((league) => league.id));
+  }, [specificLeagueId, country, leagues, t.builder.tournaments]);
+
   const filteredFixtures = useMemo(() => {
     const sourceFixtures = viewMode === "live" ? liveFixtures : fixtures;
     const todayKey = getStockholmDateKey();
@@ -836,50 +793,94 @@ export default function BuilderPage() {
         search.trim().toLowerCase()
       );
 
-      if (viewMode === "today" || viewMode === "tomorrow" || viewMode === "live") {
+      if (!allowedLeagueIds.has(fixture.league.id)) {
+        return false;
+      }
+
+      if (viewMode === "live") {
         return matchesSearch;
       }
 
       const fixtureDateKey = getFixtureStockholmDateKey(fixture.fixture.date);
 
-      let matchesDate = true;
-
-      if (dateFilter === "today") {
-        matchesDate = fixtureDateKey === todayKey;
+      if (viewMode === "today") {
+        return matchesSearch && fixtureDateKey === todayKey;
       }
 
-      if (dateFilter === "tomorrow") {
-        matchesDate = fixtureDateKey === tomorrowKey;
+      if (viewMode === "tomorrow") {
+        return matchesSearch && fixtureDateKey === tomorrowKey;
       }
 
-      if (dateFilter === "week") {
-        matchesDate =
-          fixtureDateKey >= todayKey && fixtureDateKey < weekEndKey;
+      if (viewMode === "week") {
+        return (
+          matchesSearch &&
+          fixtureDateKey >= todayKey &&
+          fixtureDateKey < weekEndKey
+        );
       }
 
-      return matchesSearch && matchesDate;
+      return matchesSearch;
     });
-  }, [fixtures, liveFixtures, search, dateFilter, viewMode]);
+  }, [fixtures, liveFixtures, search, viewMode, allowedLeagueIds]);
 
   function selectFixture(fixture: Fixture) {
     setSelectedFixtureId(fixture.fixture.id);
-    setLeagueId(fixture.league.id);
+
+    window.requestAnimationFrame(() => {
+      builderPanelRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   }
 
   function isFixtureSelectedInSlip(fixture: Fixture) {
     return slip.some((item) => item.fixtureId === fixture.fixture.id);
   }
 
-  function buildMarketText(fixture?: Fixture) {
-    if (isPlayerProp && fixture) {
-      return `${market}: ${
-        playerTeam === "home"
-          ? fixture.teams.home.name
-          : fixture.teams.away.name
-      } · ${playerName || t.builder.unknownPlayer} · ${playerLine}`;
+  function buildMarketTextFor(
+    marketName: string,
+    fixture?: Fixture,
+    options?: {
+      playerTeam?: "home" | "away";
+      playerName?: string;
+      playerLine?: string;
+    }
+  ) {
+    const targetFixture = fixture || selectedFixture;
+    const playerProp = isPlayerMarket(marketName);
+
+    if (playerProp && targetFixture) {
+      const teamSide = options?.playerTeam ?? playerTeam;
+      const name = options?.playerName ?? playerName;
+      const line = options?.playerLine ?? playerLine;
+
+      return `${marketName}: ${
+        teamSide === "home"
+          ? targetFixture.teams.home.name
+          : targetFixture.teams.away.name
+      } · ${name || t.builder.unknownPlayer} · ${line}`;
     }
 
-    return market;
+    return marketName;
+  }
+
+  function buildMarketText(fixture?: Fixture) {
+    return buildMarketTextFor(market, fixture);
+  }
+
+  function isMarketInSlip(marketName: string) {
+    if (!selectedFixture) {
+      return false;
+    }
+
+    const marketText = buildMarketTextFor(marketName, selectedFixture);
+
+    return slip.some(
+      (item) =>
+        item.fixtureId === selectedFixture.fixture.id &&
+        item.market === marketText
+    );
   }
 
   function isFixtureInSlip(fixture: Fixture) {
@@ -978,42 +979,55 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 }
               />
 
-              {viewMode === "league" ? (
-                loadingOptions ? (
-                  <div className="mt-5 rounded-3xl border border-[#18ff6d22] bg-black/30 p-6 text-center">
-                    <p className="text-[#18ff6d]">
-                      {t.builder.loadingOptionsLong}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-5">
-                    <BuilderPicker
-                      label={t.builder.labels.country}
-                      icon="🌍"
-                      value={country}
-                      onChange={setCountry}
-                      options={[
-                        {
-                          label: t.builder.tournaments,
-                          value: TOURNAMENTS_VALUE,
-                          icon: "🌍",
-                          description: t.builder.tournamentsDescription,
-                        },
-                        ...countries.map((item) => ({
-                          label: item.name,
-                          value: item.name,
-                          image: item.flag || undefined,
-                          description: t.builder.nationalLeaguesDescription,
-                        })),
-                      ]}
-                    />
+              {loadingOptions ? (
+                <div className="mt-5 rounded-3xl border border-[#18ff6d22] bg-black/30 p-6 text-center">
+                  <p className="text-[#18ff6d]">
+                    {t.builder.loadingOptionsLong}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-5">
+                  <BuilderPicker
+                    label={t.builder.labels.country}
+                    icon="🌍"
+                    value={country}
+                    onChange={setCountry}
+                    options={[
+                      {
+                        label: t.builder.tournaments,
+                        value: TOURNAMENTS_VALUE,
+                        icon: "🌍",
+                        description: t.builder.tournamentsDescription,
+                      },
+                      ...countries.map((item) => ({
+                        label: item.name,
+                        value: item.name,
+                        image: item.flag || undefined,
+                        description: t.builder.nationalLeaguesDescription,
+                      })),
+                    ]}
+                  />
 
-                    <BuilderPicker
-                      label={t.builder.labels.league}
-                      icon="🏆"
-                      value={leagueId || ""}
-                      onChange={(value) => setLeagueId(Number(value))}
-                      options={leagues.map((league) => ({
+                  <BuilderPicker
+                    label={t.builder.labels.league}
+                    icon="🏆"
+                    value={leagueId}
+                    onChange={(value) => {
+                      if (value === ALL_LEAGUES_VALUE) {
+                        setLeagueId(ALL_LEAGUES_VALUE);
+                        return;
+                      }
+
+                      setLeagueId(Number(value));
+                    }}
+                    options={[
+                      {
+                        label: t.builder.allLeagues,
+                        value: ALL_LEAGUES_VALUE,
+                        icon: "🏆",
+                        description: t.builder.allLeaguesDescription,
+                      },
+                      ...leagues.map((league) => ({
                         label: league.name,
                         value: league.id,
                         image: league.logo || undefined,
@@ -1023,20 +1037,11 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                               season: league.currentSeason,
                             })
                           : league.type,
-                      }))}
-                    />
-
-                    <BuilderPicker
-                      label={t.builder.labels.date}
-                      icon="📅"
-                      value={dateFilter}
-                      onChange={setDateFilter}
-                      options={dateOptions}
-                      searchable={false}
-                    />
-                  </div>
-                )
-              ) : null}
+                      })),
+                    ]}
+                  />
+                </div>
+              )}
 
               <div className="mt-5 flex flex-col gap-4 sm:mt-6 md:flex-row md:items-end md:justify-between">
                 <div>
@@ -1088,7 +1093,9 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   <p className="font-semibold text-[#18ff6d]">
                     {viewMode === "today" || viewMode === "tomorrow"
                       ? t.builder.loadingTodayFixtures
-                      : t.builder.loadingFixtures}
+                      : viewMode === "week"
+                        ? t.builder.loadingFixtures
+                        : t.builder.loadingFixtures}
                   </p>
                 </div>
               ) : viewMode !== "live" && matchError ? (
@@ -1098,10 +1105,6 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   </p>
                   <p className="mt-2 text-sm text-red-200/80">{matchError}</p>
                 </div>
-              ) : viewMode === "league" && !leagueId ? (
-                <p className="mt-5 rounded-3xl border border-white/10 bg-black/30 p-6 text-[#A9A9A9]">
-                  {t.builder.selectLeagueFirst}
-                </p>
               ) : filteredFixtures.length === 0 ? (
                 <p className="mt-5 rounded-3xl border border-white/10 bg-black/30 p-6 text-[#A9A9A9]">
                   {viewMode === "today"
@@ -1111,7 +1114,13 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       : t.builder.noFilteredMatches}
                 </p>
               ) : (
-                <div className="mt-5 max-h-[52vh] overflow-y-auto overscroll-contain pr-1 sm:max-h-[60vh] md:max-h-[65vh]">
+                <div
+                  className={`mt-5 overflow-y-auto overscroll-contain pr-1 transition-all ${
+                    selectedFixture
+                      ? "max-h-[28vh] sm:max-h-[32vh]"
+                      : "max-h-[52vh] sm:max-h-[60vh] md:max-h-[65vh]"
+                  }`}
+                >
                   <BuilderLeagueGroups
                     fixtures={filteredFixtures}
                     selectedFixtureId={selectedFixtureId}
@@ -1122,7 +1131,10 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               )}
 
               {selectedFixture ? (
-                <section className="mt-6 rounded-3xl border border-[#18ff6d33] bg-[#18ff6d]/5 p-4 sm:p-6">
+                <section
+                  ref={builderPanelRef}
+                  className="mt-6 rounded-3xl border border-[#18ff6d33] bg-[#18ff6d]/5 p-4 sm:p-6"
+                >
                   <div className="mb-5">
                     <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
                       {t.builder.buildPickTitle}
@@ -1139,27 +1151,12 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     onClick={() => selectFixture(selectedFixture)}
                   />
 
-                  <div className="mt-5">
-                    <BuilderPicker
-                      label={t.builder.labels.market}
-                      icon="🎯"
-                      value={market}
-                      onChange={setMarket}
-                      options={markets.map((marketOption) => ({
-                        label: marketOption,
-                        value: marketOption,
-                        icon: isPlayerMarket(marketOption)
-                          ? "👤"
-                          : marketOption.toLowerCase().includes("goal") ||
-                              marketOption.includes("mål")
-                            ? "⚽"
-                            : isCornerMarketValue(marketOption)
-                              ? "🚩"
-                              : marketOption.toLowerCase().includes("card") ||
-                                  marketOption.includes("kort")
-                                ? "🟨"
-                                : "🎯",
-                      }))}
+                  <div className="mt-5 max-h-[50vh] overflow-y-auto pr-1 sm:max-h-[55vh]">
+                    <BuilderMarketGrid
+                      markets={markets}
+                      selectedMarket={market}
+                      onSelectMarket={setMarket}
+                      isMarketInSlip={isMarketInSlip}
                     />
                   </div>
                 </section>
