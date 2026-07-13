@@ -399,6 +399,19 @@ export const translations = {
       removeTitle: "Ta bort",
       brainSlipTitle: "🧠 BrainSlip",
       noMatchSelected: "Ingen match vald ännu.",
+      slipEmptyHint:
+        "Tryck på en match i listan nedan — den läggs till här med din valda marknad.",
+      matchTapHint:
+        "Steg 2: Tryck på en match i listan nedan för att lägga till den i BrainSlip.",
+      slipReadyHint:
+        "Matcher tillagda! Lägg till fler om du vill, eller tryck Analysera.",
+      steps: {
+        title: "Så funkar det",
+        filters: "Välj filter",
+        match: "Tryck på match",
+        slip: "BrainSlip fylls",
+        analyze: "Analysera",
+      },
       liveMatchCount: "{count} matcher",
       startingXiTitle: "Startelvor",
       matchCenter: "Matchcenter",
@@ -486,9 +499,11 @@ export const translations = {
     fixtureCard: {
       selected: "VALD",
       select: "VÄLJ",
+      addBadge: "+ LÄGG TILL",
+      inSlipBadge: "✓ I SLIP",
       noStandings: "Tabell saknas",
-      matchSelected: "✓ Matchen är vald",
-      tapToSelect: "Tryck för att välja matchen",
+      matchSelected: "✓ Tillagd i BrainSlip",
+      tapToSelect: "Tryck för att lägga till i BrainSlip",
     },
 
     aiBetSlip: {
@@ -965,6 +980,19 @@ export const translations = {
       removeTitle: "Remove",
       brainSlipTitle: "🧠 BrainSlip",
       noMatchSelected: "No match selected yet.",
+      slipEmptyHint:
+        "Tap a match in the list below — it will be added here with your selected market.",
+      matchTapHint:
+        "Step 2: Tap a match in the list below to add it to BrainSlip.",
+      slipReadyHint:
+        "Matches added! Add more if you like, or tap Analyze.",
+      steps: {
+        title: "How it works",
+        filters: "Choose filters",
+        match: "Tap a match",
+        slip: "BrainSlip fills",
+        analyze: "Analyze",
+      },
       liveMatchCount: "{count} matches",
       startingXiTitle: "Starting lineups",
       matchCenter: "Match center",
@@ -1052,9 +1080,11 @@ export const translations = {
     fixtureCard: {
       selected: "SELECTED",
       select: "SELECT",
+      addBadge: "+ ADD",
+      inSlipBadge: "✓ IN SLIP",
       noStandings: "No standings",
-      matchSelected: "✓ Match selected",
-      tapToSelect: "Tap to select match",
+      matchSelected: "✓ Added to BrainSlip",
+      tapToSelect: "Tap to add to BrainSlip",
     },
 
     aiBetSlip: {

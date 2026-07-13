@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import FixtureCard from "./components/FixtureCard";
 import BuilderSlipPanel from "./components/BuilderSlipPanel";
+import BuilderHowItWorks from "./components/BuilderHowItWorks";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
@@ -756,16 +757,31 @@ export default function BuilderPage() {
     );
   }, [filteredFixtures, groupedFixtureLimit, language]);
 
+  function buildMarketText(fixture?: Fixture) {
+    if (isPlayerProp && fixture) {
+      return `${market}: ${
+        playerTeam === "home"
+          ? fixture.teams.home.name
+          : fixture.teams.away.name
+      } · ${playerName || t.builder.unknownPlayer} · ${playerLine}`;
+    }
+
+    return market;
+  }
+
+  function isFixtureInSlip(fixture: Fixture) {
+    const marketText = buildMarketText(fixture);
+
+    return slip.some(
+      (item) =>
+        item.fixtureId === fixture.fixture.id && item.market === marketText
+    );
+  }
+
   function addFixtureToSlip(fixture: Fixture) {
     setSelectedFixtureId(fixture.fixture.id);
 
-    const marketText = isPlayerProp
-      ? `${market}: ${
-          playerTeam === "home"
-            ? fixture.teams.home.name
-            : fixture.teams.away.name
-        } · ${playerName || t.builder.unknownPlayer} · ${playerLine}`
-      : market;
+    const marketText = buildMarketText(fixture);
 
     const item: SlipItem = {
       fixtureId: fixture.fixture.id,
@@ -1014,24 +1030,17 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   </div>
 )}
 
-              <div className="mt-5 brain-card rounded-3xl p-4 xl:hidden">
-                <BuilderSlipPanel
-                  compact
-                  slip={slip}
-                  onRemove={(index) =>
-                    setSlip((current) =>
-                      current.filter((_, itemIndex) => itemIndex !== index)
-                    )
-                  }
-                  onClear={() => setSlip([])}
-                  onAnalyze={analyze}
+              <div className="xl:hidden">
+                <BuilderHowItWorks
+                  filtersReady={Boolean(leagueId && market)}
+                  slipCount={slip.length}
                 />
               </div>
 
               <Button
                 onClick={addSelectedToSlip}
                 disabled={!selectedFixture}
-                className="mt-6 w-full"
+                className="mt-6 hidden w-full xl:block"
               >
                 {t.builder.addSelectedToSlip}
               </Button>
@@ -1177,6 +1186,10 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       <h2 className="mt-1 text-xl font-black max-md:text-lg sm:mt-2 sm:text-3xl">
         {t.builder.selectMatch}
       </h2>
+
+      <p className="mt-2 text-xs text-[#A9A9A9] xl:hidden">
+        {t.builder.matchTapHint}
+      </p>
     </div>
 
     <div className="w-full md:w-80">
@@ -1259,7 +1272,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
         </span>
       </div>
 
-      <div className="max-h-[68vh] space-y-4 overflow-y-auto overscroll-contain pr-1 sm:max-h-[900px] sm:space-y-5 sm:pr-2">
+      <div className="max-h-[68vh] space-y-2 overflow-y-auto overscroll-contain pr-1 max-xl:space-y-2 sm:max-h-[900px] sm:space-y-5 sm:pr-2">
         {liveFixtures.map((fixture) => (
           <FixtureCard
             key={fixture.fixture.id}
@@ -1267,6 +1280,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
             selected={
               fixture.fixture.id === selectedFixtureId
             }
+            inSlip={isFixtureInSlip(fixture)}
             onClick={() => addFixtureToSlip(fixture)}
             homeForm={[]}
             awayForm={[]}
@@ -1303,10 +1317,10 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
     {t.builder.noFilteredMatches}
   </p>
 ) : (
-  <div className="mt-5 max-h-[48vh] space-y-4 overflow-y-auto overscroll-contain pr-1 max-md:max-h-[42vh] sm:mt-8 sm:max-h-[72vh] sm:space-y-8 md:max-h-none md:space-y-10 md:overflow-visible md:pr-0">
+  <div className="mt-5 max-h-[48vh] space-y-3 overflow-y-auto overscroll-contain pr-1 max-md:max-h-[42vh] sm:mt-8 sm:max-h-[72vh] sm:space-y-8 md:max-h-none md:space-y-10 md:overflow-visible md:pr-0">
     {Object.entries(groupedFixtures).map(([date, matches]) => (
       <div key={date}>
-        <div className="mb-5 flex items-center gap-4">
+        <div className="mb-3 flex items-center gap-3 max-xl:mb-3 sm:mb-5 sm:gap-4">
           <div className="h-px flex-1 bg-[#18ff6d22]" />
 
           <p className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-2 text-sm font-bold capitalize text-[#18ff6d]">
@@ -1316,7 +1330,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
           <div className="h-px flex-1 bg-[#18ff6d22]" />
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-2 max-xl:space-y-2 sm:space-y-5">
           {matches.map((fixture) => (
             <FixtureCard
               key={fixture.fixture.id}
@@ -1324,6 +1338,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               selected={
                 fixture.fixture.id === selectedFixtureId
               }
+              inSlip={isFixtureInSlip(fixture)}
               onClick={() => addFixtureToSlip(fixture)}
               homeForm={
                 forms[fixture.teams.home.id] || []
@@ -1347,6 +1362,19 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
     ))}
   </div>
 )}   
+              <div className="mt-5 brain-card rounded-3xl p-4 xl:hidden">
+                <BuilderSlipPanel
+                  compact
+                  slip={slip}
+                  onRemove={(index) =>
+                    setSlip((current) =>
+                      current.filter((_, itemIndex) => itemIndex !== index)
+                    )
+                  }
+                  onClear={() => setSlip([])}
+                  onAnalyze={analyze}
+                />
+              </div>
             </section>
 
             <aside className="brain-card hidden h-fit rounded-3xl p-4 sm:p-8 xl:sticky xl:top-6 xl:block">

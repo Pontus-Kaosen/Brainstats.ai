@@ -50,9 +50,20 @@ export default function BuilderSlipPanel({
         className={`space-y-3 ${compact ? "mt-4 max-h-40 overflow-y-auto" : "mt-6"}`}
       >
         {slip.length === 0 ? (
-          <p className="text-sm text-[#A9A9A9]">
-            {t.builder.noMatchSelected}
-          </p>
+          compact ? (
+            <div className="rounded-xl border border-dashed border-white/10 bg-black/20 p-3">
+              <p className="text-sm text-[#A9A9A9]">
+                {t.builder.noMatchSelected}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-[#777]">
+                {t.builder.slipEmptyHint}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-[#A9A9A9]">
+              {t.builder.noMatchSelected}
+            </p>
+          )
         ) : (
           <>
             {slip.map((item, index) => (
