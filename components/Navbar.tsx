@@ -13,9 +13,24 @@ import { useLanguage } from "@/components/LanguageProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import BrainStatsLogo from "@/components/BrainStatsLogo";
 
+type UserPlan = "free" | "pro" | "elite";
+
+function getInitials(email: string) {
+  const name = email.split("@")[0] || "";
+  const parts = name.split(/[._-]+/).filter(Boolean);
+
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  return name.slice(0, 2).toUpperCase();
+}
+
 export default function Navbar() {
   const pathname = usePathname();
+  const isHomePage = pathname === "/";
   const [email, setEmail] = useState<string | null>(null);
+  const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -35,9 +50,32 @@ export default function Navbar() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!cancelled) {
-        setEmail(session?.user?.email || null);
+      if (cancelled) {
+        return;
       }
+
+      setEmail(session?.user?.email || null);
+
+      if (!session?.user?.id) {
+        setUserPlan(null);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      if (cancelled) {
+        return;
+      }
+
+      const plan = profile?.plan;
+
+      setUserPlan(
+        plan === "free" || plan === "pro" || plan === "elite" ? plan : "free"
+      );
     }
 
     function startAuth() {
@@ -45,6 +83,26 @@ export default function Navbar() {
 
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         setEmail(session?.user?.email || null);
+
+        if (!session?.user?.id) {
+          setUserPlan(null);
+          return;
+        }
+
+        void supabase
+          .from("profiles")
+          .select("plan")
+          .eq("id", session.user.id)
+          .maybeSingle()
+          .then(({ data: profile }) => {
+            const plan = profile?.plan;
+
+            setUserPlan(
+              plan === "free" || plan === "pro" || plan === "elite"
+                ? plan
+                : "free"
+            );
+          });
       });
 
       authSubscription = data.subscription;
@@ -96,6 +154,7 @@ export default function Navbar() {
   async function handleLogout() {
     await supabase.auth.signOut();
     setEmail(null);
+    setUserPlan(null);
     window.location.href = "/";
   }
 
@@ -107,6 +166,25 @@ export default function Navbar() {
     { title: t.navbar.premium, href: "/premium" },
     { title: t.navbar.legal, href: "/legal" },
   ];
+
+  const memberBadgeLabel =
+    userPlan === "elite"
+      ? t.navbar.planElite
+      : userPlan === "pro"
+        ? t.navbar.planPro
+        : t.navbar.memberBadge;
+
+  const profileButtonClass = isHomePage
+    ? "flex items-center gap-2.5 rounded-[15px] bg-[#0a0a0a] px-3 py-2.5 font-semibold text-white transition hover:bg-[#111111] sm:px-4 sm:py-3"
+    : "flex items-center gap-2 rounded-2xl border border-[#18ff6d33] bg-[#121212]/80 px-3 py-3 font-semibold text-white shadow-[0_0_30px_rgba(24,255,109,.12)] transition hover:border-[#18ff6d88] hover:bg-[#18ff6d]/10 sm:px-5";
+
+  const avatarClass = isHomePage
+    ? "flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] text-xs font-black tracking-wide text-black shadow-[0_0_24px_rgba(232,220,200,.35)]"
+    : "flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-[#18ff6d] to-[#2fbfff] text-black";
+
+  const loginLinkClass = isHomePage
+    ? "relative inline-flex items-center gap-2 overflow-hidden rounded-[15px] bg-[#0a0a0a] px-4 py-3 text-sm font-bold text-[#E8DCC8] transition hover:bg-[#111111] sm:px-6 sm:text-base"
+    : "rounded-2xl border border-[#18ff6d55] bg-[#18ff6d]/10 px-3 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d] hover:text-black sm:px-6 sm:text-base";
 
   return (
     <nav className="relative border-b border-[#18ff6d22] bg-black/95 px-3 py-3 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
@@ -143,32 +221,79 @@ export default function Navbar() {
           <div className="relative" ref={menuRef}>
             {email ? (
               <>
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex items-center gap-2 rounded-2xl border border-[#18ff6d33] bg-[#121212]/80 px-3 py-3 font-semibold text-white shadow-[0_0_30px_rgba(24,255,109,.12)] transition hover:border-[#18ff6d88] hover:bg-[#18ff6d]/10 sm:px-5"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-[#18ff6d] to-[#2fbfff] text-black">
-                    👤
-                  </span>
+                {isHomePage ? (
+                  <div className="navbar-profile-exclusive rounded-2xl p-[1px] shadow-[0_0_40px_rgba(232,220,200,.12)]">
+                    <button
+                      type="button"
+                      onClick={() => setMenuOpen(!menuOpen)}
+                      className={profileButtonClass}
+                    >
+                      <span className={avatarClass}>
+                        {getInitials(email)}
+                      </span>
 
-                  <span className="hidden max-w-28 truncate sm:inline">
-                    {email.split("@")[0]}
-                  </span>
+                      <span className="hidden min-w-0 sm:block">
+                        <span className="block max-w-28 truncate text-sm text-white">
+                          {email.split("@")[0]}
+                        </span>
+                        <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
+                          {memberBadgeLabel}
+                        </span>
+                      </span>
 
-                  <span className="hidden text-[#18ff6d] sm:inline">▼</span>
-                </button>
+                      <span className="hidden text-[#E8DCC8]/80 sm:inline">
+                        ▼
+                      </span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className={profileButtonClass}
+                  >
+                    <span className={avatarClass}>👤</span>
+
+                    <span className="hidden max-w-28 truncate sm:inline">
+                      {email.split("@")[0]}
+                    </span>
+
+                    <span className="hidden text-[#18ff6d] sm:inline">▼</span>
+                  </button>
+                )}
 
                 {menuOpen && (
-                  <div className="absolute right-0 z-[90] mt-4 w-[min(18rem,calc(100vw-1.5rem))] rounded-3xl border border-[#18ff6d33] bg-[#101010] p-3 shadow-[0_0_60px_rgba(24,255,109,.18)] max-md:backdrop-blur-none backdrop-blur-xl">
-                    <div className="rounded-2xl bg-[#18ff6d]/10 p-4">
+                  <div
+                    className={`absolute right-0 z-[90] mt-4 w-[min(18rem,calc(100vw-1.5rem))] rounded-3xl border p-3 max-md:backdrop-blur-none backdrop-blur-xl ${
+                      isHomePage
+                        ? "border-[#E8DCC8]/25 bg-[#0b0b0b] shadow-[0_0_80px_rgba(232,220,200,.16)]"
+                        : "border-[#18ff6d33] bg-[#101010] shadow-[0_0_60px_rgba(24,255,109,.18)]"
+                    }`}
+                  >
+                    <div
+                      className={`rounded-2xl p-4 ${
+                        isHomePage
+                          ? "border border-[#E8DCC8]/15 bg-gradient-to-br from-[#18ff6d]/10 via-[#E8DCC8]/5 to-[#2fbfff]/10"
+                          : "bg-[#18ff6d]/10"
+                      }`}
+                    >
                       <p className="text-xs text-[#A9A9A9]">
                         {t.navbar.loggedInAs}
                       </p>
 
-                      <p className="mt-1 truncate font-bold text-[#18ff6d]">
+                      <p
+                        className={`mt-1 truncate font-bold ${
+                          isHomePage ? "text-[#E8DCC8]" : "text-[#18ff6d]"
+                        }`}
+                      >
                         {email}
                       </p>
+
+                      {isHomePage ? (
+                        <span className="mt-2 inline-flex rounded-full border border-[#E8DCC8]/25 bg-black/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
+                          {memberBadgeLabel}
+                        </span>
+                      ) : null}
                     </div>
 
                     <div className="mt-3 space-y-2">
@@ -193,11 +318,17 @@ export default function Navbar() {
                   </div>
                 )}
               </>
+            ) : isHomePage ? (
+              <div className="navbar-profile-exclusive rounded-2xl p-[1px] shadow-[0_0_40px_rgba(232,220,200,.12)]">
+                <Link href={loginHref} className={loginLinkClass}>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] text-sm text-black">
+                    💎
+                  </span>
+                  <span>{t.navbar.memberArea}</span>
+                </Link>
+              </div>
             ) : (
-              <Link
-                href={loginHref}
-                className="rounded-2xl border border-[#18ff6d55] bg-[#18ff6d]/10 px-3 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d] hover:text-black sm:px-6 sm:text-base"
-              >
+              <Link href={loginHref} className={loginLinkClass}>
                 {t.navbar.login}
               </Link>
             )}
@@ -225,9 +356,13 @@ export default function Navbar() {
             {!email && (
               <Link
                 href={loginHref}
-                className="mt-2 rounded-2xl border border-[#18ff6d55] bg-[#18ff6d]/10 px-4 py-3 text-center text-sm font-bold text-[#18ff6d]"
+                className={`mt-2 rounded-2xl px-4 py-3 text-center text-sm font-bold ${
+                  isHomePage
+                    ? "border border-[#E8DCC8]/25 bg-gradient-to-r from-[#18ff6d]/10 via-[#E8DCC8]/10 to-[#2fbfff]/10 text-[#E8DCC8]"
+                    : "border border-[#18ff6d55] bg-[#18ff6d]/10 text-[#18ff6d]"
+                }`}
               >
-                {t.navbar.login}
+                {isHomePage ? `💎 ${t.navbar.memberArea}` : t.navbar.login}
               </Link>
             )}
           </div>
