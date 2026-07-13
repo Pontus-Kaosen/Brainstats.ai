@@ -420,7 +420,14 @@ export const translations = {
       },
       buildPickTitle: "Bygg ditt spel",
       buildPickHint:
-        "Välj marknad nedan och lägg till i BrainSlip när du är nöjd.",
+        "Välj en eller flera marknader — lägg till alla på en gång i BrainSlip.",
+      marketSelected: "Vald",
+      addSelectedMarkets: "Lägg till {count} marknader i BrainSlip",
+      addOneMarket: "Lägg till 1 marknad i BrainSlip",
+      selectMarketsFirst: "Välj minst en marknad ovan.",
+      playerRequiredForMarkets:
+        "Välj spelare och lag innan du lägger till spelarmarknader.",
+      selectedMarketCount: "{count} marknader valda",
       buildPickCta: "Vald",
       matchFinished: "Spelad",
       matchUpcoming: "Kommande",
@@ -1063,7 +1070,14 @@ export const translations = {
       },
       buildPickTitle: "Build your pick",
       buildPickHint:
-        "Choose a market below and add it to BrainSlip when you're ready.",
+        "Pick one or more markets — add them all to BrainSlip at once.",
+      marketSelected: "Selected",
+      addSelectedMarkets: "Add {count} markets to BrainSlip",
+      addOneMarket: "Add 1 market to BrainSlip",
+      selectMarketsFirst: "Select at least one market above.",
+      playerRequiredForMarkets:
+        "Choose team and player before adding player markets.",
+      selectedMarketCount: "{count} markets selected",
       buildPickCta: "Selected",
       matchFinished: "Finished",
       matchUpcoming: "Upcoming",

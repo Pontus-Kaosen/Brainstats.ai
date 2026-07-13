@@ -9,8 +9,8 @@ import {
 
 type BuilderMarketGridProps = {
   markets: readonly string[];
-  selectedMarket: string;
-  onSelectMarket: (market: string) => void;
+  selectedMarkets: readonly string[];
+  onToggleMarket: (market: string) => void;
   isMarketInSlip?: (market: string) => boolean;
 };
 
@@ -24,8 +24,8 @@ const groupOrder: MarketGroupId[] = [
 
 export default function BuilderMarketGrid({
   markets,
-  selectedMarket,
-  onSelectMarket,
+  selectedMarkets,
+  onToggleMarket,
   isMarketInSlip,
 }: BuilderMarketGridProps) {
   const { t } = useLanguage();
@@ -56,14 +56,15 @@ export default function BuilderMarketGrid({
 
             <div className="mt-3 space-y-2">
               {items.map((marketOption) => {
-                const selected = selectedMarket === marketOption;
                 const inSlip = isMarketInSlip?.(marketOption) ?? false;
+                const selected =
+                  inSlip || selectedMarkets.includes(marketOption);
 
                 return (
                   <button
                     key={marketOption}
                     type="button"
-                    onClick={() => onSelectMarket(marketOption)}
+                    onClick={() => onToggleMarket(marketOption)}
                     className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-left transition ${
                       selected
                         ? "border-[#18ff6d] bg-[#18ff6d]/10"
@@ -71,6 +72,15 @@ export default function BuilderMarketGrid({
                     }`}
                   >
                     <div className="flex min-w-0 items-center gap-3">
+                      <span
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs font-black ${
+                          selected
+                            ? "border-[#18ff6d] bg-[#18ff6d] text-black"
+                            : "border-white/20 bg-black/40 text-transparent"
+                        }`}
+                      >
+                        ✓
+                      </span>
                       <span className="text-lg">{getMarketIcon(marketOption)}</span>
                       <span
                         className={`truncate text-sm font-semibold sm:text-base ${
@@ -92,8 +102,8 @@ export default function BuilderMarketGrid({
                     >
                       {inSlip
                         ? t.fixtureCard.inSlipBadge
-                        : selected
-                          ? t.builder.buildPickCta
+                        : selectedMarkets.includes(marketOption)
+                          ? t.builder.marketSelected
                           : t.fixtureCard.select}
                     </span>
                   </button>

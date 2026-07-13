@@ -199,9 +199,13 @@ export default function BuilderPage() {
   >(null);
 
   const [market, setMarket] = useState<string>(markets[0]);
+  const [selectedMarkets, setSelectedMarkets] = useState<string[]>([]);
+  const [builderError, setBuilderError] = useState("");
 
   useEffect(() => {
     setMarket(t.builder.markets[0]);
+    setSelectedMarkets([]);
+    setBuilderError("");
   }, [language]);
   const [viewMode, setViewMode] = useState<BuilderViewMode>("today");
   const [search, setSearch] = useState("");
@@ -242,7 +246,8 @@ export default function BuilderPage() {
     );
 
   const isPlayerProp = isPlayerMarket(market);
-  const isCornerMarket = isCornerMarketValue(market);
+  const hasSelectedPlayerMarkets = selectedMarkets.some(isPlayerMarket);
+  const hasSelectedCornerMarkets = selectedMarkets.some(isCornerMarketValue);
 
   const selectedPlayers =
     playerTeam === "home" ? homePlayers : awayPlayers;
@@ -656,7 +661,7 @@ export default function BuilderPage() {
   ]);
 
   useEffect(() => {
-    if (!selectedFixture || !isPlayerProp) {
+    if (!selectedFixture || !hasSelectedPlayerMarkets) {
       setHomePlayers([]);
       setAwayPlayers([]);
       setPlayerName("");
@@ -700,7 +705,7 @@ export default function BuilderPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedFixtureId, isPlayerProp]);
+  }, [selectedFixtureId, hasSelectedPlayerMarkets]);
 
   useEffect(() => {
     if (!selectedFixtureId) {
@@ -825,6 +830,8 @@ export default function BuilderPage() {
 
   function selectFixture(fixture: Fixture) {
     setSelectedFixtureId(fixture.fixture.id);
+    setSelectedMarkets([]);
+    setBuilderError("");
 
     window.requestAnimationFrame(() => {
       builderPanelRef.current?.scrollIntoView({
@@ -832,6 +839,64 @@ export default function BuilderPage() {
         block: "start",
       });
     });
+  }
+
+  function removeMarketFromSlip(marketName: string) {
+    if (!selectedFixture) {
+      return;
+    }
+
+    const marketText = buildMarketTextFor(marketName, selectedFixture);
+
+    setSlip((current) =>
+      current.filter(
+        (item) =>
+          !(
+            item.fixtureId === selectedFixture.fixture.id &&
+            item.market === marketText
+          )
+      )
+    );
+  }
+
+  function toggleMarketSelection(marketName: string) {
+    setBuilderError("");
+
+    if (isMarketInSlip(marketName)) {
+      removeMarketFromSlip(marketName);
+      setSelectedMarkets((current) =>
+        current.filter((item) => item !== marketName)
+      );
+      return;
+    }
+
+    setSelectedMarkets((current) => {
+      if (current.includes(marketName)) {
+        return current.filter((item) => item !== marketName);
+      }
+
+      return [...current, marketName];
+    });
+    setMarket(marketName);
+  }
+
+  function createSlipItem(fixture: Fixture, marketName: string): SlipItem {
+    const marketText = buildMarketTextFor(marketName, fixture);
+    const playerProp = isPlayerMarket(marketName);
+
+    return {
+      fixtureId: fixture.fixture.id,
+      leagueId: fixture.league.id,
+      season: fixture.league.season,
+      date: fixture.fixture.date,
+      homeTeamId: fixture.teams.home.id,
+      awayTeamId: fixture.teams.away.id,
+      homeTeam: fixture.teams.home.name,
+      awayTeam: fixture.teams.away.name,
+      market: marketText,
+      playerId: playerProp ? playerId : null,
+      playerName: playerProp ? playerName : undefined,
+    };
   }
 
   function isFixtureSelectedInSlip(fixture: Fixture) {
@@ -895,21 +960,7 @@ export default function BuilderPage() {
   function addFixtureToSlip(fixture: Fixture) {
     selectFixture(fixture);
 
-    const marketText = buildMarketText(fixture);
-
-    const item: SlipItem = {
-      fixtureId: fixture.fixture.id,
-      leagueId: fixture.league.id,
-      season: fixture.league.season,
-      date: fixture.fixture.date,
-      homeTeamId: fixture.teams.home.id,
-      awayTeamId: fixture.teams.away.id,
-      homeTeam: fixture.teams.home.name,
-      awayTeam: fixture.teams.away.name,
-      market: marketText,
-      playerId: isPlayerProp ? playerId : null,
-      playerName: isPlayerProp ? playerName : undefined,
-    };
+    const item = createSlipItem(fixture, market);
 
     setSlip((current) => {
       const exists = current.some(
@@ -922,9 +973,42 @@ export default function BuilderPage() {
     });
   }
 
-  function addSelectedToSlip() {
-    if (!selectedFixture) return;
-    addFixtureToSlip(selectedFixture);
+  function addSelectedMarketsToSlip() {
+    if (!selectedFixture || selectedMarkets.length === 0) {
+      setBuilderError(t.builder.selectMarketsFirst);
+      return;
+    }
+
+    if (selectedMarkets.some(isPlayerMarket) && !playerId) {
+      setBuilderError(t.builder.playerRequiredForMarkets);
+      return;
+    }
+
+    setBuilderError("");
+
+    const items = selectedMarkets.map((marketName) =>
+      createSlipItem(selectedFixture, marketName)
+    );
+
+    setSlip((current) => {
+      const merged = [...current];
+
+      for (const item of items) {
+        const exists = merged.some(
+          (existing) =>
+            existing.fixtureId === item.fixtureId &&
+            existing.market === item.market
+        );
+
+        if (!exists) {
+          merged.push(item);
+        }
+      }
+
+      return merged;
+    });
+
+    setSelectedMarkets([]);
   }
 
   function analyze() {
@@ -1154,11 +1238,25 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   <div className="mt-5 max-h-[50vh] overflow-y-auto pr-1 sm:max-h-[55vh]">
                     <BuilderMarketGrid
                       markets={markets}
-                      selectedMarket={market}
-                      onSelectMarket={setMarket}
+                      selectedMarkets={selectedMarkets}
+                      onToggleMarket={toggleMarketSelection}
                       isMarketInSlip={isMarketInSlip}
                     />
                   </div>
+
+                  {selectedMarkets.length > 0 ? (
+                    <p className="mt-4 text-sm font-semibold text-[#18ff6d]">
+                      {formatTranslation(t.builder.selectedMarketCount, {
+                        count: selectedMarkets.length,
+                      })}
+                    </p>
+                  ) : null}
+
+                  {builderError ? (
+                    <p className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+                      {builderError}
+                    </p>
+                  ) : null}
                 </section>
               ) : (
                 <p className="mt-6 rounded-2xl border border-dashed border-white/10 bg-black/20 p-5 text-sm text-[#A9A9A9]">
@@ -1166,7 +1264,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 </p>
               )}
 
-{selectedFixture && isPlayerProp && (
+{selectedFixture && hasSelectedPlayerMarkets && (
   <>
   <div className="mt-4 grid grid-cols-1 gap-2 sm:mt-6 sm:grid-cols-2 md:grid-cols-3 sm:gap-5">
     <BuilderPicker
@@ -1261,7 +1359,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   </>
         )}
 
-{selectedFixture && isCornerMarket && (
+{selectedFixture && hasSelectedCornerMarkets && (
   <div className="mt-6">
     <label className="text-sm text-[#A9A9A9]">
       🚩 {t.builder.cornerLineLabel}
@@ -1294,11 +1392,15 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               </div>
 
               <Button
-                onClick={addSelectedToSlip}
-                disabled={!selectedFixture}
+                onClick={addSelectedMarketsToSlip}
+                disabled={!selectedFixture || selectedMarkets.length === 0}
                 className="mt-6 w-full"
               >
-                {t.builder.addSelectedToSlip}
+                {selectedMarkets.length === 1
+                  ? t.builder.addOneMarket
+                  : formatTranslation(t.builder.addSelectedMarkets, {
+                      count: selectedMarkets.length,
+                    })}
               </Button>
 
               <section className="mt-5 rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 sm:mt-8 sm:p-6">
