@@ -7,8 +7,8 @@ export const companyInfo = {
   vatNoteEn: "All prices include VAT unless stated otherwise.",
   locationSv: "Stockholm, Sverige",
   locationEn: "Stockholm, Sweden",
-  email: "support@brainstats.ai",
-  website: "brainstats.ai",
+  email: "support@brainstats.eu",
+  website: "brainstats.eu",
   plans: {
     pro: {
       priceSv: "99 kr/månad",

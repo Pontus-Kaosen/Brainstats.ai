@@ -1,6 +1,6 @@
 export const siteName = "BrainStats";
 
-const defaultProductionUrl = "https://brainstats.ai";
+const defaultProductionUrl = "https://brainstats.eu";
 
 export function getSiteUrl() {
   const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");

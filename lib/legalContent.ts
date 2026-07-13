@@ -17,8 +17,8 @@ export type LegalDocument = {
   sections: LegalSection[];
 };
 
-const contactEmail = "support@brainstats.ai";
-const website = "brainstats.ai";
+const contactEmail = "support@brainstats.eu";
+const website = "brainstats.eu";
 
 const documents: Record<
   Language,
