@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -20,6 +20,10 @@ import {
   type RotationRisk,
   type ScheduleContextStatus,
 } from "@/lib/matchImportance";
+import {
+  hasPartialLineups,
+  type PlayerLineupStatus,
+} from "@/lib/lineups";
 
 
 type ScoreBreakdown = {
@@ -115,6 +119,9 @@ type UsedData = {
   rotationRisks?: RotationRisk[];
   scheduleContext?: ScheduleContextStatus;
   scheduleTeamsChecked?: string[];
+  playerLineupStatus?: PlayerLineupStatus | null;
+  homeTeamId?: string | null;
+  awayTeamId?: string | null;
 };
 
 const cardClass =
@@ -292,8 +299,14 @@ function AnalyzePageContent() {
 const lineups = usedData?.lineups || [];
 const homeLineup = lineups[0];
 const awayLineup = lineups[1];
-const confirmedLineups =
-  usedData?.confirmedLineups === true && lineups.length >= 2;
+const confirmedLineups = usedData?.confirmedLineups === true;
+const partialLineups = hasPartialLineups(lineups);
+const playerLineupStatus = usedData?.playerLineupStatus ?? null;
+
+const selectedPlayerId = useMemo(() => {
+  const match = betText.match(/Player ID:\s*(\d+)/i);
+  return match ? Number(match[1]) : null;
+}, [betText]);
 
 const weather = usedData?.weather;
 const referee = usedData?.referee;
@@ -618,7 +631,7 @@ const scheduleStatusMessage =
       </span>
     </div>
 
-    {!confirmedLineups ? (
+    {!confirmedLineups && !partialLineups ? (
       <div className="mt-6 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-5">
         <p className="font-semibold text-yellow-200">
           {t.analyze.lineupsNotPublished}
@@ -630,7 +643,21 @@ const scheduleStatusMessage =
       </div>
     ) : (
       <div className="mt-6 space-y-6">
-        {[homeLineup, awayLineup].map((lineup, teamIndex) => (
+        {playerLineupStatus === "bench" ? (
+          <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+            {t.analyze.playerOnBenchWarningReport}
+          </div>
+        ) : null}
+
+        {playerLineupStatus === "not_in_squad" ? (
+          <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
+            {t.analyze.playerNotStartingWarningReport}
+          </div>
+        ) : null}
+
+        {[homeLineup, awayLineup]
+          .filter((lineup) => (lineup?.startXI?.length ?? 0) > 0)
+          .map((lineup, teamIndex) => (
           <div
             key={lineup?.team?.id || teamIndex}
             className="overflow-hidden rounded-2xl border border-[#18ff6d22] bg-black/35"
@@ -678,7 +705,12 @@ const scheduleStatusMessage =
                         player.id ||
                         `${player.name}-${playerIndex}`
                       }
-                      className="flex items-center justify-between rounded-xl border border-white/5 bg-[#101010]/80 px-4 py-3"
+                      className={`flex items-center justify-between rounded-xl border px-4 py-3 ${
+                        selectedPlayerId &&
+                        player.id === selectedPlayerId
+                          ? "border-[#18ff6d] bg-[#18ff6d]/10"
+                          : "border-white/5 bg-[#101010]/80"
+                      }`}
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#18ff6d]/10 text-sm font-black text-[#18ff6d]">
@@ -688,6 +720,13 @@ const scheduleStatusMessage =
                         <span className="truncate font-semibold text-[#E8E8E8]">
                           {player.name || t.builder.unknownPlayer}
                         </span>
+
+                        {selectedPlayerId &&
+                        player.id === selectedPlayerId ? (
+                          <span className="rounded-full bg-[#18ff6d]/20 px-2 py-0.5 text-[10px] font-bold text-[#18ff6d]">
+                            {t.analyze.selectedPlayerBadge}
+                          </span>
+                        ) : null}
                       </div>
 
                       <span className="ml-3 shrink-0 text-xs font-bold text-[#A9A9A9]">

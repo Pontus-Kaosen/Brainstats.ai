@@ -1,8 +1,10 @@
 import type { Language } from "@/lib/translations";
 import {
-  summarizeRotationRisksForPrompt,
-  type RotationRisk,
-} from "@/lib/matchImportance";
+  describePlayerLineupStatus,
+  hasPartialLineups,
+  type PlayerLineupStatus,
+} from "@/lib/lineups";
+import { summarizeRotationRisksForPrompt, type RotationRisk } from "@/lib/matchImportance";
 
 export function parseRequestLanguage(value: unknown): Language {
   return value === "en" ? "en" : "sv";
@@ -39,6 +41,7 @@ const labels = {
     formation: "Formation",
     coach: "Tränare",
     startingXi: "Startelva",
+    substitutes: "Avbytare",
   },
   en: {
     unknown: "Unknown",
@@ -69,6 +72,7 @@ const labels = {
     formation: "Formation",
     coach: "Coach",
     startingXi: "Starting XI",
+    substitutes: "Substitutes",
   },
 } as const;
 
@@ -113,13 +117,23 @@ export function summarizeLineupsForPrompt(
 ) {
   const l = L(language);
 
-  if (!Array.isArray(lineups) || lineups.length < 2) {
+  if (!Array.isArray(lineups) || !hasPartialLineups(lineups)) {
     return l.lineupsNotPublished;
   }
 
   return lineups
+    .filter((lineup) => (lineup.startXI?.length ?? 0) > 0)
     .map((lineup) => {
       const players = (lineup.startXI || [])
+        .map(
+          (player: any) =>
+            `${player.number ?? "-"} ${
+              player.name || l.unknownPlayer
+            } (${player.position || "-"})`
+        )
+        .join(", ");
+
+      const bench = (lineup.substitutes || [])
         .map(
           (player: any) =>
             `${player.number ?? "-"} ${
@@ -133,6 +147,7 @@ ${l.team}: ${lineup.team?.name || l.unknownTeam}
 ${l.formation}: ${lineup.formation || l.notSpecified}
 ${l.coach}: ${lineup.coach?.name || l.notSpecified}
 ${l.startingXi}: ${players || l.notAvailable}
+${l.substitutes}: ${bench || l.notAvailable}
 `;
     })
     .join("\n");
@@ -155,6 +170,7 @@ type AnalyzePromptInput = {
   playerStats: any;
   playerId: string | null;
   rotationRisks: RotationRisk[];
+  playerLineupStatus?: PlayerLineupStatus | null;
 };
 
 export function buildAnalyzeSystemPrompt(language: Language) {
@@ -254,6 +270,18 @@ ${JSON.stringify(input.injuries, null, 2)}
 
 Player statistics:
 ${summarizePlayerStatsForPrompt(input.playerStats, language)}
+
+Selected player lineup status:
+${
+  input.playerId
+    ? describePlayerLineupStatus(
+        input.playerLineupStatus || "unknown",
+        language
+      )
+    : language === "en"
+      ? "Not a player market."
+      : "Inte en spelarmarknad."
+}
 
 Schedule / rotation context (next 7 days for bet-relevant team(s)):
 ${summarizeRotationRisksForPrompt(input.rotationRisks || [], "en")}
@@ -364,6 +392,16 @@ ${JSON.stringify(input.injuries, null, 2)}
 
 Spelarstatistik:
 ${summarizePlayerStatsForPrompt(input.playerStats, language)}
+
+Status för vald spelare i startelva/trupp:
+${
+  input.playerId
+    ? describePlayerLineupStatus(
+        input.playerLineupStatus || "unknown",
+        language
+      )
+    : "Inte en spelarmarknad."
+}
 
 Matchschema / rotationskontext (7 dagar för lag som spelidén gäller):
 ${summarizeRotationRisksForPrompt(input.rotationRisks || [], "sv")}

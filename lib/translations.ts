@@ -311,6 +311,11 @@ export const translations = {
         "Schema kunde inte kopplas till ett lag. Använd marknader som Hemmalag/Bortalag vinner via Builder.",
       scheduleNoFixture:
         "Ingen match hittades i underlaget. Bygg spelet via Builder för schemaanalys.",
+      playerNotStartingWarningReport:
+        "Vald spelare är inte i startelvan. Det påverkar spelarmarknader kraftigt.",
+      playerOnBenchWarningReport:
+        "Vald spelare är avbytare, inte i startelvan.",
+      selectedPlayerBadge: "Din spelare",
       reportSubtitle: "Brain Engine™ Report",
       reportTitle: "AI Match Analysis",
       brainScore: "/100 BrainScore™",
@@ -374,6 +379,15 @@ export const translations = {
       searchPlaceholder: "Sök Liverpool, Arsenal...",
       unknownPlayer: "Okänd spelare",
       awaitingLineups: "Inväntar publicering",
+      partialLineupsPublished: "Delvis publicerad",
+      playerNotStartingWarning:
+        "{name} är inte i startelvan. Spelarmarknader blir betydligt mer osäkra.",
+      playerOnBenchWarning:
+        "{name} är bara avbytare i publicerad elva — högre risk för spelarmarknader.",
+      playerInStartingXi: "I startelvan",
+      playerOnBench: "På bänken",
+      playerNotInSquad: "Ej i trupp",
+      playerLineupUnknown: "Elva ej publicerad",
       labels: {
         country: "Land",
         league: "Liga",
@@ -912,6 +926,11 @@ export const translations = {
         "Schedule could not be linked to a team. Use markets like Home/Away win via Builder.",
       scheduleNoFixture:
         "No match was found in the input. Build the bet via Builder for schedule analysis.",
+      playerNotStartingWarningReport:
+        "The selected player is not in the starting XI. This strongly affects player markets.",
+      playerOnBenchWarningReport:
+        "The selected player is on the bench, not in the starting XI.",
+      selectedPlayerBadge: "Your player",
       reportSubtitle: "Brain Engine™ Report",
       reportTitle: "AI Match Analysis",
       brainScore: "/100 BrainScore™",
@@ -975,6 +994,15 @@ export const translations = {
       searchPlaceholder: "Search Liverpool, Arsenal...",
       unknownPlayer: "Unknown player",
       awaitingLineups: "Awaiting release",
+      partialLineupsPublished: "Partially published",
+      playerNotStartingWarning:
+        "{name} is not in the starting XI. Player markets become significantly riskier.",
+      playerOnBenchWarning:
+        "{name} is only on the bench in the published lineup — higher risk for player markets.",
+      playerInStartingXi: "In starting XI",
+      playerOnBench: "On the bench",
+      playerNotInSquad: "Not in squad",
+      playerLineupUnknown: "Lineups not published",
       labels: {
         country: "Country",
         league: "League",

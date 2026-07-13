@@ -14,6 +14,12 @@ import {
   getLocale,
 } from "@/lib/locale";
 import { useIsMobile } from "@/lib/useMediaQuery";
+import {
+  areLineupsConfirmed,
+  getPlayerLineupStatus,
+  getPlayerLineupStatusLabel,
+  hasPartialLineups,
+} from "@/lib/lineups";
 
 const TOURNAMENTS_VALUE = "__tournaments__";
 
@@ -245,6 +251,40 @@ export default function BuilderPage() {
 
   const selectedPlayers =
     playerTeam === "home" ? homePlayers : awayPlayers;
+
+  const selectedPlayerTeamId = selectedFixture
+    ? playerTeam === "home"
+      ? selectedFixture.teams.home.id
+      : selectedFixture.teams.away.id
+    : null;
+
+  const lineupsConfirmed = useMemo(
+    () => areLineupsConfirmed(lineups),
+    [lineups]
+  );
+
+  const partialLineupsPublished = useMemo(
+    () => hasPartialLineups(lineups),
+    [lineups]
+  );
+
+  const publishedLineups = useMemo(
+    () =>
+      lineups.filter((lineup) => (lineup.startXI?.length ?? 0) > 0),
+    [lineups]
+  );
+
+  const selectedPlayerLineupStatus = useMemo(() => {
+    if (!playerId || !isPlayerProp) {
+      return null;
+    }
+
+    return getPlayerLineupStatus(
+      playerId,
+      lineups,
+      selectedPlayerTeamId
+    );
+  }, [playerId, isPlayerProp, lineups, selectedPlayerTeamId]);
 
     useEffect(() => {
       let cancelled = false;
@@ -939,6 +979,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               )}
 
 {isPlayerProp && (
+  <>
   <div className="mt-4 grid grid-cols-1 gap-2 sm:mt-6 sm:grid-cols-2 md:grid-cols-3 sm:gap-5">
     <BuilderPicker
       label={t.builder.labels.team}
@@ -985,7 +1026,17 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
         label: player.name,
         value: player.id,
         icon: "👤",
-        description: player.position || t.builder.playerFallback,
+        description: [
+          player.position || t.builder.playerFallback,
+          getPlayerLineupStatusLabel(
+            getPlayerLineupStatus(
+              player.id,
+              lineups,
+              selectedPlayerTeamId
+            ),
+            language
+          ),
+        ].join(" · "),
       }))}
     />
 
@@ -1005,6 +1056,21 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       }))}
     />
   </div>
+
+  {selectedPlayerLineupStatus === "bench" && playerName ? (
+    <div className="mt-3 rounded-2xl border border-yellow-500/40 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+      {formatTranslation(t.builder.playerOnBenchWarning, { name: playerName })}
+    </div>
+  ) : null}
+
+  {selectedPlayerLineupStatus === "not_in_squad" && playerName ? (
+    <div className="mt-3 rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-100">
+      {formatTranslation(t.builder.playerNotStartingWarning, {
+        name: playerName,
+      })}
+    </div>
+  ) : null}
+  </>
         )}
 
 {isCornerMarket && (
@@ -1045,28 +1111,32 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 {t.builder.addSelectedToSlip}
               </Button>
 
-              <section className="mt-5 hidden rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 md:block sm:mt-8 sm:p-6">
+              <section className="mt-5 rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 sm:mt-8 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
                       {t.builder.startingXiBadge}
                     </p>
 
-                    <h2 className="mt-2 text-2xl font-black text-white">
+                    <h2 className="mt-2 text-xl font-black text-white sm:text-2xl">
                       👥 {t.builder.startingXiTitle}
                     </h2>
                   </div>
 
                   <span
                     className={`w-fit rounded-full border px-4 py-2 text-xs font-bold ${
-                      lineups.length >= 2
+                      lineupsConfirmed
                         ? "border-[#18ff6d44] bg-[#18ff6d]/10 text-[#18ff6d]"
-                        : "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
+                        : partialLineupsPublished
+                          ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
+                          : "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
                     }`}
                   >
-                    {lineups.length >= 2
+                    {lineupsConfirmed
                       ? t.analyze.confirmed
-                      : t.builder.awaitingLineups}
+                      : partialLineupsPublished
+                        ? t.builder.partialLineupsPublished
+                        : t.builder.awaitingLineups}
                   </span>
                 </div>
 
@@ -1090,7 +1160,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       {lineupError}
                     </p>
                   </div>
-                ) : lineups.length < 2 ? (
+                ) : !partialLineupsPublished ? (
                   <div className="mt-5 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-5">
                     <p className="font-semibold text-yellow-300">
                       {t.analyze.lineupsNotPublished}
@@ -1102,7 +1172,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   </div>
                 ) : (
                   <div className="mt-5 grid gap-4 xl:grid-cols-2">
-                    {lineups.map((lineup, teamIndex) => (
+                    {publishedLineups.map((lineup, teamIndex) => (
                       <div
                         key={lineup.team?.id || teamIndex}
                         className="overflow-hidden rounded-2xl border border-[#18ff6d22] bg-black/30"
@@ -1142,7 +1212,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                             {t.analyze.startingPlayers}
                           </p>
 
-                          <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1 sm:max-h-96">
+                          <div className="mt-4 max-h-48 space-y-2 overflow-y-auto pr-1 sm:max-h-96">
                             {(lineup.startXI || []).map(
                               (player, playerIndex) => (
                                 <div
@@ -1150,7 +1220,13 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                                     player.id ||
                                     `${player.name}-${playerIndex}`
                                   }
-                                  className="flex items-center justify-between rounded-xl border border-white/5 bg-[#101010]/80 px-4 py-3"
+                                  className={`flex items-center justify-between rounded-xl border px-4 py-3 ${
+                                    isPlayerProp &&
+                                    playerId &&
+                                    player.id === playerId
+                                      ? "border-[#18ff6d] bg-[#18ff6d]/10"
+                                      : "border-white/5 bg-[#101010]/80"
+                                  }`}
                                 >
                                   <div className="flex min-w-0 items-center gap-3">
                                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#18ff6d]/10 text-sm font-black text-[#18ff6d]">
@@ -1160,6 +1236,14 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                                     <span className="truncate font-semibold text-[#E8E8E8]">
                                       {player.name || t.builder.unknownPlayer}
                                     </span>
+
+                                    {isPlayerProp &&
+                                    playerId &&
+                                    player.id === playerId ? (
+                                      <span className="rounded-full bg-[#18ff6d]/20 px-2 py-0.5 text-[10px] font-bold text-[#18ff6d]">
+                                        {t.analyze.selectedPlayerBadge}
+                                      </span>
+                                    ) : null}
                                   </div>
 
                                   <span className="ml-3 shrink-0 text-xs font-bold text-[#A9A9A9]">

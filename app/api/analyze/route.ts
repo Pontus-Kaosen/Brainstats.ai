@@ -8,6 +8,14 @@ import {
   parseRequestLanguage,
 } from "@/lib/aiPrompts";
 import {
+  areLineupsConfirmed,
+  describePlayerLineupStatus,
+  getPlayerLineupStatus,
+  normalizeTeamLineup,
+  orderLineupsForFixture,
+  type PlayerLineupStatus,
+} from "@/lib/lineups";
+import {
   findRotationRisks,
   getScheduleContextStatus,
   resolveBetSides,
@@ -182,7 +190,9 @@ async function getInjuries(
 }
 
 async function getLineups(
-  fixtureId: string | null
+  fixtureId: string | null,
+  homeTeamId?: string | null,
+  awayTeamId?: string | null
 ) {
   if (!fixtureId) return [];
 
@@ -190,44 +200,9 @@ async function getLineups(
     `/fixtures/lineups?fixture=${fixtureId}`
   );
 
-  return (Array.isArray(data) ? data : []).map(
-    (teamLineup: any) => ({
-      team: {
-        id: teamLineup.team?.id,
-        name: teamLineup.team?.name,
-        logo: teamLineup.team?.logo,
-      },
+  const lineups = (Array.isArray(data) ? data : []).map(normalizeTeamLineup);
 
-      formation:
-        teamLineup.formation || null,
-
-      coach: {
-        id: teamLineup.coach?.id,
-        name: teamLineup.coach?.name,
-        photo: teamLineup.coach?.photo,
-      },
-
-      startXI: (
-        teamLineup.startXI || []
-      ).map((item: any) => ({
-        id: item.player?.id,
-        name: item.player?.name,
-        number: item.player?.number,
-        position: item.player?.pos,
-        grid: item.player?.grid,
-      })),
-
-      substitutes: (
-        teamLineup.substitutes || []
-      ).map((item: any) => ({
-        id: item.player?.id,
-        name: item.player?.name,
-        number: item.player?.number,
-        position: item.player?.pos,
-        grid: item.player?.grid,
-      })),
-    })
-  );
+  return orderLineupsForFixture(lineups, homeTeamId, awayTeamId);
 }
 
 async function getWeather(
@@ -295,6 +270,7 @@ function calculateBrainScore(input: {
   playerStats: any;
   lineups: any[];
   isPlayerProp: boolean;
+  playerLineupStatus?: PlayerLineupStatus | null;
 }) {
   let score = 50;
 
@@ -339,9 +315,24 @@ function calculateBrainScore(input: {
     breakdown.market = 18;
   }
 
-  if (input.lineups.length >= 2) {
+  if (areLineupsConfirmed(input.lineups)) {
     score += 3;
     breakdown.confidence = 15;
+  }
+
+  if (input.isPlayerProp && input.playerLineupStatus === "starting") {
+    score += 5;
+    breakdown.confidence = Math.max(breakdown.confidence, 16);
+  }
+
+  if (input.isPlayerProp && input.playerLineupStatus === "bench") {
+    score -= 10;
+    breakdown.market = Math.max(0, breakdown.market - 8);
+  }
+
+  if (input.isPlayerProp && input.playerLineupStatus === "not_in_squad") {
+    score -= 18;
+    breakdown.market = Math.max(0, breakdown.market - 12);
   }
 
   if (input.injuries.length > 0) {
@@ -812,7 +803,7 @@ export async function POST(
         season
       ),
 
-      getLineups(fixtureId),
+      getLineups(fixtureId, homeTeamId, awayTeamId),
     ]);
 
     const homeName = fixture?.teams?.home?.name ?? "";
@@ -871,6 +862,12 @@ export async function POST(
       rotationRisks,
     });
 
+    const isPlayerProp = Boolean(playerId);
+    const playerLineupStatus = playerId
+      ? getPlayerLineupStatus(playerId, lineups)
+      : null;
+    const confirmedLineups = areLineupsConfirmed(lineups);
+
     const homeStanding =
       standings.find(
         (item: any) =>
@@ -894,8 +891,8 @@ export async function POST(
         weather,
         playerStats,
         lineups,
-        isPlayerProp:
-          Boolean(playerId),
+        isPlayerProp,
+        playerLineupStatus,
       });
 
     const completion =
@@ -933,6 +930,7 @@ export async function POST(
               playerStats,
               playerId,
               rotationRisks,
+              playerLineupStatus,
             }),
           },
         ],
@@ -1072,10 +1070,11 @@ export async function POST(
           injuries.length > 0,
 
         hasLineups:
-          lineups.length >= 2,
+          lineups.length > 0,
 
-        confirmedLineups:
-          lineups.length >= 2,
+        confirmedLineups,
+
+        playerLineupStatus,
 
         lastMatches: {
           home: homeLastMatches,
