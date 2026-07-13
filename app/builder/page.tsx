@@ -847,7 +847,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
                   <BuilderPicker
                     label={t.builder.labels.country}
                     icon="🌍"
@@ -923,7 +923,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               )}
 
 {isPlayerProp && (
-  <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3 sm:gap-5">
+  <div className="mt-4 grid grid-cols-1 gap-2 sm:mt-6 sm:grid-cols-2 md:grid-cols-3 sm:gap-5">
     <BuilderPicker
       label={t.builder.labels.team}
       icon="👕"

@@ -62,42 +62,33 @@ export default function BuilderPicker({
 
   return (
     <div ref={containerRef} className="relative min-w-0">
-      {/* MOBIL: använder telefonens egen lista */}
       <div className="relative sm:hidden">
-        <div className="pointer-events-none min-h-28 rounded-2xl border border-[#18ff6d22] bg-[#111]/90 p-4">
-          <div className="flex items-center justify-between">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#18ff6d33] bg-[#18ff6d]/10 text-lg">
-              {icon}
-            </span>
+        <div className="pointer-events-none flex items-center gap-3 rounded-xl border border-[#18ff6d22] bg-[#111]/90 px-3 py-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#18ff6d33] bg-[#18ff6d]/10 text-base">
+            {icon}
+          </span>
 
-            <span className="text-xs text-[#18ff6d]">▼</span>
-          </div>
-
-          <div className="mt-3 min-w-0">
-            <p className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-[#7C8A82]">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#7C8A82]">
               {label}
             </p>
 
-            <div className="mt-1 flex min-w-0 items-center gap-2">
+            <div className="mt-0.5 flex min-w-0 items-center gap-2">
               {selectedOption?.image && (
                 <img
                   src={selectedOption.image}
                   alt=""
-                  className="h-6 w-6 shrink-0 object-contain"
+                  className="h-5 w-5 shrink-0 object-contain"
                 />
               )}
 
-              {!selectedOption?.image && selectedOption?.icon && (
-                <span className="shrink-0 text-base">
-                  {selectedOption.icon}
-                </span>
-              )}
-
-              <p className="min-w-0 truncate text-sm font-black text-white">
+              <p className="min-w-0 truncate text-sm font-bold text-white">
                 {selectedOption?.label || t.builderPicker.select}
               </p>
             </div>
           </div>
+
+          <span className="shrink-0 text-xs text-[#18ff6d]">▼</span>
         </div>
 
         <select
@@ -107,17 +98,13 @@ export default function BuilderPicker({
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         >
           {options.map((option) => (
-            <option
-              key={String(option.value)}
-              value={String(option.value)}
-            >
+            <option key={String(option.value)} value={String(option.value)}>
               {option.label}
             </option>
           ))}
         </select>
       </div>
 
-      {/* DESKTOP/TABLET: behåller snygg custom-lista */}
       <div className="hidden sm:block">
         <button
           type="button"
