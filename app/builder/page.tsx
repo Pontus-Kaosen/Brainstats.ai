@@ -20,6 +20,11 @@ import {
   getPlayerLineupStatusLabel,
   hasPartialLineups,
 } from "@/lib/lineups";
+import {
+  addDaysToDateKey,
+  getFixtureStockholmDateKey,
+  getStockholmDateKey,
+} from "@/lib/stockholmDate";
 
 const TOURNAMENTS_VALUE = "__tournaments__";
 
@@ -212,6 +217,20 @@ export default function BuilderPage() {
     setMarket(t.builder.markets[0]);
   }, [language]);
   const [dateFilter, setDateFilter] = useState("all");
+
+  const fixtureFetchDate = useMemo(() => {
+    const todayKey = getStockholmDateKey();
+
+    if (dateFilter === "today") {
+      return todayKey;
+    }
+
+    if (dateFilter === "tomorrow") {
+      return addDaysToDateKey(todayKey, 1);
+    }
+
+    return null;
+  }, [dateFilter]);
   const [search, setSearch] = useState("");
 
   const [playerName, setPlayerName] = useState("");
@@ -470,8 +489,12 @@ export default function BuilderPage() {
       setSlip([]);
 
       try {
+        const dateQuery = fixtureFetchDate
+          ? `&date=${fixtureFetchDate}`
+          : "";
+
         const response = await fetch(
-          `/api/football/fixtures?league=${currentLeagueId}&season=${season}`,
+          `/api/football/fixtures?league=${currentLeagueId}&season=${season}${dateQuery}`,
           {
             signal: controller.signal,
           }
@@ -518,7 +541,10 @@ export default function BuilderPage() {
       currentLeagueId: number,
       season: number
     ) {
-      const visibleFixtures = items.slice(0, fixturePreviewLimit);
+      const visibleFixtures = items.slice(
+        0,
+        fixtureFetchDate ? items.length : fixturePreviewLimit
+      );
 
       const teamIds = Array.from(
         new Set(
@@ -614,7 +640,7 @@ export default function BuilderPage() {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [leagueId, selectedSeason, fixturePreviewLimit]);
+  }, [leagueId, selectedSeason, fixtureFetchDate, fixturePreviewLimit]);
 
   useEffect(() => {
     if (!selectedFixture || !isPlayerProp) {
@@ -722,6 +748,10 @@ export default function BuilderPage() {
   }, [selectedFixtureId]);
 
   const filteredFixtures = useMemo(() => {
+    const todayKey = getStockholmDateKey();
+    const tomorrowKey = addDaysToDateKey(todayKey, 1);
+    const weekEndKey = addDaysToDateKey(todayKey, 7);
+
     return fixtures.filter((fixture) => {
       const searchableText = `
         ${fixture.teams.home.name}
@@ -733,41 +763,23 @@ export default function BuilderPage() {
         search.trim().toLowerCase()
       );
 
-      const fixtureDate = new Date(fixture.fixture.date);
-      const now = new Date();
-
-      const todayStart = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate()
+      const fixtureDateKey = getFixtureStockholmDateKey(
+        fixture.fixture.date
       );
-
-      const tomorrowStart = new Date(todayStart);
-      tomorrowStart.setDate(todayStart.getDate() + 1);
-
-      const dayAfterTomorrow = new Date(todayStart);
-      dayAfterTomorrow.setDate(todayStart.getDate() + 2);
-
-      const weekEnd = new Date(todayStart);
-      weekEnd.setDate(todayStart.getDate() + 7);
 
       let matchesDate = true;
 
       if (dateFilter === "today") {
-        matchesDate =
-          fixtureDate >= todayStart &&
-          fixtureDate < tomorrowStart;
+        matchesDate = fixtureDateKey === todayKey;
       }
 
       if (dateFilter === "tomorrow") {
-        matchesDate =
-          fixtureDate >= tomorrowStart &&
-          fixtureDate < dayAfterTomorrow;
+        matchesDate = fixtureDateKey === tomorrowKey;
       }
 
       if (dateFilter === "week") {
         matchesDate =
-          fixtureDate >= todayStart && fixtureDate < weekEnd;
+          fixtureDateKey >= todayKey && fixtureDateKey < weekEndKey;
       }
 
       return matchesSearch && matchesDate;
@@ -775,7 +787,12 @@ export default function BuilderPage() {
   }, [fixtures, search, dateFilter]);
 
   const groupedFixtures = useMemo(() => {
-    return filteredFixtures.slice(0, groupedFixtureLimit).reduce(
+    const displayLimit =
+      dateFilter === "today" || dateFilter === "tomorrow"
+        ? filteredFixtures.length
+        : groupedFixtureLimit;
+
+    return filteredFixtures.slice(0, displayLimit).reduce(
       (groups: Record<string, Fixture[]>, fixture) => {
         const date = new Date(
           fixture.fixture.date

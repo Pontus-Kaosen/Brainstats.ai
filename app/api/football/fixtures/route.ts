@@ -4,6 +4,8 @@ import {
 } from "next/server";
 import { fetchFootballApi, jsonWithCache } from "@/lib/footballApiFetch";
 
+const CANCELLED_STATUSES = new Set(["CANC", "ABD", "AWD", "WO"]);
+
 const LIVE_STATUSES = new Set([
   "1H",
   "HT",
@@ -43,6 +45,8 @@ export async function GET(
     const season =
       searchParams.get("season");
 
+    const date = searchParams.get("date");
+
     if (!league || !season) {
       return NextResponse.json(
         {
@@ -75,6 +79,10 @@ export async function GET(
       season,
       timezone: "Europe/Stockholm",
     });
+
+    if (date) {
+      query.set("date", date);
+    }
 
     const response = await fetchFootballApi(
       `fixtures?${query.toString()}`,
@@ -174,6 +182,10 @@ export async function GET(
         const status =
           item.fixture.status?.short || "";
 
+        if (date) {
+          return !CANCELLED_STATUSES.has(status);
+        }
+
         const kickoff = new Date(
           item.fixture.date
         ).getTime();
@@ -212,7 +224,7 @@ export async function GET(
           ).getTime()
         );
       })
-      .slice(0, 100);
+      .slice(0, date ? 250 : 100);
 
     return jsonWithCache(
       {
