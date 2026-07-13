@@ -428,6 +428,13 @@ export const translations = {
       playerRequiredForMarkets:
         "Välj spelare och lag innan du lägger till spelarmarknader.",
       selectedMarketCount: "{count} marknader valda",
+      addPlayerToSelection: "Lägg till spelare i valet",
+      playerPicksTitle: "Valda spelare",
+      configurePlayer: "Konfigurera",
+      playerDraftCount: "{count} spelare",
+      duplicatePlayerPick:
+        "Den här spelaren är redan tillagd med samma marknad och linje.",
+      totalSelectionCount: "{count} val totalt",
       buildPickCta: "Vald",
       matchFinished: "Spelad",
       matchUpcoming: "Kommande",
@@ -1078,6 +1085,13 @@ export const translations = {
       playerRequiredForMarkets:
         "Choose team and player before adding player markets.",
       selectedMarketCount: "{count} markets selected",
+      addPlayerToSelection: "Add player to selection",
+      playerPicksTitle: "Selected players",
+      configurePlayer: "Configure",
+      playerDraftCount: "{count} players",
+      duplicatePlayerPick:
+        "This player is already added with the same market and line.",
+      totalSelectionCount: "{count} picks total",
       buildPickCta: "Selected",
       matchFinished: "Finished",
       matchUpcoming: "Upcoming",

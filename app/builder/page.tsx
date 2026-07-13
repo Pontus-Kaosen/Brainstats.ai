@@ -159,6 +159,15 @@ type SlipItem = {
   playerName?: string;
 };
 
+type PlayerPickDraft = {
+  id: string;
+  market: string;
+  playerTeam: "home" | "away";
+  playerId: number;
+  playerName: string;
+  playerLine: string;
+};
+
 const tournamentIds = [1, 2, 3, 4, 5, 9, 848];
 
 function isPlayerMarket(market: string) {
@@ -200,11 +209,15 @@ export default function BuilderPage() {
 
   const [market, setMarket] = useState<string>(markets[0]);
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>([]);
+  const [playerPickDrafts, setPlayerPickDrafts] = useState<PlayerPickDraft[]>(
+    []
+  );
   const [builderError, setBuilderError] = useState("");
 
   useEffect(() => {
     setMarket(t.builder.markets[0]);
     setSelectedMarkets([]);
+    setPlayerPickDrafts([]);
     setBuilderError("");
   }, [language]);
   const [viewMode, setViewMode] = useState<BuilderViewMode>("today");
@@ -246,8 +259,10 @@ export default function BuilderPage() {
     );
 
   const isPlayerProp = isPlayerMarket(market);
-  const hasSelectedPlayerMarkets = selectedMarkets.some(isPlayerMarket);
+  const hasPlayerPickDrafts = playerPickDrafts.length > 0;
   const hasSelectedCornerMarkets = selectedMarkets.some(isCornerMarketValue);
+  const totalPendingPicks =
+    selectedMarkets.length + playerPickDrafts.length;
 
   const selectedPlayers =
     playerTeam === "home" ? homePlayers : awayPlayers;
@@ -661,7 +676,7 @@ export default function BuilderPage() {
   ]);
 
   useEffect(() => {
-    if (!selectedFixture || !hasSelectedPlayerMarkets) {
+    if (!selectedFixture) {
       setHomePlayers([]);
       setAwayPlayers([]);
       setPlayerName("");
@@ -705,7 +720,7 @@ export default function BuilderPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedFixtureId, hasSelectedPlayerMarkets]);
+  }, [selectedFixtureId, selectedFixture]);
 
   useEffect(() => {
     if (!selectedFixtureId) {
@@ -831,6 +846,7 @@ export default function BuilderPage() {
   function selectFixture(fixture: Fixture) {
     setSelectedFixtureId(fixture.fixture.id);
     setSelectedMarkets([]);
+    setPlayerPickDrafts([]);
     setBuilderError("");
 
     window.requestAnimationFrame(() => {
@@ -860,6 +876,11 @@ export default function BuilderPage() {
   }
 
   function toggleMarketSelection(marketName: string) {
+    if (isPlayerMarket(marketName)) {
+      selectPlayerMarket(marketName);
+      return;
+    }
+
     setBuilderError("");
 
     if (isMarketInSlip(marketName)) {
@@ -878,6 +899,79 @@ export default function BuilderPage() {
       return [...current, marketName];
     });
     setMarket(marketName);
+  }
+
+  function selectPlayerMarket(marketName: string) {
+    setBuilderError("");
+    setMarket(marketName);
+  }
+
+  function addPlayerPickDraft() {
+    if (!selectedFixture || !isPlayerMarket(market) || !playerId) {
+      setBuilderError(t.builder.playerRequiredForMarkets);
+      return;
+    }
+
+    const duplicate = playerPickDrafts.some(
+      (draft) =>
+        draft.market === market &&
+        draft.playerId === playerId &&
+        draft.playerLine === playerLine
+    );
+
+    if (duplicate) {
+      setBuilderError(t.builder.duplicatePlayerPick);
+      return;
+    }
+
+    setBuilderError("");
+    setPlayerPickDrafts((current) => [
+      ...current,
+      {
+        id: `${playerId}-${market}-${playerLine}-${Date.now()}`,
+        market,
+        playerTeam,
+        playerId,
+        playerName,
+        playerLine,
+      },
+    ]);
+  }
+
+  function removePlayerPickDraft(id: string) {
+    setPlayerPickDrafts((current) =>
+      current.filter((draft) => draft.id !== id)
+    );
+  }
+
+  function playerDraftCountForMarket(marketName: string) {
+    return playerPickDrafts.filter((draft) => draft.market === marketName)
+      .length;
+  }
+
+  function createSlipItemFromDraft(
+    fixture: Fixture,
+    draft: PlayerPickDraft
+  ): SlipItem {
+    const marketText = buildMarketTextFor(draft.market, fixture, {
+      playerTeam: draft.playerTeam,
+      playerName: draft.playerName,
+      playerLine: draft.playerLine,
+    });
+
+    return {
+      fixtureId: fixture.fixture.id,
+      leagueId: fixture.league.id,
+      season: fixture.league.season,
+      date: fixture.fixture.date,
+      homeTeamId: fixture.teams.home.id,
+      awayTeamId: fixture.teams.away.id,
+      homeTeam: fixture.teams.home.name,
+      awayTeam: fixture.teams.away.name,
+      market: marketText,
+      playerId: draft.playerId,
+      playerName: draft.playerName,
+    };
   }
 
   function createSlipItem(fixture: Fixture, marketName: string): SlipItem {
@@ -935,7 +1029,7 @@ export default function BuilderPage() {
   }
 
   function isMarketInSlip(marketName: string) {
-    if (!selectedFixture) {
+    if (!selectedFixture || isPlayerMarket(marketName)) {
       return false;
     }
 
@@ -945,6 +1039,25 @@ export default function BuilderPage() {
       (item) =>
         item.fixtureId === selectedFixture.fixture.id &&
         item.market === marketText
+    );
+  }
+
+  function isPlayerDraftInSlip(draft: PlayerPickDraft) {
+    if (!selectedFixture) {
+      return false;
+    }
+
+    const marketText = buildMarketTextFor(draft.market, selectedFixture, {
+      playerTeam: draft.playerTeam,
+      playerName: draft.playerName,
+      playerLine: draft.playerLine,
+    });
+
+    return slip.some(
+      (item) =>
+        item.fixtureId === selectedFixture.fixture.id &&
+        item.market === marketText &&
+        item.playerId === draft.playerId
     );
   }
 
@@ -974,21 +1087,21 @@ export default function BuilderPage() {
   }
 
   function addSelectedMarketsToSlip() {
-    if (!selectedFixture || selectedMarkets.length === 0) {
+    if (!selectedFixture || totalPendingPicks === 0) {
       setBuilderError(t.builder.selectMarketsFirst);
-      return;
-    }
-
-    if (selectedMarkets.some(isPlayerMarket) && !playerId) {
-      setBuilderError(t.builder.playerRequiredForMarkets);
       return;
     }
 
     setBuilderError("");
 
-    const items = selectedMarkets.map((marketName) =>
-      createSlipItem(selectedFixture, marketName)
-    );
+    const items = [
+      ...selectedMarkets.map((marketName) =>
+        createSlipItem(selectedFixture, marketName)
+      ),
+      ...playerPickDrafts.map((draft) =>
+        createSlipItemFromDraft(selectedFixture, draft)
+      ),
+    ];
 
     setSlip((current) => {
       const merged = [...current];
@@ -997,7 +1110,8 @@ export default function BuilderPage() {
         const exists = merged.some(
           (existing) =>
             existing.fixtureId === item.fixtureId &&
-            existing.market === item.market
+            existing.market === item.market &&
+            (item.playerId ? existing.playerId === item.playerId : true)
         );
 
         if (!exists) {
@@ -1009,6 +1123,7 @@ export default function BuilderPage() {
     });
 
     setSelectedMarkets([]);
+    setPlayerPickDrafts([]);
   }
 
   function analyze() {
@@ -1240,14 +1355,17 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       markets={markets}
                       selectedMarkets={selectedMarkets}
                       onToggleMarket={toggleMarketSelection}
+                      activePlayerMarket={isPlayerProp ? market : null}
+                      onSelectPlayerMarket={selectPlayerMarket}
+                      playerDraftCountForMarket={playerDraftCountForMarket}
                       isMarketInSlip={isMarketInSlip}
                     />
                   </div>
 
-                  {selectedMarkets.length > 0 ? (
+                  {totalPendingPicks > 0 ? (
                     <p className="mt-4 text-sm font-semibold text-[#18ff6d]">
-                      {formatTranslation(t.builder.selectedMarketCount, {
-                        count: selectedMarkets.length,
+                      {formatTranslation(t.builder.totalSelectionCount, {
+                        count: totalPendingPicks,
                       })}
                     </p>
                   ) : null}
@@ -1264,7 +1382,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 </p>
               )}
 
-{selectedFixture && hasSelectedPlayerMarkets && (
+{selectedFixture && isPlayerProp && (
   <>
   <div className="mt-4 grid grid-cols-1 gap-2 sm:mt-6 sm:grid-cols-2 md:grid-cols-3 sm:gap-5">
     <BuilderPicker
@@ -1356,8 +1474,56 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       })}
     </div>
   ) : null}
+
+  <Button
+    onClick={addPlayerPickDraft}
+    disabled={!playerId}
+    className="mt-4 w-full sm:w-auto"
+  >
+    {t.builder.addPlayerToSelection}
+  </Button>
   </>
         )}
+
+{selectedFixture && hasPlayerPickDrafts ? (
+  <section className="mt-5 rounded-2xl border border-[#18ff6d33] bg-black/30 p-4">
+    <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#777]">
+      {t.builder.playerPicksTitle}
+    </p>
+
+    <ul className="mt-3 space-y-2">
+      {playerPickDrafts.map((draft) => {
+        const inSlip = isPlayerDraftInSlip(draft);
+
+        return (
+          <li
+            key={draft.id}
+            className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-black/40 px-3 py-2.5"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-white">
+                {draft.playerName}
+              </p>
+              <p className="truncate text-xs text-[#A9A9A9]">
+                {draft.market} · {draft.playerLine}
+                {inSlip ? ` · ${t.fixtureCard.inSlipBadge}` : ""}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => removePlayerPickDraft(draft.id)}
+              className="shrink-0 rounded-lg border border-white/10 px-2.5 py-1 text-xs font-semibold text-[#A9A9A9] hover:border-red-500/40 hover:text-red-200"
+              title={t.builder.removeTitle}
+            >
+              ✕
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+) : null}
 
 {selectedFixture && hasSelectedCornerMarkets && (
   <div className="mt-6">
@@ -1393,13 +1559,13 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
               <Button
                 onClick={addSelectedMarketsToSlip}
-                disabled={!selectedFixture || selectedMarkets.length === 0}
+                disabled={!selectedFixture || totalPendingPicks === 0}
                 className="mt-6 w-full"
               >
-                {selectedMarkets.length === 1
+                {totalPendingPicks === 1
                   ? t.builder.addOneMarket
                   : formatTranslation(t.builder.addSelectedMarkets, {
-                      count: selectedMarkets.length,
+                      count: totalPendingPicks,
                     })}
               </Button>
 

@@ -1,9 +1,10 @@
 "use client";
 
-import { useLanguage } from "@/components/LanguageProvider";
+import { useLanguage } from "@/components/LanguageProvider";import { formatTranslation } from "@/lib/locale";
 import {
   getMarketIcon,
   groupMarkets,
+  isPlayerMarketLabel,
   type MarketGroupId,
 } from "@/lib/builderMarkets";
 
@@ -11,6 +12,9 @@ type BuilderMarketGridProps = {
   markets: readonly string[];
   selectedMarkets: readonly string[];
   onToggleMarket: (market: string) => void;
+  activePlayerMarket?: string | null;
+  onSelectPlayerMarket?: (market: string) => void;
+  playerDraftCountForMarket?: (market: string) => number;
   isMarketInSlip?: (market: string) => boolean;
 };
 
@@ -26,6 +30,9 @@ export default function BuilderMarketGrid({
   markets,
   selectedMarkets,
   onToggleMarket,
+  activePlayerMarket = null,
+  onSelectPlayerMarket,
+  playerDraftCountForMarket,
   isMarketInSlip,
 }: BuilderMarketGridProps) {
   const { t } = useLanguage();
@@ -56,15 +63,23 @@ export default function BuilderMarketGrid({
 
             <div className="mt-3 space-y-2">
               {items.map((marketOption) => {
+                const isPlayerRow = isPlayerMarketLabel(marketOption);
                 const inSlip = isMarketInSlip?.(marketOption) ?? false;
-                const selected =
-                  inSlip || selectedMarkets.includes(marketOption);
+                const draftCount =
+                  playerDraftCountForMarket?.(marketOption) ?? 0;
+                const selected = isPlayerRow
+                  ? activePlayerMarket === marketOption || draftCount > 0
+                  : inSlip || selectedMarkets.includes(marketOption);
 
                 return (
                   <button
                     key={marketOption}
                     type="button"
-                    onClick={() => onToggleMarket(marketOption)}
+                    onClick={() =>
+                      isPlayerRow
+                        ? onSelectPlayerMarket?.(marketOption)
+                        : onToggleMarket(marketOption)
+                    }
                     className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-left transition ${
                       selected
                         ? "border-[#18ff6d] bg-[#18ff6d]/10"
@@ -102,9 +117,17 @@ export default function BuilderMarketGrid({
                     >
                       {inSlip
                         ? t.fixtureCard.inSlipBadge
-                        : selectedMarkets.includes(marketOption)
-                          ? t.builder.marketSelected
-                          : t.fixtureCard.select}
+                        : isPlayerRow
+                          ? draftCount > 0
+                            ? formatTranslation(t.builder.playerDraftCount, {
+                                count: draftCount,
+                              })
+                            : activePlayerMarket === marketOption
+                              ? t.builder.configurePlayer
+                              : t.fixtureCard.select
+                          : selectedMarkets.includes(marketOption)
+                            ? t.builder.marketSelected
+                            : t.fixtureCard.select}
                     </span>
                   </button>
                 );
