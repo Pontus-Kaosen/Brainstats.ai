@@ -1,44 +1,72 @@
-import { createClient } from "@supabase/supabase-js";
-import ReportView from "@/components/ReportView";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
-type ReportProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+import ReportView, { type ReportAnalysis } from "@/components/ReportView";
+import { supabase } from "@/lib/supabase";
 
-function createServerSupabase() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+export default function ReportPage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const [analysis, setAnalysis] = useState<
+    ReportAnalysis | null | undefined
+  >(undefined);
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Supabase environment variables are missing.");
-  }
+  useEffect(() => {
+    let cancelled = false;
 
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
-}
+    async function loadReport() {
+      setAnalysis(undefined);
 
-export default async function ReportPage({ params }: ReportProps) {
-  const { id } = await params;
+      const id = params?.id;
+      if (!id) {
+        setAnalysis(null);
+        return;
+      }
 
-  const supabase = createServerSupabase();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-  const { data: analysis, error } = await supabase
-    .from("analyses")
-    .select("*")
-    .eq("id", id)
-    .single();
+      if (!user) {
+        router.replace(
+          `/login?next=${encodeURIComponent(`/report/${id}`)}`
+        );
+        return;
+      }
 
-  if (error || !analysis) {
-    return <ReportView analysis={null} />;
-  }
+      const { data, error } = await supabase
+        .from("analyses")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-  return <ReportView analysis={analysis} />;
+      if (cancelled) {
+        return;
+      }
+
+      if (error || !data) {
+        console.error("Failed to load analysis:", error);
+        setAnalysis(null);
+        return;
+      }
+
+      setAnalysis(data as ReportAnalysis);
+    }
+
+    void loadReport();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params?.id, router]);
+
+  return (
+    <ReportView
+      analysis={analysis ?? null}
+      loading={analysis === undefined}
+    />
+  );
 }

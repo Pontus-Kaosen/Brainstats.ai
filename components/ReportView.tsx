@@ -31,6 +31,7 @@ export type ReportAnalysis = {
 
 type ReportViewProps = {
   analysis: ReportAnalysis | null;
+  loading?: boolean;
 };
 
 const titleGradient =
@@ -50,8 +51,23 @@ function riskColor(risk?: string) {
   return "border-yellow-500/40 bg-yellow-500/10 text-yellow-300";
 }
 
-export default function ReportView({ analysis }: ReportViewProps) {
+export default function ReportView({
+  analysis,
+  loading = false,
+}: ReportViewProps) {
   const { t } = useLanguage();
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#050505] px-4 py-10 text-white sm:px-8">
+        <div className="mx-auto max-w-5xl">
+          <section className="mt-10 rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">
+            <p className="font-semibold text-[#18ff6d]">{t.common.loading}</p>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   if (!analysis) {
     return (
