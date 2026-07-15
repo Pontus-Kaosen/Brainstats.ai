@@ -97,33 +97,6 @@ a {
   box-shadow: 0 0 60px rgba(24, 255, 109, 0.18), 0 30px 90px rgba(0,0,0,0.55);
 }
 
-@keyframes profileShimmer {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.navbar-profile-exclusive {
-  background: linear-gradient(120deg, #18ff6d, #E8DCC8, #2fbfff, #18ff6d);
-  background-size: 220% 220%;
-  animation: profileShimmer 8s ease infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .navbar-profile-exclusive {
-    animation: none;
-    background-size: 100% 100%;
-  }
-}
-
 .brain-title {
   background: linear-gradient(90deg, #18ff6d, #E8DCC8, #2fbfff);
   -webkit-background-clip: text;
