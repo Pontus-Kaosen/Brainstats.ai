@@ -169,11 +169,15 @@ function LoginForm() {
               className="mt-4 w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 text-white outline-none"
             />
 
-            {mode === "login" && loginFailed ? (
+            {mode === "login" ? (
               <button
                 type="button"
                 onClick={() => switchMode("forgot")}
-                className="mt-4 text-sm font-semibold text-[#18ff6d] transition hover:text-[#9dffc4]"
+                className={`mt-4 w-full rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                  loginFailed
+                    ? "border-[#18ff6d]/40 bg-[#18ff6d]/10 text-[#18ff6d] hover:bg-[#18ff6d]/15"
+                    : "border-white/10 bg-black/20 text-[#E8DCC8] hover:border-[#E8DCC8]/30 hover:bg-white/5"
+                }`}
               >
                 {t.login.forgotPassword}
               </button>
@@ -247,7 +251,17 @@ function LoginForm() {
                 : "bg-black/30 text-[#E8DCC8]"
             }`}
           >
-            {message}
+            <p>{message}</p>
+
+            {loginFailed && mode === "login" ? (
+              <button
+                type="button"
+                onClick={() => switchMode("forgot")}
+                className="mt-3 w-full rounded-xl border border-[#18ff6d]/40 bg-[#18ff6d]/10 px-4 py-2.5 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15"
+              >
+                {t.login.forgotPassword}
+              </button>
+            ) : null}
           </div>
         ) : null}
 
