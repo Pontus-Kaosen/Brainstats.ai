@@ -31,7 +31,7 @@ export default function CookieConsent() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[200] p-4 sm:p-6">
+    <div className="fixed inset-x-0 bottom-0 z-[var(--z-cookie)] p-4 sm:p-6">
       <div className="mx-auto max-w-3xl rounded-3xl border border-[#18ff6d33] bg-[#101010]/98 p-5 shadow-[0_0_60px_rgba(24,255,109,.15)] backdrop-blur-xl sm:p-6">
         <p className="text-lg font-bold text-white">{t.cookieConsent.title}</p>
 

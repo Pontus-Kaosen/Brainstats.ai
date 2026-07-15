@@ -39,6 +39,7 @@ import {
 } from "@/lib/builderMarkets";
 
 const TOURNAMENTS_VALUE = "__tournaments__";
+const ALL_COUNTRIES_VALUE = "__all_countries__";
 const ALL_LEAGUES_VALUE = "__all_leagues__";
 
 type Country = {
@@ -199,7 +200,7 @@ export default function BuilderPage() {
   >({});
   const [h2hMap, setH2hMap] = useState<Record<number, H2HItem[]>>({});
 
-  const [country, setCountry] = useState(TOURNAMENTS_VALUE);
+  const [country, setCountry] = useState(ALL_COUNTRIES_VALUE);
   const [leagueId, setLeagueId] = useState<number | typeof ALL_LEAGUES_VALUE>(
     ALL_LEAGUES_VALUE
   );
@@ -447,7 +448,9 @@ export default function BuilderPage() {
 
     let filtered: League[];
 
-    if (country === TOURNAMENTS_VALUE || country === t.builder.tournaments) {
+    if (country === ALL_COUNTRIES_VALUE) {
+      filtered = [];
+    } else if (country === TOURNAMENTS_VALUE || country === t.builder.tournaments) {
       filtered = tournamentIds
         .map((id) => allLeagues.find((league) => league.id === id))
         .filter((league): league is League => Boolean(league));
@@ -793,6 +796,10 @@ export default function BuilderPage() {
       return new Set([specificLeagueId]);
     }
 
+    if (country === ALL_COUNTRIES_VALUE) {
+      return null;
+    }
+
     if (
       country === TOURNAMENTS_VALUE ||
       country === t.builder.tournaments
@@ -821,7 +828,7 @@ export default function BuilderPage() {
         search.trim().toLowerCase()
       );
 
-      if (!allowedLeagueIds.has(fixture.league.id)) {
+      if (allowedLeagueIds && !allowedLeagueIds.has(fixture.league.id)) {
         return false;
       }
 
@@ -1208,8 +1215,8 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
             </p>
           </section>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-8">
-            <section className="brain-card min-w-0 rounded-3xl p-4 sm:p-8">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-start xl:gap-8">
+            <section className="brain-card relative z-20 min-w-0 overflow-visible rounded-3xl p-4 sm:p-8">
               <BuilderViewTabs
                 value={viewMode}
                 onChange={setViewMode}
@@ -1233,6 +1240,12 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     value={country}
                     onChange={setCountry}
                     options={[
+                      {
+                        label: t.builder.allCountries,
+                        value: ALL_COUNTRIES_VALUE,
+                        icon: "🌍",
+                        description: t.builder.allCountriesDescription,
+                      },
                       {
                         label: t.builder.tournaments,
                         value: TOURNAMENTS_VALUE,
@@ -1391,7 +1404,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     onClick={() => selectFixture(selectedFixture)}
                   />
 
-                  <div className="mt-5 max-h-[50vh] overflow-y-auto pr-1 sm:max-h-[55vh]">
+                  <div className="mt-5 max-h-[50vh] overflow-y-auto overscroll-contain pr-1 sm:max-h-[55vh]">
                     <BuilderMarketGrid
                       markets={markets}
                       selectedMarkets={selectedMarkets}
@@ -1796,7 +1809,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               </div>
             </section>
 
-            <aside className="brain-card hidden h-fit rounded-3xl p-4 sm:p-8 xl:sticky xl:top-6 xl:block">
+            <aside className="brain-card relative z-10 hidden h-fit rounded-3xl p-4 sm:p-8 xl:sticky xl:top-24 xl:block">
               <BuilderSlipPanel
                 slip={slip}
                 onRemove={(index) =>

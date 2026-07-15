@@ -301,6 +301,27 @@ export const translations = {
       riskModel: "Risk Model",
       active: "Active",
       placeholder: "Liverpool - Arsenal\nÖver 2.5 mål",
+      inputModeText: "Klistra in",
+      inputModeImage: "Ladda upp kupong",
+      imageUploadTitle: "Ladda upp skärmbild av din kupong",
+      imageUploadHint:
+        "Ta en skärmbild från spelbolag eller bettingapp. BrainStats läser av matcher och marknader automatiskt.",
+      imageUploadButton: "Välj bild",
+      imageParsing: "Läser kupongen...",
+      imageParseFailed: "Kupongen kunde inte läsas. Prova en tydligare bild.",
+      imageInvalidType: "Endast JPG, PNG och WebP stöds.",
+      imageTooLarge: "Bilden får max vara 5 MB.",
+      imagePreviewAlt: "Uppladdad kupong",
+      imageParsedHint:
+        "Kupongen är inläst. Kontrollera texten nedan och justera vid behov innan du analyserar.",
+      imageTextareaPlaceholder:
+        "Den inlästa kupongtexten visas här efter uppladdning...",
+      imageHeicHint:
+        "iPhone-bilder sparas bäst som skärmbild (PNG) innan uppladdning.",
+      imageFixtureWarning:
+        "Match-ID kunde inte hittas automatiskt. Kontrollera lagnamnen eller bygg spelet via Builder för bästa analys.",
+      imageMultipleMatchesWarning:
+        "Flera matcher hittades på kupongen. Första matchen används i analysen.",
       analyzing: "Analyserar...",
       runEngine: "🧠 Kör Brain Engine",
       loadingReport: "Brain Engine analyserar data...",
@@ -379,6 +400,8 @@ export const translations = {
     builder: {
       tournaments: "Turneringar",
       tournamentsDescription: "Internationella cuper och mästerskap",
+      allCountries: "Alla länder",
+      allCountriesDescription: "Visa alla matcher utan landsfilter",
       nationalLeaguesDescription: "Nationella ligor och divisioner",
       dateAll: "Alla kommande",
       dateAllDescription: "Visa samtliga kommande matcher",
@@ -969,6 +992,27 @@ export const translations = {
       riskModel: "Risk Model",
       active: "Active",
       placeholder: "Liverpool - Arsenal\nOver 2.5 goals",
+      inputModeText: "Paste in",
+      inputModeImage: "Upload slip",
+      imageUploadTitle: "Upload a screenshot of your bet slip",
+      imageUploadHint:
+        "Take a screenshot from a bookmaker or betting app. BrainStats reads matches and markets automatically.",
+      imageUploadButton: "Choose image",
+      imageParsing: "Reading bet slip...",
+      imageParseFailed: "The bet slip could not be read. Try a clearer image.",
+      imageInvalidType: "Only JPG, PNG and WebP are supported.",
+      imageTooLarge: "The image must be 5 MB or smaller.",
+      imagePreviewAlt: "Uploaded bet slip",
+      imageParsedHint:
+        "The slip has been read. Review the text below and adjust if needed before analyzing.",
+      imageTextareaPlaceholder:
+        "The parsed slip text will appear here after upload...",
+      imageHeicHint:
+        "iPhone photos work best as screenshots (PNG) before uploading.",
+      imageFixtureWarning:
+        "Match ID could not be found automatically. Check team names or build the bet in Builder for the best analysis.",
+      imageMultipleMatchesWarning:
+        "Multiple matches were found on the slip. The first match is used for analysis.",
       analyzing: "Analyzing...",
       runEngine: "🧠 Run Brain Engine",
       loadingReport: "Brain Engine is analyzing data...",
@@ -1047,6 +1091,8 @@ export const translations = {
     builder: {
       tournaments: "Tournaments",
       tournamentsDescription: "International cups and championships",
+      allCountries: "All countries",
+      allCountriesDescription: "Show all matches without a country filter",
       nationalLeaguesDescription: "National leagues and divisions",
       dateAll: "All upcoming",
       dateAllDescription: "Show all upcoming matches",

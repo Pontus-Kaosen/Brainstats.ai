@@ -14,7 +14,11 @@ import {
   translateBreakdownKey,
   translateRiskLevel,
 } from "@/lib/locale";
-import { ANALYZE_DRAFT_KEY } from "@/lib/safeRedirect";
+import {
+  ANALYZE_DRAFT_KEY,
+  ANALYZE_INPUT_MODE_KEY,
+} from "@/lib/safeRedirect";
+import BetSlipImageUpload from "@/components/BetSlipImageUpload";
 import {
   summarizeRotationRisksForUi,
   type RotationRisk,
@@ -173,6 +177,22 @@ function AnalyzePageContent() {
   const searchParams = useSearchParams();
 
   const [betText, setBetText] = useState("");
+  const [inputMode, setInputMode] = useState<"text" | "image">(() => {
+    if (typeof window === "undefined") {
+      return "text";
+    }
+
+    const modeParam = new URLSearchParams(window.location.search).get("mode");
+    if (modeParam === "image" || modeParam === "text") {
+      return modeParam;
+    }
+
+    const saved = sessionStorage.getItem(ANALYZE_INPUT_MODE_KEY);
+    return saved === "image" ? "image" : "text";
+  });
+  const [imageWarning, setImageWarning] = useState<string | null>(null);
+  const [showParsedHint, setShowParsedHint] = useState(false);
+  const [parsingImage, setParsingImage] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [loading, setLoading] = useState(false);
   const [aiResult, setAiResult] = useState<AIResult | null>(null);
@@ -194,6 +214,33 @@ function AnalyzePageContent() {
       sessionStorage.removeItem(ANALYZE_DRAFT_KEY);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const modeParam = searchParams.get("mode");
+    if (modeParam === "image" || modeParam === "text") {
+      setInputMode(modeParam);
+      sessionStorage.setItem(ANALYZE_INPUT_MODE_KEY, modeParam);
+      return;
+    }
+
+    const saved = sessionStorage.getItem(ANALYZE_INPUT_MODE_KEY);
+    if (saved === "image" || saved === "text") {
+      setInputMode(saved);
+    }
+  }, [searchParams]);
+
+  function selectInputMode(mode: "text" | "image") {
+    setInputMode(mode);
+    sessionStorage.setItem(ANALYZE_INPUT_MODE_KEY, mode);
+
+    const nextUrl =
+      mode === "image" ? "/analyze?mode=image" : "/analyze";
+    window.history.replaceState(null, "", nextUrl);
+    window.dispatchEvent(new CustomEvent("brainstats-analyze-mode"));
+  }
+
+  const analyzeLoginNext =
+    inputMode === "image" ? "/analyze?mode=image" : "/analyze";
 
   useEffect(() => {
     let cancelled = false;
@@ -260,7 +307,7 @@ function AnalyzePageContent() {
 
     if (!session) {
       sessionStorage.setItem(ANALYZE_DRAFT_KEY, betText);
-      window.location.href = `/login?next=${encodeURIComponent("/analyze")}`;
+      window.location.href = `/login?next=${encodeURIComponent(analyzeLoginNext)}`;
       return;
     }
 
@@ -407,7 +454,7 @@ const brainPicks = useMemo(() => {
                   {t.analyze.loginRequiredDescription}
                 </p>
                 <Link
-                  href={`/login?next=${encodeURIComponent("/analyze")}`}
+                  href={`/login?next=${encodeURIComponent(analyzeLoginNext)}`}
                   className="mt-4 inline-flex rounded-full bg-[#18ff6d] px-5 py-2.5 text-sm font-bold text-black transition hover:opacity-90"
                 >
                   {t.analyze.loginToAnalyze}
@@ -434,38 +481,114 @@ const brainPicks = useMemo(() => {
               </div>
             )}
 
+            <div className="mb-5 flex gap-2 rounded-2xl border border-[#18ff6d22] bg-black/30 p-1">
+              <button
+                type="button"
+                onClick={() => selectInputMode("text")}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold transition ${
+                  inputMode === "text"
+                    ? "bg-[#18ff6d]/15 text-[#18ff6d]"
+                    : "text-[#A9A9A9] hover:text-white"
+                }`}
+              >
+                📋 {t.analyze.inputModeText}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => selectInputMode("image")}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold transition ${
+                  inputMode === "image"
+                    ? "bg-[#18ff6d]/15 text-[#18ff6d]"
+                    : "text-[#A9A9A9] hover:text-white"
+                }`}
+              >
+                📸 {t.analyze.inputModeImage}
+              </button>
+            </div>
+
+            {inputMode === "image" ? (
+              <div className="mb-5">
+                <BetSlipImageUpload
+                  disabled={
+                    loading ||
+                    parsingImage ||
+                    remainingToday === 0 ||
+                    isLoggedIn !== true
+                  }
+                  isLoggedIn={isLoggedIn}
+                  onParsingChange={setParsingImage}
+                  onError={(message) => {
+                    if (message) {
+                      setAnalysisError(message);
+                    } else {
+                      setAnalysisError("");
+                    }
+                  }}
+                  onParsed={({ text, warning }) => {
+                    setBetText(text);
+                    setShowReport(false);
+                    setAnalysisError("");
+                    setShowParsedHint(true);
+                    setImageWarning(
+                      warning === "fixture_not_found"
+                        ? t.analyze.imageFixtureWarning
+                        : warning === "multiple_matches"
+                          ? t.analyze.imageMultipleMatchesWarning
+                          : null
+                    );
+                  }}
+                />
+              </div>
+            ) : null}
+
+            {imageWarning ? (
+              <div className="mb-5 rounded-2xl border border-yellow-500/40 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+                {imageWarning}
+              </div>
+            ) : null}
+
+            {showParsedHint && betText ? (
+              <p className="mb-4 text-sm text-[#18ff6d]">
+                {t.analyze.imageParsedHint}
+              </p>
+            ) : null}
+
             <textarea
               value={betText}
               onChange={(e) => {
                 setBetText(e.target.value);
                 setShowReport(false);
+                setImageWarning(null);
+                setShowParsedHint(false);
               }}
-              placeholder={t.analyze.placeholder}
+              placeholder={
+                inputMode === "image"
+                  ? t.analyze.imageTextareaPlaceholder
+                  : t.analyze.placeholder
+              }
               className="min-h-40 w-full resize-none rounded-2xl border border-[#18ff6d22] bg-black/40 p-4 text-white outline-none placeholder:text-[#666] sm:min-h-64 sm:p-5"
             />
 
+            {analysisError ? (
+              <div className="mt-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+                {analysisError}
+              </div>
+            ) : null}
+
             <Button
               onClick={handleAnalyze}
-              disabled={!betText.trim() || loading || remainingToday === 0}
+              disabled={
+                !betText.trim() ||
+                loading ||
+                parsingImage ||
+                remainingToday === 0
+              }
               className="mt-5 w-full py-4"
             >
               {loading ? t.analyze.analyzing : t.analyze.runEngine}
             </Button>
           </section>
-
-          {analysisError && (
-            <section className="mt-8 rounded-3xl border border-red-500/40 bg-red-500/10 p-6 text-center">
-              <p className="font-bold text-red-300">{analysisError}</p>
-              {analysisError && isLoggedIn === false ? (
-                <Link
-                  href={`/login?next=${encodeURIComponent("/analyze")}`}
-                  className="mt-4 inline-flex rounded-full bg-[#18ff6d] px-5 py-2.5 text-sm font-bold text-black"
-                >
-                  {t.analyze.loginToAnalyze}
-                </Link>
-              ) : null}
-            </section>
-          )}
 
           {loading && (
             <section className="mt-8 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 max-md:backdrop-blur-none backdrop-blur-xl">

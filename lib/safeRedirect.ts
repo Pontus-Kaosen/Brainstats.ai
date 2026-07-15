@@ -14,3 +14,4 @@ export function getSafeRedirectPath(
 }
 
 export const ANALYZE_DRAFT_KEY = "brainstats-analyze-draft";
+export const ANALYZE_INPUT_MODE_KEY = "brainstats-analyze-input-mode";

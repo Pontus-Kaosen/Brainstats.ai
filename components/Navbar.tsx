@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   useEffect,
+  useId,
   useRef,
   useState,
 } from "react";
@@ -12,6 +13,11 @@ import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/LanguageProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import BrainStatsLogo from "@/components/BrainStatsLogo";
+import {
+  dispatchCloseOverlays,
+  subscribeCloseOverlays,
+} from "@/lib/overlayEvents";
+import { ANALYZE_INPUT_MODE_KEY } from "@/lib/safeRedirect";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -29,16 +35,37 @@ function getInitials(email: string) {
 export default function Navbar() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
+  const overlayId = useId();
   const [email, setEmail] = useState<string | null>(null);
   const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [loginNext, setLoginNext] = useState(pathname || "/dashboard");
   const menuRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
+  useEffect(() => {
+    function syncAnalyzeLoginNext() {
+      if (pathname !== "/analyze") {
+        setLoginNext(pathname || "/dashboard");
+        return;
+      }
+
+      const saved = sessionStorage.getItem(ANALYZE_INPUT_MODE_KEY);
+      setLoginNext(saved === "image" ? "/analyze?mode=image" : "/analyze");
+    }
+
+    syncAnalyzeLoginNext();
+    window.addEventListener("brainstats-analyze-mode", syncAnalyzeLoginNext);
+
+    return () => {
+      window.removeEventListener("brainstats-analyze-mode", syncAnalyzeLoginNext);
+    };
+  }, [pathname]);
+
   const loginHref =
     pathname && pathname !== "/login"
-      ? `/login?next=${encodeURIComponent(pathname)}`
+      ? `/login?next=${encodeURIComponent(loginNext)}`
       : "/login";
 
   useEffect(() => {
@@ -135,6 +162,49 @@ export default function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
+    return subscribeCloseOverlays(overlayId, () => {
+      setMenuOpen(false);
+    });
+  }, [overlayId]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileNavOpen]);
+
+  function toggleProfileMenu() {
+    if (menuOpen) {
+      setMenuOpen(false);
+      return;
+    }
+
+    setMobileNavOpen(false);
+    dispatchCloseOverlays(overlayId);
+    setMenuOpen(true);
+  }
+
+  function toggleMobileNav() {
+    const nextOpen = !mobileNavOpen;
+    setMenuOpen(false);
+    dispatchCloseOverlays();
+
+    if (nextOpen) {
+      setMobileNavOpen(true);
+      return;
+    }
+
+    setMobileNavOpen(false);
+  }
+
+  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
         menuRef.current &&
@@ -188,7 +258,7 @@ export default function Navbar() {
     : "rounded-2xl border border-[#18ff6d55] bg-[#18ff6d]/10 px-3 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d] hover:text-black sm:px-6 sm:text-base";
 
   return (
-    <nav className="relative border-b border-[#18ff6d22] bg-black/95 px-3 py-3 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
+    <nav className="app-navbar relative border-b border-[#18ff6d22] bg-black/95 px-3 py-3 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <Link href="/" className="flex min-w-0 items-center">
           <BrainStatsLogo variant="nav" />
@@ -214,7 +284,7 @@ export default function Navbar() {
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={() => setMobileNavOpen((open) => !open)}
+            onClick={toggleMobileNav}
             className="rounded-2xl border border-[#18ff6d33] bg-[#121212]/80 px-3 py-3 text-sm font-bold text-[#18ff6d] transition hover:border-[#18ff6d88] hover:bg-[#18ff6d]/10 lg:hidden"
             aria-expanded={mobileNavOpen}
             aria-label={mobileNavOpen ? t.navbar.menuClose : t.navbar.menuOpen}
@@ -231,7 +301,7 @@ export default function Navbar() {
                   <div className="navbar-profile-exclusive rounded-2xl p-[1px] shadow-[0_0_40px_rgba(232,220,200,.12)]">
                     <button
                       type="button"
-                      onClick={() => setMenuOpen(!menuOpen)}
+                      onClick={toggleProfileMenu}
                       className={profileButtonClass}
                     >
                       <span className={avatarClass}>
@@ -255,7 +325,7 @@ export default function Navbar() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setMenuOpen(!menuOpen)}
+                    onClick={toggleProfileMenu}
                     className={profileButtonClass}
                   >
                     <span className={avatarClass}>👤</span>
@@ -270,7 +340,7 @@ export default function Navbar() {
 
                 {menuOpen && (
                   <div
-                    className={`absolute right-0 z-[90] mt-4 w-[min(18rem,calc(100vw-1.5rem))] rounded-3xl border p-3 max-md:backdrop-blur-none backdrop-blur-xl ${
+                    className={`app-dropdown-layer absolute right-0 mt-4 w-[min(18rem,calc(100vw-1.5rem))] rounded-3xl border p-3 max-md:backdrop-blur-none backdrop-blur-xl ${
                       isHomePage
                         ? "border-[#E8DCC8]/25 bg-[#0b0b0b] shadow-[0_0_80px_rgba(232,220,200,.16)]"
                         : "border-[#18ff6d33] bg-[#101010] shadow-[0_0_60px_rgba(24,255,109,.18)]"
@@ -343,7 +413,15 @@ export default function Navbar() {
       </div>
 
       {mobileNavOpen && (
-        <div className="border-t border-[#18ff6d22] bg-black/95 px-3 py-4 lg:hidden sm:px-8">
+        <>
+          <button
+            type="button"
+            aria-label={t.navbar.menuClose}
+            onClick={() => setMobileNavOpen(false)}
+            className="app-nav-overlay fixed inset-0 bg-black/70 lg:hidden"
+          />
+
+          <div className="app-nav-overlay relative border-t border-[#18ff6d22] bg-black/95 px-3 py-4 lg:hidden sm:px-8">
           <div className="mx-auto flex max-w-7xl flex-col gap-1">
             {navLinks.map((link) => (
               <Link
@@ -378,6 +456,7 @@ export default function Navbar() {
             )}
           </div>
         </div>
+        </>
       )}
     </nav>
   );

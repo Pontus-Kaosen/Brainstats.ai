@@ -62,7 +62,7 @@ export default function BrainDropdown({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-3 w-full overflow-hidden rounded-3xl border border-[#18ff6d33] bg-[#07110d]/95 p-3 shadow-[0_0_60px_rgba(24,255,109,.18)] backdrop-blur-xl">
+        <div className="app-dropdown-layer absolute z-50 mt-3 w-full overflow-hidden rounded-3xl border border-[#18ff6d33] bg-[#07110d]/95 p-3 shadow-[0_0_60px_rgba(24,255,109,.18)] backdrop-blur-xl">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}

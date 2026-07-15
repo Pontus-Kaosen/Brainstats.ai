@@ -441,6 +441,92 @@ Svara i exakt denna JSON-struktur:
 `;
 }
 
+export function buildBetImageSystemPrompt(language: Language) {
+  if (language === "en") {
+    return (
+      "You read screenshots of football bet slips from bookmakers and betting apps. " +
+      "Extract teams, markets and player names exactly as shown. " +
+      "Normalize market text into clear football betting terms. " +
+      "Respond only with valid JSON."
+    );
+  }
+
+  return (
+    "Du läser skärmbilder av fotbollskuponger från spelbolag och bettingappar. " +
+    "Extrahera lag, marknader och spelarnamn exakt som de visas. " +
+    "Normalisera marknadstext till tydliga fotbollsspeltermer. " +
+    "Svara endast med giltig JSON."
+  );
+}
+
+export function buildBetImageUserPrompt(language: Language) {
+  if (language === "en") {
+    return `Read this bet slip image and extract every visible football selection.
+
+Return JSON in this shape:
+{
+  "picks": [
+    {
+      "homeTeam": "Home team name",
+      "awayTeam": "Away team name",
+      "market": "Market in clear English, e.g. Over 2.5 goals",
+      "playerName": "Player name or null"
+    }
+  ]
+}
+
+Rules:
+- Use the full team names when visible.
+- If only one team is tied to a player market, infer the opponent from the match header.
+- Convert shorthand like "O2.5", "BTTS", "DNB" into readable market names.
+- Include all legs visible on the coupon.
+- Use null for playerName when not a player market.`;
+  }
+
+  return `Läs den här kupongbilden och extrahera varje synligt fotbollsval.
+
+Returnera JSON i denna form:
+{
+  "picks": [
+    {
+      "homeTeam": "Hemmalag",
+      "awayTeam": "Bortalag",
+      "market": "Marknad på tydlig svenska, t.ex. Över 2.5 mål",
+      "playerName": "Spelarnamn eller null"
+    }
+  ]
+}
+
+Regler:
+- Använd fulla lagnamn när de syns.
+- Om bara ett lag syns vid en spelarmarknad, hämta motståndaren från matchrubriken.
+- Översätt förkortningar som "Ö2.5", "BTTS", "DNB" till läsbara marknadsnamn.
+- Ta med alla val som syns på kupongen.
+- Använd null för playerName när det inte är en spelarmarknad.`;
+}
+
+export function getParseImageApiMessages(language: Language) {
+  if (language === "en") {
+    return {
+      mustLogin: "You must be signed in to read a bet slip image.",
+      authFailed: "Sign-in could not be verified.",
+      noImage: "No image was uploaded.",
+      invalidImage: "The file must be a JPG, PNG or WebP image under 5 MB.",
+      parseFailed: "The bet slip image could not be read. Try a clearer photo.",
+      noPicksFound: "No bet selections were found in the image.",
+    };
+  }
+
+  return {
+    mustLogin: "Du måste vara inloggad för att läsa en kupongbild.",
+    authFailed: "Inloggningen kunde inte verifieras.",
+    noImage: "Ingen bild laddades upp.",
+    invalidImage: "Filen måste vara JPG, PNG eller WebP under 5 MB.",
+    parseFailed: "Kupongbilden kunde inte läsas. Prova en tydligare bild.",
+    noPicksFound: "Inga spelval hittades i bilden.",
+  };
+}
+
 export function getAnalyzeApiMessages(language: Language) {
   if (language === "en") {
     return {

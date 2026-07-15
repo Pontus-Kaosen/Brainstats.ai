@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --z-navbar: 120;
+  --z-nav-overlay: 125;
+  --z-dropdown: 140;
+  --z-cookie: 300;
 }
 
 @theme inline {
@@ -125,4 +129,18 @@ a {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-navbar);
+}
+
+.app-dropdown-layer {
+  z-index: var(--z-dropdown);
+}
+
+.app-nav-overlay {
+  z-index: var(--z-nav-overlay);
 }

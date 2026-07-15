@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
+import {
+  dispatchCloseOverlays,
+  subscribeCloseOverlays,
+} from "@/lib/overlayEvents";
 
 type PickerOption = {
   label: string;
@@ -21,6 +26,44 @@ type BuilderPickerProps = {
   searchable?: boolean;
 };
 
+type MenuPosition = {
+  top: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+  placement: "below" | "above";
+};
+
+function getMenuPosition(trigger: HTMLElement): MenuPosition {
+  const rect = trigger.getBoundingClientRect();
+  const viewportPadding = 16;
+  const width = Math.min(420, window.innerWidth - viewportPadding * 2);
+  const left = Math.min(
+    Math.max(viewportPadding, rect.left),
+    window.innerWidth - width - viewportPadding
+  );
+  const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
+  const spaceAbove = rect.top - viewportPadding;
+  const placement =
+    spaceBelow < 260 && spaceAbove > spaceBelow ? "above" : "below";
+  const maxHeight = Math.min(
+    420,
+    placement === "below" ? spaceBelow - 12 : spaceAbove - 12
+  );
+  const top =
+    placement === "below"
+      ? rect.bottom + 12
+      : Math.max(viewportPadding, rect.top - maxHeight - 12);
+
+  return {
+    top,
+    left,
+    width,
+    maxHeight: Math.max(180, maxHeight),
+    placement,
+  };
+}
+
 export default function BuilderPicker({
   label,
   icon,
@@ -30,9 +73,13 @@ export default function BuilderPicker({
   searchable = true,
 }: BuilderPickerProps) {
   const { t } = useLanguage();
+  const overlayId = useId();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const selectedOption = options.find(
     (option) => String(option.value) === String(value)
@@ -42,26 +89,182 @@ export default function BuilderPicker({
     option.label.toLowerCase().includes(search.trim().toLowerCase())
   );
 
+  function closeMenu() {
+    setOpen(false);
+    setSearch("");
+  }
+
+  function openMenu() {
+    dispatchCloseOverlays(overlayId);
+    setOpen(true);
+  }
+
   useEffect(() => {
-    function handleOutsideClick(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-        setSearch("");
-      }
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    return subscribeCloseOverlays(overlayId, closeMenu);
+  }, [overlayId]);
+
+  useEffect(() => {
+    if (!open || !triggerRef.current) {
+      return;
     }
 
-    document.addEventListener("mousedown", handleOutsideClick);
+    function updatePosition() {
+      if (!triggerRef.current) {
+        return;
+      }
+
+      setMenuPosition(getMenuPosition(triggerRef.current));
+    }
+
+    updatePosition();
+
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
+
+      if (
+        containerRef.current?.contains(target) ||
+        (target instanceof Element && target.closest("[data-builder-picker-menu]"))
+      ) {
+        return;
+      }
+
+      closeMenu();
+    }
+
+    if (open) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
 
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, []);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeMenu();
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [open]);
+
+  const menu =
+    mounted && open && menuPosition
+      ? createPortal(
+          <div
+            data-builder-picker-menu
+            className="app-dropdown-layer fixed overflow-hidden rounded-3xl border border-[#18ff6d55] bg-[#07100b]/98 p-4 shadow-[0_0_80px_rgba(24,255,109,.28)] backdrop-blur-2xl"
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+              width: menuPosition.width,
+            }}
+          >
+            {searchable && (
+              <div className="mb-3">
+                <input
+                  autoFocus
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={formatTranslation(
+                    t.builderPicker.searchPlaceholder,
+                    { label: label.toLowerCase() }
+                  )}
+                  className="w-full rounded-2xl border border-[#18ff6d33] bg-black/60 px-4 py-4 text-base text-white outline-none placeholder:text-[#667069] focus:border-[#18ff6d]"
+                />
+              </div>
+            )}
+
+            <div
+              className="space-y-2 overflow-y-auto pr-2"
+              style={{ maxHeight: menuPosition.maxHeight }}
+            >
+              {filteredOptions.length === 0 ? (
+                <p className="p-4 text-center text-sm text-[#A9A9A9]">
+                  {t.builderPicker.noOptions}
+                </p>
+              ) : (
+                filteredOptions.map((option) => {
+                  const selected =
+                    String(option.value) === String(value);
+
+                  return (
+                    <button
+                      key={String(option.value)}
+                      type="button"
+                      onClick={() => {
+                        onChange(String(option.value));
+                        closeMenu();
+                      }}
+                      className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition ${
+                        selected
+                          ? "border-[#18ff6d66] bg-[#18ff6d]/15 text-[#18ff6d]"
+                          : "border-transparent bg-white/[0.03] text-white hover:border-[#18ff6d33] hover:bg-white/[0.07]"
+                      }`}
+                    >
+                      {option.image ? (
+                        <img
+                          src={option.image}
+                          alt=""
+                          className="h-10 w-10 shrink-0 object-contain"
+                        />
+                      ) : (
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-xl">
+                          {option.icon || "⚽"}
+                        </span>
+                      )}
+
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words font-bold leading-5">
+                          {option.label}
+                        </p>
+
+                        {option.description && (
+                          <p className="mt-1 text-xs leading-5 text-[#8F9892]">
+                            {option.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {selected && (
+                        <span className="shrink-0 text-lg font-black">✓</span>
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
 
   return (
-    <div ref={containerRef} className="relative min-w-0">
+    <div ref={containerRef} className="relative isolate min-w-0">
       <div className="relative sm:hidden">
         <div className="pointer-events-none flex items-center gap-3 rounded-xl border border-[#18ff6d22] bg-[#111]/90 px-3 py-2.5">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#18ff6d33] bg-[#18ff6d]/10 text-base">
@@ -107,8 +310,16 @@ export default function BuilderPicker({
 
       <div className="hidden sm:block">
         <button
+          ref={triggerRef}
           type="button"
-          onClick={() => setOpen((current) => !current)}
+          onClick={() => {
+            if (open) {
+              closeMenu();
+              return;
+            }
+
+            openMenu();
+          }}
           className={`group relative min-h-40 w-full overflow-hidden rounded-3xl border p-6 text-left transition-all duration-300 ${
             open
               ? "border-[#18ff6d] bg-[#07150d] shadow-[0_0_55px_rgba(24,255,109,.2)]"
@@ -165,86 +376,9 @@ export default function BuilderPicker({
             </div>
           </div>
         </button>
-
-        {open && (
-          <div className="absolute left-0 top-full z-[200] mt-3 w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-[#18ff6d55] bg-[#07100b]/98 p-4 shadow-[0_0_80px_rgba(24,255,109,.28)] backdrop-blur-2xl">
-            {searchable && (
-              <div className="mb-3">
-                <input
-                  autoFocus
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder={formatTranslation(
-                    t.builderPicker.searchPlaceholder,
-                    { label: label.toLowerCase() }
-                  )}
-                  className="w-full rounded-2xl border border-[#18ff6d33] bg-black/60 px-4 py-4 text-base text-white outline-none placeholder:text-[#667069] focus:border-[#18ff6d]"
-                />
-              </div>
-            )}
-
-            <div className="max-h-[420px] space-y-2 overflow-y-auto pr-2">
-              {filteredOptions.length === 0 ? (
-                <p className="p-4 text-center text-sm text-[#A9A9A9]">
-                  {t.builderPicker.noOptions}
-                </p>
-              ) : (
-                filteredOptions.map((option) => {
-                  const selected =
-                    String(option.value) === String(value);
-
-                  return (
-                    <button
-                      key={String(option.value)}
-                      type="button"
-                      onClick={() => {
-                        onChange(String(option.value));
-                        setOpen(false);
-                        setSearch("");
-                      }}
-                      className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition ${
-                        selected
-                          ? "border-[#18ff6d66] bg-[#18ff6d]/15 text-[#18ff6d]"
-                          : "border-transparent bg-white/[0.03] text-white hover:border-[#18ff6d33] hover:bg-white/[0.07]"
-                      }`}
-                    >
-                      {option.image ? (
-                        <img
-                          src={option.image}
-                          alt=""
-                          className="h-10 w-10 shrink-0 object-contain"
-                        />
-                      ) : (
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-xl">
-                          {option.icon || "⚽"}
-                        </span>
-                      )}
-
-                      <div className="min-w-0 flex-1">
-                        <p className="break-words font-bold leading-5">
-                          {option.label}
-                        </p>
-
-                        {option.description && (
-                          <p className="mt-1 text-xs leading-5 text-[#8F9892]">
-                            {option.description}
-                          </p>
-                        )}
-                      </div>
-
-                      {selected && (
-                        <span className="shrink-0 text-lg font-black">
-                          ✓
-                        </span>
-                      )}
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        )}
       </div>
+
+      {menu}
     </div>
   );
 }
