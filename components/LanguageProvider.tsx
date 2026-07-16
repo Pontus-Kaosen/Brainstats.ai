@@ -27,13 +27,20 @@ const LanguageContext =
 
 const STORAGE_KEY = "brainstats-language";
 
+function detectBrowserLanguage(): Language {
+  const browserLanguage = navigator.language.toLowerCase();
+  return browserLanguage.startsWith("sv") ? "sv" : "en";
+}
+
 export default function LanguageProvider({
   children,
+  initialLanguage = "sv",
 }: {
   children: React.ReactNode;
+  initialLanguage?: Language;
 }) {
   const [language, setLanguageState] =
-    useState<Language>("sv");
+    useState<Language>(initialLanguage);
 
   useEffect(() => {
     const savedLanguage =
@@ -49,18 +56,13 @@ export default function LanguageProvider({
       return;
     }
 
-    const browserLanguage =
-      navigator.language.toLowerCase();
+    const resolvedLanguage = initialLanguage || detectBrowserLanguage();
 
-    const detectedLanguage: Language =
-      browserLanguage.startsWith("sv")
-        ? "sv"
-        : "en";
-
-    setLanguageState(detectedLanguage);
-    document.documentElement.lang = detectedLanguage;
-    persistLanguageCookie(detectedLanguage);
-  }, []);
+    setLanguageState(resolvedLanguage);
+    document.documentElement.lang = resolvedLanguage;
+    window.localStorage.setItem(STORAGE_KEY, resolvedLanguage);
+    persistLanguageCookie(resolvedLanguage);
+  }, [initialLanguage]);
 
   function setLanguage(nextLanguage: Language) {
     setLanguageState(nextLanguage);

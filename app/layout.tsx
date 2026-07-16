@@ -9,6 +9,7 @@ import DeferredSiteChrome from "@/components/DeferredSiteChrome";
 import StructuredData from "@/components/StructuredData";
 import { createPageMetadata } from "@/lib/seo";
 import { getSiteUrl, siteDescriptionSv, siteName } from "@/lib/site";
+import { detectLanguage } from "@/lib/locale.server";
 
 import "./globals.css";
 
@@ -47,20 +48,22 @@ export const viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialLanguage = await detectLanguage();
+
   return (
     <html
-      lang="sv"
+      lang={initialLanguage}
       suppressHydrationWarning
       className={`${geistSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
         <StructuredData />
-        <LanguageProvider>
+        <LanguageProvider initialLanguage={initialLanguage}>
           <div className="flex min-h-full flex-col">
             <div className="flex-1">{children}</div>
             <DeferredSiteChrome />

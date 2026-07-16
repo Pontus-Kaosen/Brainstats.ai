@@ -40,6 +40,10 @@ export default async function Home() {
           </p>
 
           <div className="mt-6 flex w-full flex-col justify-center gap-3 sm:mt-12 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-5">
+            <HomeCtaLink href="/login?next=/analyze" className="w-full sm:w-auto">
+              ✨ {t.signupFree}
+            </HomeCtaLink>
+
             <HomeCtaLink href="/analyze" className="w-full sm:w-auto">
               📝 {t.pasteBet}
             </HomeCtaLink>
@@ -55,7 +59,28 @@ export default async function Home() {
 
           <Link
             href="/premium"
-            className="mt-4 text-sm font-semibold text-[#18ff6d] transition hover:underline sm:mt-6"
+            className="mt-6 block w-full max-w-3xl rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-br from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 text-left transition hover:border-[#E8DCC8]/40 hover:shadow-[0_0_50px_rgba(232,220,200,.14)] sm:mt-8 sm:p-8"
+          >
+            <p className="inline-flex rounded-full border border-[#E8DCC8]/30 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
+              {t.trialBadge}
+            </p>
+
+            <h2 className="mt-4 text-2xl font-black text-white sm:text-3xl">
+              {t.trialTitle}
+            </h2>
+
+            <p className="mt-3 text-sm leading-7 text-[#A9A9A9] sm:text-base">
+              {t.trialText}
+            </p>
+
+            <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#E8DCC8] sm:text-base">
+              {t.trialCta} →
+            </span>
+          </Link>
+
+          <Link
+            href="/premium"
+            className="mt-4 text-sm font-semibold text-[#18ff6d] transition hover:underline sm:mt-5"
           >
             💎 {t.seePremium}
           </Link>

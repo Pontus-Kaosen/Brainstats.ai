@@ -144,6 +144,10 @@ export const translations = {
       averageScore: "Genomsnittlig score",
       plan: "Plan",
       remainingToday: "Kvar idag",
+      upgradeBannerTitle: "Lås upp obegränsad AI-analys",
+      upgradeBannerText:
+        "Pro ger obegränsade analyser, Brain Builder, dagliga AI-kuponger och sparad historik. Testa gratis i 7 dagar.",
+      upgradeBannerCta: "Starta 7 dagar Pro gratis",
       viewAiTips: "Se dagens AI-tips",
       aiTipsHero:
         "Färdiga AI-kuponger med olika riskprofil — uppdateras varje dag.",
@@ -212,6 +216,10 @@ export const translations = {
       includes: "Detta ingår",
       popular: "POPULÄR",
       eliteBadge: "ELITE",
+      proTrialBadge: "7 DAGAR GRATIS",
+      proTrialNote:
+        "Pro inkluderar 7 dagars gratis provperiod. Du kan avsluta innan första debiteringen.",
+      proTrialCta: "Starta 7 dagar gratis",
       footerTitle: "Every match deserves a BrainScore™",
       footerText:
         "Du kan börja gratis och uppgradera när du behöver fler analyser. Prenumerationerna förnyas månadsvis.",
@@ -348,6 +356,7 @@ export const translations = {
       loadingReport: "Brain Engine analyserar data...",
       premiumRequired: "Premium krävs",
       upgradePro: "🚀 Uppgradera till Pro",
+      upgradeTrialCta: "Testa Pro gratis i 7 dagar",
       loginRequiredTitle: "Logga in för att analysera",
       loginRequiredDescription:
         "Skapa ett gratis konto för att köra Brain Engine. Free-planen inkluderar 3 analyser per dag.",
@@ -856,6 +865,10 @@ export const translations = {
       averageScore: "Average score",
       plan: "Plan",
       remainingToday: "Remaining today",
+      upgradeBannerTitle: "Unlock unlimited AI analysis",
+      upgradeBannerText:
+        "Pro gives unlimited analyses, Brain Builder, daily AI slips and saved history. Try free for 7 days.",
+      upgradeBannerCta: "Start 7-day Pro free trial",
       viewAiTips: "See today's AI tips",
       aiTipsHero:
         "Ready-made AI slips with different risk profiles — updated daily.",
@@ -924,6 +937,10 @@ export const translations = {
       includes: "What's included",
       popular: "POPULAR",
       eliteBadge: "ELITE",
+      proTrialBadge: "7 DAYS FREE",
+      proTrialNote:
+        "Pro includes a 7-day free trial. Cancel before the first charge if you want.",
+      proTrialCta: "Start 7-day free trial",
       footerTitle: "Every match deserves a BrainScore™",
       footerText:
         "You can start free and upgrade when you need more analyses. Subscriptions renew monthly.",
@@ -1060,6 +1077,7 @@ export const translations = {
       loadingReport: "Brain Engine is analyzing data...",
       premiumRequired: "Premium required",
       upgradePro: "🚀 Upgrade to Pro",
+      upgradeTrialCta: "Try Pro free for 7 days",
       loginRequiredTitle: "Log in to analyze",
       loginRequiredDescription:
         "Create a free account to run Brain Engine. The Free plan includes 3 analyses per day.",

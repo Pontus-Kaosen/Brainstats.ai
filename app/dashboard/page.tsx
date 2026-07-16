@@ -246,6 +246,26 @@ export default function DashboardPage() {
             </a>
           </section>
 
+          {!loading && plan === "free" ? (
+            <section className="mt-6 overflow-hidden rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-r from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 sm:mt-8 sm:p-8">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#E8DCC8]">
+                {t.premium.proTrialBadge}
+              </p>
+              <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">
+                {t.dashboard.upgradeBannerTitle}
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9] sm:text-base">
+                {t.dashboard.upgradeBannerText}
+              </p>
+              <a
+                href="/premium"
+                className="mt-5 inline-flex rounded-2xl border border-[#E8DCC8]/35 bg-[#0a0a0a] px-5 py-3 text-sm font-bold text-[#F5EAD8] transition hover:border-[#E8DCC8]/55 hover:bg-[#111111]"
+              >
+                {t.dashboard.upgradeBannerCta} →
+              </a>
+            </section>
+          ) : null}
+
           {dashboardError && (
             <section className="mt-8 rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
               <p className="font-bold text-red-300">

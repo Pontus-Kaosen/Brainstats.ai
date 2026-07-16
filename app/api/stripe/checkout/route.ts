@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
       },
 
       subscription_data: {
+        ...(plan === "pro" ? { trial_period_days: 7 } : {}),
         metadata: {
           plan,
           userId,

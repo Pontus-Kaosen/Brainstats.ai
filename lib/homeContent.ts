@@ -8,6 +8,11 @@ export type HomeContent = {
   pasteBet: string;
   buildBet: string;
   seePremium: string;
+  signupFree: string;
+  trialBadge: string;
+  trialTitle: string;
+  trialText: string;
+  trialCta: string;
   aiTipsBadge: string;
   aiTipsTitle: string;
   aiTipsText: string;
@@ -25,7 +30,13 @@ const homeContent: Record<Language, HomeContent> = {
       "AI-analysverktyg · Inte ett spelbolag · Vi tar inte emot spel eller pengar",
     pasteBet: "Klistra in spelidé",
     buildBet: "Bygg spelidé",
-    seePremium: "Se Premium",
+    seePremium: "7 dagar Pro gratis",
+    signupFree: "Skapa gratis konto",
+    trialBadge: "Lanseringserbjudande",
+    trialTitle: "Testa Pro gratis i 7 dagar",
+    trialText:
+      "Obegränsade AI-analyser, Brain Builder och dagliga AI-kuponger. Avsluta när som helst.",
+    trialCta: "Starta gratis provperiod",
     aiTipsBadge: "Dagliga AI-kuponger",
     aiTipsTitle: "Färdiga AI-speltips varje dag",
     aiTipsText:
@@ -55,7 +66,13 @@ const homeContent: Record<Language, HomeContent> = {
       "AI analysis tool · Not a bookmaker · We do not accept bets or money",
     pasteBet: "Paste bet idea",
     buildBet: "Build bet idea",
-    seePremium: "See Premium",
+    seePremium: "7 days Pro free",
+    signupFree: "Create free account",
+    trialBadge: "Launch offer",
+    trialTitle: "Try Pro free for 7 days",
+    trialText:
+      "Unlimited AI analyses, Brain Builder and daily AI slips. Cancel anytime.",
+    trialCta: "Start free trial",
     aiTipsBadge: "Daily AI slips",
     aiTipsTitle: "Ready-made AI bet tips every day",
     aiTipsText:

@@ -196,7 +196,7 @@ export default function PremiumPage() {
 
                   {plan.elite && (
                     <div className="absolute right-6 top-6 rounded-full border border-[#2fbfff66] bg-[#2fbfff]/10 px-4 py-2 text-xs font-black text-[#72d5ff]">
-                      👑 ELITE
+                      👑 {t.premium.eliteBadge}
                     </div>
                   )}
 
@@ -220,6 +220,12 @@ export default function PremiumPage() {
                     >
                       {plan.price}
                     </p>
+
+                    {plan.id === "pro" ? (
+                      <p className="mt-3 text-sm font-semibold text-[#E8DCC8]">
+                        {t.premium.proTrialBadge} · {t.premium.proTrialNote}
+                      </p>
+                    ) : null}
 
                     <div className="mt-8">
                       {plan.id === "free" ? (
@@ -246,9 +252,11 @@ export default function PremiumPage() {
                         >
                           {isLoading
                             ? t.premium.openingCheckout
-                            : formatTranslation(t.premium.choosePlan, {
-                                plan: plan.name,
-                              })}
+                            : plan.id === "pro"
+                              ? t.premium.proTrialCta
+                              : formatTranslation(t.premium.choosePlan, {
+                                  plan: plan.name,
+                                })}
                         </Button>
                       )}
                     </div>

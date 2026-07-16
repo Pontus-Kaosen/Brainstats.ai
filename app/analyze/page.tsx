@@ -478,6 +478,13 @@ const brainPicks = useMemo(() => {
                       remaining: remainingToday,
                       limit: 3,
                     })}
+
+                <a
+                  href="/premium"
+                  className="mt-3 inline-flex rounded-xl border border-[#E8DCC8]/30 bg-[#E8DCC8]/10 px-4 py-2 text-xs font-bold text-[#F5EAD8] transition hover:bg-[#E8DCC8]/15"
+                >
+                  {t.analyze.upgradeTrialCta} →
+                </a>
               </div>
             )}
 
