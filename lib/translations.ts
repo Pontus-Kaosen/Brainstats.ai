@@ -949,7 +949,7 @@ export const translations = {
       prePurchase: {
         title: "Pre-purchase information",
         intro:
-          "Applies to paid plans Pro (99 SEK/month) and Elite (149 SEK/month). The Free plan costs nothing and requires no purchase.",
+          "Applies to paid plans Pro ($9/month) and Elite ($15/month). The Free plan costs nothing and requires no purchase.",
         sellerLabel: "Seller",
         paymentLabel: "Payment",
         paymentText:
@@ -977,7 +977,7 @@ export const translations = {
       plans: {
         free: {
           name: "Free",
-          price: "0 SEK",
+          price: "$0",
           tag: "Start",
           description: "For trying BrainStats.",
           features: [
@@ -989,7 +989,7 @@ export const translations = {
         },
         pro: {
           name: "Pro",
-          price: "99 SEK/month",
+          price: "$9/month",
           tag: "Most popular",
           description: "For serious analysis.",
           features: [
@@ -1002,7 +1002,7 @@ export const translations = {
         },
         elite: {
           name: "Elite",
-          price: "149 SEK/month",
+          price: "$15/month",
           tag: "Max",
           description: "For maximum insight.",
           features: [

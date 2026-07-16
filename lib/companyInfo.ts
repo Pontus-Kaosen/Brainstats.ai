@@ -12,11 +12,11 @@ export const companyInfo = {
   plans: {
     pro: {
       priceSv: "99 kr/månad",
-      priceEn: "99 SEK/month",
+      priceEn: "$9/month",
     },
     elite: {
       priceSv: "149 kr/månad",
-      priceEn: "149 SEK/month",
+      priceEn: "$15/month",
     },
   },
 };

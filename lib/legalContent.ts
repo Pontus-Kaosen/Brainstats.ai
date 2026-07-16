@@ -565,7 +565,7 @@ const documents: Record<
           bullets: [
             `Pro – ${companyInfo.plans.pro.priceEn}: unlimited AI analyses, deeper reports, full Brain Builder, saved history, form and statistics, up to 3 Brain Picks per analysis and 3 daily AI slips.`,
             `Elite – ${companyInfo.plans.elite.priceEn}: everything in Pro plus AI Match of the Day, Daily Brain Picks, Value Bets, priority AI and early access to new features, up to 5 Brain Picks per analysis and 5 daily AI slips.`,
-            "The Free plan (0 SEK) is not covered by these Purchase Terms but provides limited access under the Terms of Service.",
+            "The Free plan ($0) is not covered by these Purchase Terms but provides limited access under the Terms of Service.",
           ],
         },
         {
