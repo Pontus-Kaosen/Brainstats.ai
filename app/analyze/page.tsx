@@ -19,6 +19,7 @@ import {
   ANALYZE_INPUT_MODE_KEY,
 } from "@/lib/safeRedirect";
 import BetSlipImageUpload from "@/components/BetSlipImageUpload";
+import AnalyzeQuickStart from "@/components/AnalyzeQuickStart";
 import {
   summarizeRotationRisksForUi,
   type RotationRisk,
@@ -445,6 +446,8 @@ const brainPicks = useMemo(() => {
 </section>
 
           <section className="mt-6 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-4 max-md:backdrop-blur-none backdrop-blur-xl sm:mt-10 sm:p-6">
+            {isLoggedIn !== true && <AnalyzeQuickStart />}
+
             {isLoggedIn === false && (
               <div className="mb-5 rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 p-4">
                 <h3 className="font-bold text-[#18ff6d]">

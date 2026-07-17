@@ -7,7 +7,9 @@ import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/components/LanguageProvider";
 import ManageSubscriptionButton from "@/components/ManageSubscriptionButton";
 import DailySlipsSection from "@/components/DailySlipsSection";
+import OnboardingChecklist from "@/components/OnboardingChecklist";
 import { useIsMobile } from "@/lib/useMediaQuery";
+import { formatTranslation } from "@/lib/locale";
 import type { Translations } from "@/lib/translations";
 
 type UserPlan = "free" | "pro" | "elite";
@@ -48,6 +50,10 @@ export default function DashboardPage() {
   const isMobile = useIsMobile();
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [plan, setPlan] = useState<UserPlan>("free");
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(
+    null
+  );
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -112,7 +118,7 @@ export default function DashboardPage() {
 
           supabase
             .from("profiles")
-            .select("plan")
+            .select("plan, subscription_status, current_period_end")
             .eq("id", user.id)
             .maybeSingle(),
         ]);
@@ -139,6 +145,9 @@ export default function DashboardPage() {
         } else {
           setPlan("free");
         }
+
+        setSubscriptionStatus(profileResult.data?.subscription_status ?? null);
+        setTrialEndsAt(profileResult.data?.current_period_end ?? null);
       } catch (error) {
         console.error("Dashboard error:", error);
 
@@ -200,10 +209,21 @@ export default function DashboardPage() {
         )
       : 0;
 
+  const remainingTodayNum =
+    plan === "free" ? Math.max(0, 3 - todayCount) : null;
+
   const remainingToday =
-    plan === "free"
-      ? Math.max(0, 3 - todayCount).toString()
-      : "∞";
+    plan === "free" ? remainingTodayNum?.toString() ?? "0" : "∞";
+
+  const trialDaysLeft =
+    subscriptionStatus === "trialing" && trialEndsAt
+      ? Math.max(
+          0,
+          Math.ceil(
+            (new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000
+          )
+        )
+      : null;
 
 
   return (
@@ -245,6 +265,28 @@ export default function DashboardPage() {
               <span aria-hidden>↓</span>
             </a>
           </section>
+
+          <OnboardingChecklist analysisCount={total} />
+
+          {!loading && trialDaysLeft !== null && plan === "pro" ? (
+            <section className="mt-6 rounded-[2rem] border border-[#18ff6d33] bg-[#18ff6d]/10 p-5 sm:mt-8 sm:p-6">
+              <p className="text-sm font-bold text-[#18ff6d]">
+                {trialDaysLeft === 0
+                  ? t.dashboard.trialEndsToday
+                  : formatTranslation(t.dashboard.trialDaysLeft, {
+                      days: trialDaysLeft,
+                    })}
+              </p>
+            </section>
+          ) : null}
+
+          {!loading && plan === "free" && remainingTodayNum !== null && remainingTodayNum > 0 ? (
+            <section className="mt-6 rounded-2xl border border-[#18ff6d22] bg-black/30 px-5 py-4 text-sm text-[#A9A9A9] sm:mt-8">
+              {formatTranslation(t.dashboard.remainingNudge, {
+                remaining: remainingTodayNum,
+              })}
+            </section>
+          ) : null}
 
           {!loading && plan === "free" ? (
             <section className="mt-6 overflow-hidden rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-r from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 sm:mt-8 sm:p-8">
@@ -312,7 +354,7 @@ export default function DashboardPage() {
                   <p
                     className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}
                   >
-                    History
+                    {t.dashboard.history}
                   </p>
 
                   <h2 className="mt-2 text-2xl font-bold text-white">
@@ -321,9 +363,15 @@ export default function DashboardPage() {
 
                   <div className="mt-6 space-y-4">
                     {analyses.length === 0 ? (
-                      <p className="text-[#A9A9A9]">
-                        {t.dashboard.noAnalyses}
-                      </p>
+                      <div>
+                        <p className="text-[#A9A9A9]">{t.dashboard.noAnalyses}</p>
+                        <a
+                          href="/analyze?mode=image"
+                          className="mt-4 inline-flex rounded-2xl border border-[#18ff6d55] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15"
+                        >
+                          {t.dashboard.emptyStateCta} →
+                        </a>
+                      </div>
                     ) : (
                       analyses.slice(0, isMobile ? 5 : 10).map((analysis) => (
                         <a
@@ -365,7 +413,7 @@ export default function DashboardPage() {
                     <p
                       className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}
                     >
-                      Membership
+                      {t.dashboard.membership}
                     </p>
 
                     <h3 className="mt-3 text-3xl font-bold text-white">
@@ -398,7 +446,7 @@ export default function DashboardPage() {
                     <p
                       className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}
                     >
-                      Shortcuts
+                      {t.dashboard.shortcuts}
                     </p>
 
                     <h3 className="mt-2 text-xl font-bold text-white">

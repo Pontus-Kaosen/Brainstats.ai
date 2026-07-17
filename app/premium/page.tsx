@@ -125,7 +125,7 @@ export default function PremiumPage() {
   }
 
   function openFreePlan() {
-    window.location.href = "/builder";
+    window.location.href = "/analyze?mode=image";
   }
 
   return (

@@ -12,12 +12,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/builder",
     "/analyze",
     "/premium",
+    "/track-record",
+    "/football-analysis",
+    "/upload-bet-slip",
     "/legal",
   ].map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified: now,
     changeFrequency: path === "" ? "weekly" : "monthly",
-    priority: path === "" ? 1 : path === "/builder" || path === "/analyze" ? 0.9 : 0.7,
+    priority:
+      path === ""
+        ? 1
+        : path === "/builder" ||
+            path === "/analyze" ||
+            path === "/football-analysis" ||
+            path === "/upload-bet-slip"
+          ? 0.9
+          : 0.7,
   }));
 
   const legalRoutes: MetadataRoute.Sitemap = legalSlugs.map((slug) => ({

@@ -8,16 +8,24 @@ import BrainStatsLogo from "@/components/BrainStatsLogo";
 export default function Footer() {
   const { t } = useLanguage();
 
-  const links = legalSlugs.map((slug) => ({
+  const legalLinks = legalSlugs.map((slug) => ({
     slug,
     label: t.legal.links[slug],
     href: `/legal/${slug}`,
   }));
 
+  const productLinks = [
+    { label: t.footer.linkAnalyze, href: "/analyze" },
+    { label: t.footer.linkUpload, href: "/analyze?mode=image" },
+    { label: t.footer.linkTrackRecord, href: "/track-record" },
+    { label: t.footer.linkFootballAnalysis, href: "/football-analysis" },
+    { label: t.footer.linkPremium, href: "/premium" },
+  ];
+
   return (
     <footer className="relative z-10 border-t border-[#18ff6d22] bg-black/95 px-4 py-6 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-10">
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-6 md:grid-cols-[1.2fr_1fr] md:gap-8">
+        <div className="grid gap-8 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>
             <BrainStatsLogo variant="footer" />
 
@@ -36,6 +44,25 @@ export default function Footer() {
 
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#18ff6d] sm:text-sm">
+              {t.footer.productHeading}
+            </p>
+
+            <ul className="mt-3 space-y-2 sm:mt-4">
+              {productLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-[#D8D8D8] transition hover:text-[#18ff6d]"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#18ff6d] sm:text-sm">
               {t.footer.legalHeading}
             </p>
 
@@ -43,17 +70,17 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal"
-                  className="text-[#D8D8D8] transition hover:text-[#18ff6d]"
+                  className="text-sm text-[#D8D8D8] transition hover:text-[#18ff6d]"
                 >
                   {t.footer.allLegal}
                 </Link>
               </li>
 
-              {links.map((link) => (
+              {legalLinks.map((link) => (
                 <li key={link.slug}>
                   <Link
                     href={link.href}
-                    className="text-[#D8D8D8] transition hover:text-[#18ff6d]"
+                    className="text-sm text-[#D8D8D8] transition hover:text-[#18ff6d]"
                   >
                     {link.label}
                   </Link>

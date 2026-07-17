@@ -74,6 +74,24 @@ export const pageSeo = {
       "BrainStats Pro och Elite — fler AI-analyser, djupare rapporter och dagliga AI-kuponger för fotboll.",
     path: "/premium",
   },
+  trackRecord: {
+    title: "Analys vs resultat",
+    description:
+      "Transparent exempel på BrainStats AI-analyser före match och utfall efter — inga garantier.",
+    path: "/track-record",
+  },
+  footballAnalysis: {
+    title: "AI fotbollsanalys",
+    description:
+      "AI-driven fotbollsanalys med BrainScore, form, skador och risk. Analysera dina egna spelidéer gratis.",
+    path: "/football-analysis",
+  },
+  uploadBetSlip: {
+    title: "Ladda upp spelkupong",
+    description:
+      "Ladda upp skärmdump av din spelkupong — BrainStats AI läser match och marknader automatiskt.",
+    path: "/upload-bet-slip",
+  },
   legal: {
     title: "Juridisk information",
     description:

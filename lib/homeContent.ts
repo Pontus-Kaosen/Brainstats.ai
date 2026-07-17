@@ -6,6 +6,7 @@ export type HomeContent = {
   description: string;
   trustStrip: string;
   pasteBet: string;
+  uploadBetSlip: string;
   buildBet: string;
   seePremium: string;
   signupFree: string;
@@ -17,6 +18,15 @@ export type HomeContent = {
   aiTipsTitle: string;
   aiTipsText: string;
   aiTipsCta: string;
+  howItWorksTitle: string;
+  howItWorksSteps: Array<{ title: string; text: string }>;
+  brainScoreTitle: string;
+  brainScoreText: string;
+  brainScorePoints: string[];
+  brainScoreCta: string;
+  trackRecordTitle: string;
+  trackRecordText: string;
+  trackRecordCta: string;
   features: Array<{ title: string; text: string }>;
 };
 
@@ -27,8 +37,9 @@ const homeContent: Record<Language, HomeContent> = {
     description:
       "BrainStats hjälper dig att analysera matcher, statistik, form, skador och risker. Tjänsten är ett analysverktyg och tar inte emot spel eller pengar.",
     trustStrip:
-      "AI-analysverktyg · Inte ett spelbolag · Vi tar inte emot spel eller pengar",
+      "AI-analysverktyg · Inte ett spelbolag · Vi tar inte emot spel eller pengar · 3 gratis analyser/dag",
     pasteBet: "Klistra in spelidé",
+    uploadBetSlip: "Ladda upp kupong",
     buildBet: "Bygg spelidé",
     seePremium: "7 dagar Pro gratis",
     signupFree: "Skapa gratis konto",
@@ -42,10 +53,39 @@ const homeContent: Record<Language, HomeContent> = {
     aiTipsText:
       "BrainStats skapar dagliga AI-kuponger med olika riskprofil, matcher och estimerade fair odds — direkt i din dashboard.",
     aiTipsCta: "Se dagens AI-tips",
+    howItWorksTitle: "Så funkar det",
+    howItWorksSteps: [
+      {
+        title: "1. Ladda upp eller klistra in",
+        text: "Skärmdump av kupong eller text — AI tolkar match och marknader.",
+      },
+      {
+        title: "2. Brain Engine analyserar",
+        text: "Form, tabell, skador, väder och marknad kombineras till en rapport.",
+      },
+      {
+        title: "3. Få BrainScore™ & risk",
+        text: "Tydlig score, risknivå och Brain Picks — spara i dashboarden.",
+      },
+    ],
+    brainScoreTitle: "BrainScore™ — din match i siffror",
+    brainScoreText:
+      "Varje analys får en BrainScore från 0–100 baserad på form, statistik, skador och marknad. Plus tydlig risknivå så du ser styrkor och svagheter.",
+    brainScorePoints: [
+      "Form & tabell",
+      "Skador & laguppställning",
+      "H2H & statistik",
+      "Risknivå & Brain Picks",
+    ],
+    brainScoreCta: "Testa BrainScore gratis",
+    trackRecordTitle: "Transparent analys vs resultat",
+    trackRecordText:
+      "Vi visar exempel på AI-analyser före match och vad som hände efter — inga dolda vinster, inga garantier.",
+    trackRecordCta: "Se analys vs resultat",
     features: [
       {
-        title: "📋 Klistra in",
-        text: "Kopiera din spelidé och låt BrainStats tolka den.",
+        title: "📸 Ladda upp kupong",
+        text: "AI läser skärmdump och tolkar match och marknader automatiskt.",
       },
       {
         title: "🧠 Brain Engine",
@@ -63,8 +103,9 @@ const homeContent: Record<Language, HomeContent> = {
     description:
       "BrainStats helps you analyze matches, stats, form, injuries and risk. This is an analysis tool — we do not accept bets or money.",
     trustStrip:
-      "AI analysis tool · Not a bookmaker · We do not accept bets or money",
+      "AI analysis tool · Not a bookmaker · We do not accept bets or money · 3 free analyses/day",
     pasteBet: "Paste bet idea",
+    uploadBetSlip: "Upload bet slip",
     buildBet: "Build bet idea",
     seePremium: "7 days Pro free",
     signupFree: "Create free account",
@@ -78,10 +119,39 @@ const homeContent: Record<Language, HomeContent> = {
     aiTipsText:
       "BrainStats creates daily AI slips with different risk profiles, matches and estimated fair odds — right in your dashboard.",
     aiTipsCta: "See today's AI tips",
+    howItWorksTitle: "How it works",
+    howItWorksSteps: [
+      {
+        title: "1. Upload or paste",
+        text: "Bet slip screenshot or text — AI reads the match and markets.",
+      },
+      {
+        title: "2. Brain Engine runs",
+        text: "Form, table, injuries, weather and market combined into one report.",
+      },
+      {
+        title: "3. Get BrainScore™ & risk",
+        text: "Clear score, risk level and Brain Picks — save in your dashboard.",
+      },
+    ],
+    brainScoreTitle: "BrainScore™ — your match in numbers",
+    brainScoreText:
+      "Every analysis gets a BrainScore from 0–100 based on form, stats, injuries and market. Plus a clear risk level so you see strengths and weaknesses.",
+    brainScorePoints: [
+      "Form & table",
+      "Injuries & lineups",
+      "H2H & statistics",
+      "Risk level & Brain Picks",
+    ],
+    brainScoreCta: "Try BrainScore free",
+    trackRecordTitle: "Transparent analysis vs outcome",
+    trackRecordText:
+      "See examples of AI analyses before kick-off and what happened after — no hidden wins, no guarantees.",
+    trackRecordCta: "View analysis vs outcome",
     features: [
       {
-        title: "📋 Paste in",
-        text: "Copy your bet idea and let BrainStats interpret it.",
+        title: "📸 Upload bet slip",
+        text: "AI reads your screenshot and parses match and markets automatically.",
       },
       {
         title: "🧠 Brain Engine",
