@@ -20,6 +20,7 @@ import {
 } from "@/lib/safeRedirect";
 import BetSlipImageUpload from "@/components/BetSlipImageUpload";
 import AnalyzeQuickStart from "@/components/AnalyzeQuickStart";
+import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import {
   summarizeRotationRisksForUi,
   type RotationRisk,
@@ -426,6 +427,8 @@ const brainPicks = useMemo(() => {
   <p className="mt-4 max-w-2xl text-sm leading-7 text-[#A9A9A9] max-md:line-clamp-3 sm:mt-6 sm:text-lg sm:leading-8">
     {t.analyze.description}
   </p>
+
+  <ResponsibleUseNotice className="mt-5 sm:mt-6" />
 
   <div className="mt-6 hidden gap-4 md:grid md:grid-cols-3">
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">

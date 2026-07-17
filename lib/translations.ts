@@ -122,14 +122,26 @@ export const translations = {
       resetInvalidLink:
         "Länken är ogiltig eller har gått ut. Begär en ny återställningslänk från inloggningen.",
       resetLoading: "Verifierar återställningslänken...",
-      acceptTermsLabel: "Jag godkänner",
+      acceptTermsLabel: "Jag är minst 18 år och godkänner",
       acceptTermsRequired:
-        "Du måste godkänna användarvillkoren och integritetspolicyn för att skapa konto.",
+        "Du måste bekräfta att du är minst 18 år och godkänna användarvillkoren samt integritetspolicyn.",
       termsLink: "användarvillkoren",
       privacyLink: "integritetspolicyn",
       and: "och",
       legalFooter:
-        "Genom att använda BrainStats godkänner du våra villkor. Läs även köpvillkor, cookiepolicy och ansvarsfriskrivning.",
+        "Endast för vuxna (18+). BrainStats är ett analysverktyg — inte ett spelbolag.",
+    },
+
+    responsibleUse: {
+      badge: "18+",
+      title: "Analysverktyg — inte spelbolag",
+      description:
+        "BrainStats ger AI-baserad fotbollsanalys och beslutsstöd. Vi tar inte emot spel eller insatser. AI-resultat är ingen garanti. Spela endast ansvarsfullt om du väljer att spela hos tredje part.",
+      compactText:
+        "Analysverktyg · ingen garanti · spela ansvarsfullt.",
+      learnMore: "Läs mer",
+      disclaimerLink: "Ansvarsfriskrivning",
+      helpLink: "Stödlinjen.se",
     },
 
     dashboard: {
@@ -224,7 +236,7 @@ export const translations = {
       description:
         "Börja gratis eller lås upp fler analyser, djupare rapporter och avancerade AI-insikter.",
       disclaimer:
-        "BrainStats erbjuder analys och information. Vi tar inte emot spel, insatser eller utbetalningar.",
+        "18+. Analys och information — inte spel, insatser eller utbetalningar. AI-resultat är ingen garanti.",
       paymentErrorTitle: "Betalningen kunde inte startas",
       sessionError: "Kunde inte kontrollera din inloggning.",
       checkoutError: "Stripe Checkout kunde inte startas.",
@@ -636,7 +648,7 @@ export const translations = {
       description:
         "AI-genererad analys baserad på matchdata, form, tabell, H2H och vald marknad.",
       disclaimer:
-        "BrainStats erbjuder analys och information. Vi tar inte emot spel, insatser eller utbetalningar.",
+        "18+. Analys och information — inte spel, insatser eller utbetalningar. AI-resultat är ingen garanti.",
       brainScore: "BrainScore™",
       riskLevel: "Risknivå",
       confidence: "Confidence",
@@ -882,14 +894,26 @@ export const translations = {
       resetInvalidLink:
         "This link is invalid or has expired. Request a new reset link from the login page.",
       resetLoading: "Verifying reset link...",
-      acceptTermsLabel: "I agree to the",
+      acceptTermsLabel: "I confirm I am at least 18 and agree to the",
       acceptTermsRequired:
-        "You must accept the Terms of Service and Privacy Policy to create an account.",
+        "You must confirm you are at least 18 and accept the Terms of Service and Privacy Policy.",
       termsLink: "Terms of Service",
       privacyLink: "Privacy Policy",
       and: "and",
       legalFooter:
-        "By using BrainStats you agree to our terms. Also read the Purchase Terms, Cookie Policy and Disclaimer.",
+        "Adults only (18+). BrainStats is an analysis tool — not a bookmaker.",
+    },
+
+    responsibleUse: {
+      badge: "18+",
+      title: "Analysis tool — not a bookmaker",
+      description:
+        "BrainStats provides AI football analysis and decision support. We do not accept bets or stakes. AI output is not a guarantee. Only gamble responsibly if you choose to bet with third parties.",
+      compactText:
+        "Analysis tool · no guarantees · gamble responsibly.",
+      learnMore: "Learn more",
+      disclaimerLink: "Disclaimer",
+      helpLink: "BeGambleAware.org",
     },
 
     dashboard: {
@@ -984,7 +1008,7 @@ export const translations = {
       description:
         "Start free or unlock more analyses, deeper reports and advanced AI insights.",
       disclaimer:
-        "BrainStats provides analysis and information. We do not accept bets, stakes or payouts.",
+        "18+. Analysis and information — not bets, stakes or payouts. AI output is not a guarantee.",
       paymentErrorTitle: "Payment could not be started",
       sessionError: "Could not verify your login.",
       checkoutError: "Stripe Checkout could not be started.",

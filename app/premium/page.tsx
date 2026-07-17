@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
 import PurchasePreContractBox from "@/components/PurchasePreContractBox";
+import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 
 type PaidPlan = "pro" | "elite";
 
@@ -152,6 +153,10 @@ export default function PremiumPage() {
             <p className="mx-auto mt-2 hidden max-w-2xl text-sm text-[#747474] md:block sm:mt-3">
               {t.premium.disclaimer}
             </p>
+
+            <div className="mx-auto mt-6 max-w-2xl">
+              <ResponsibleUseNotice />
+            </div>
           </section>
 
           {error && (

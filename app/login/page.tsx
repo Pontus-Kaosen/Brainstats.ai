@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import LegalLinksSection from "@/components/LegalLinksSection";
+import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getSafeRedirectPath } from "@/lib/safeRedirect";
 
@@ -266,7 +267,8 @@ function LoginForm() {
         ) : null}
 
         <div className="mt-8 border-t border-white/10 pt-6">
-          <p className="text-center text-xs leading-6 text-[#777]">
+          <ResponsibleUseNotice compact className="justify-center text-center" />
+          <p className="mt-4 text-center text-xs leading-6 text-[#777]">
             {t.login.legalFooter}
           </p>
           <div className="mt-4">

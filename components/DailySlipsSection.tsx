@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AIBetSlip from "@/components/AIBetSlip";
+import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
 
@@ -129,6 +130,8 @@ export default function DailySlipsSection() {
       </div>
 
       <p className="mt-3 hidden text-sm text-[#777] md:block sm:mt-4">{t.dailySlips.disclaimer}</p>
+
+      <ResponsibleUseNotice compact className="mt-4 hidden md:flex" />
 
       {!loading && !error && slips.length > 0 && (
         <div className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-4 sm:p-5">

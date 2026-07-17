@@ -29,7 +29,7 @@ const documents: Record<
       title: "Användarvillkor",
       description:
         "Villkor för användning av BrainStats analysplattform och premiumtjänster.",
-      lastUpdated: "12 juli 2026",
+      lastUpdated: "17 juli 2026",
       sections: [
         {
           title: "1. Om BrainStats",
@@ -39,20 +39,10 @@ const documents: Record<
           ],
         },
         {
-          title: "2. Tjänstens funktioner och planer",
+          title: "2. Tjänsten",
           paragraphs: [
-            "BrainStats är en helt digital webbtjänst. Nedan beskrivs huvudfunktionerna och vad som ingår i respektive plan.",
-          ],
-          bullets: [
-            "Analyze – klistra in eller skicka en spelidé (text eller BrainSlip) och få AI-rapport med BrainScore™, risknivå, styrkor, risker, marknadsanalys och Brain Picks.",
-            "Brain Builder – välj liga, match och marknad, bygg en BrainSlip och skicka till AI-analys.",
-            "Dashboard – översikt över sparade analyser, planstatus, dagliga AI-kuponger och genvägar till Builder och Premium.",
-            "Rapporter – sparade AI-analyser tillgängliga via unika länkar (/report/[id]).",
-            "Daily Brain Picks – AI-genererade dagliga kuponger med olika riskprofiler och estimerade fair odds (inte liveodds från spelbolag).",
-            "Premium-hantering – köp, uppgradering och avslut via Stripe Checkout och Stripe Customer Portal i dashboarden.",
-            "Free – kostnadsfri plan med upp till 3 AI-analyser per dag, grundrapport, BrainScore™, 1 Brain Pick per analys och 1 daglig AI-kupong.",
-            `Pro (${companyInfo.plans.pro.priceSv}) – obegränsade analyser, full Brain Builder, djupare rapporter, sparad historik, form/statistik, upp till 3 Brain Picks per analys och 3 dagliga AI-kuponger.`,
-            `Elite (${companyInfo.plans.elite.priceSv}) – allt i Pro plus AI Match of the Day, Value Bets, prioriterad AI, upp till 5 Brain Picks per analys och 5 dagliga AI-kuponger.`,
+            "BrainStats är en digital webbtjänst för AI-driven fotbollsanalys, inklusive Analyze (text eller bild), Brain Builder, sparade rapporter, dashboard och dagliga AI-kuponger (Daily Brain Picks).",
+            "Omfattning beror på din plan (Free, Pro eller Elite). Priser och planinnehåll framgår av premium-sidan och köpvillkoren.",
           ],
         },
         {
@@ -64,7 +54,9 @@ const documents: Record<
         {
           title: "4. Behörighet",
           paragraphs: [
-            "Du måste vara minst 18 år för att använda BrainStats. Tjänsten riktar sig till vuxna som vill analysera fotboll och spelidéer på ett ansvarsfullt sätt.",
+            "Du måste vara minst 18 år för att använda BrainStats.",
+            "Tjänsten riktar sig till vuxna i länder där det är lagligt att ta del av fotbollsanalys och information om spel. Du ansvarar själv för att ditt användande följer lokal lagstiftning.",
+            "BrainStats är varken spelbolag, betalningsförmedlare för spel eller affiliate som tar emot provision för insatser hos tredje part.",
           ],
         },
         {
@@ -145,7 +137,7 @@ const documents: Record<
       title: "Köpvillkor",
       description:
         "Villkor för köp av digitala premium-prenumerationer på BrainStats (Pro och Elite).",
-      lastUpdated: "12 juli 2026",
+      lastUpdated: "17 juli 2026",
       sections: [
         {
           title: "1. Säljare",
@@ -159,8 +151,7 @@ const documents: Record<
           ],
           bullets: [
             `Pro – ${companyInfo.plans.pro.priceSv}: obegränsade AI-analyser, djupare rapporter, full Brain Builder, sparad historik, form och statistik, upp till 3 Brain Picks per analys och 3 dagliga AI-kuponger.`,
-            `Elite – ${companyInfo.plans.elite.priceSv}: allt i Pro plus AI Match of the Day, Daily Brain Picks, Value Bets, prioriterad AI och tidig tillgång till nya funktioner, upp till 5 Brain Picks per analys och 5 dagliga AI-kuponger.`,
-            "Free-planen (0 kr) omfattas inte av dessa köpvillkor men ger begränsad tillgång enligt användarvillkoren.",
+            `Elite – ${companyInfo.plans.elite.priceSv}: allt i Pro plus AI Match of the Day, Value Bets, prioriterad AI och tidig tillgång till nya funktioner, upp till 5 Brain Picks per analys och 5 dagliga AI-kuponger.`,
           ],
         },
         {
@@ -243,7 +234,7 @@ const documents: Record<
       title: "Integritetspolicy",
       description:
         "Hur BrainStats samlar in, använder och skyddar personuppgifter enligt GDPR.",
-      lastUpdated: "12 juli 2026",
+      lastUpdated: "17 juli 2026",
       sections: [
         {
           title: "1. Personuppgiftsansvarig",
@@ -265,13 +256,13 @@ const documents: Record<
           ],
         },
         {
-          title: "3. Varför vi behandlar uppgifter",
+          title: "3. Varför vi behandlar uppgifter (rättslig grund)",
           bullets: [
-            "Tillhandahålla och förbättra tjänsten (avtal).",
+            "Tillhandahålla och förbättra tjänsten (avtal, GDPR art. 6.1 b).",
             "Hantera inloggning, konto och premium (avtal).",
-            "Betalning och fakturering via Stripe (avtal / rättslig förpliktelse).",
-            "Säkerhet, felsökning och missbruksförebyggande (berättigat intresse).",
-            "Anonymiserad/anonym statistik via Vercel Analytics (berättigat intresse / samtycke där krävs).",
+            "Betalning och bokföring via Stripe (avtal / rättslig förpliktelse).",
+            "Säkerhet, felsökning och missbruksförebyggande (berättigat intresse, art. 6.1 f).",
+            "Anonym besöksstatistik via Vercel Analytics (berättigat intresse / samtycke där ePrivacy kräver det).",
           ],
         },
         {
@@ -336,7 +327,7 @@ const documents: Record<
       title: "Cookiepolicy",
       description:
         "Information om cookies, lokal lagring och liknande teknik på BrainStats.",
-      lastUpdated: "12 juli 2026",
+      lastUpdated: "17 juli 2026",
       sections: [
         {
           title: "1. Vad är cookies?",
@@ -377,12 +368,13 @@ const documents: Record<
       title: "Ansvarsfriskrivning",
       description:
         "Viktig information om AI-analyser, spelansvar och risker.",
-      lastUpdated: "12 juli 2026",
+      lastUpdated: "17 juli 2026",
       sections: [
         {
           title: "1. BrainStats är inte ett spelbolag",
           paragraphs: [
-            "BrainStats erbjuder analys, statistik och AI-baserade insikter. Vi erbjuder inte spel, odds, insatsmottagning eller utbetalningar. Vi är inte en operatör enligt spellagen.",
+            "BrainStats erbjuder analys, statistik och AI-baserade insikter. Vi erbjuder inte spel, odds, insatsmottagning eller utbetalningar. Vi är inte operatör enligt spellagen (2018:1138) och agerar inte som affiliate som tar emot provision för insatser.",
+            "Innehållet är endast avsett som beslutsstöd för vuxna. Det utgör inte personlig finansiell rådgivning.",
           ],
         },
         {
@@ -436,7 +428,7 @@ const documents: Record<
       title: "Terms of Service",
       description:
         "Terms for using the BrainStats analysis platform and premium services.",
-      lastUpdated: "12 July 2026",
+      lastUpdated: "17 July 2026",
       sections: [
         {
           title: "1. About BrainStats",
@@ -446,20 +438,10 @@ const documents: Record<
           ],
         },
         {
-          title: "2. Service features and plans",
+          title: "2. Service",
           paragraphs: [
-            "BrainStats is a fully digital web service. Below are the main features and what each plan includes.",
-          ],
-          bullets: [
-            "Analyze – paste or submit a bet idea (text or BrainSlip) and receive an AI report with BrainScore™, risk level, strengths, risks, market analysis and Brain Picks.",
-            "Brain Builder – choose league, match and market, build a BrainSlip and send it for AI analysis.",
-            "Dashboard – overview of saved analyses, plan status, daily AI slips and shortcuts to Builder and Premium.",
-            "Reports – saved AI analyses available via unique links (/report/[id]).",
-            "Daily Brain Picks – AI-generated daily slips with different risk profiles and estimated fair odds (not live bookmaker odds).",
-            "Premium management – purchase, upgrade and cancel via Stripe Checkout and the Stripe Customer Portal in your dashboard.",
-            "Free – free plan with up to 3 AI analyses per day, basic report, BrainScore™, 1 Brain Pick per analysis and 1 daily AI slip.",
-            `Pro (${companyInfo.plans.pro.priceEn}) – unlimited analyses, full Brain Builder, deeper reports, saved history, form/statistics, up to 3 Brain Picks per analysis and 3 daily AI slips.`,
-            `Elite (${companyInfo.plans.elite.priceEn}) – everything in Pro plus AI Match of the Day, Value Bets, priority AI, up to 5 Brain Picks per analysis and 5 daily AI slips.`,
+            "BrainStats is a digital web service for AI-driven football analysis, including Analyze (text or image), Brain Builder, saved reports, dashboard and daily AI slips (Daily Brain Picks).",
+            "Access depends on your plan (Free, Pro or Elite). Prices and plan details are shown on the premium page and in the Purchase Terms.",
           ],
         },
         {
@@ -471,7 +453,9 @@ const documents: Record<
         {
           title: "4. Eligibility",
           paragraphs: [
-            "You must be at least 18 years old to use BrainStats. The service is intended for adults who want to analyse football and bet ideas responsibly.",
+            "You must be at least 18 years old to use BrainStats.",
+            "The service is intended for adults in jurisdictions where football analysis and betting-related information is legal. You are responsible for complying with local law.",
+            "BrainStats is not a gambling operator, payment agent for gambling or affiliate earning commission on stakes placed with third parties.",
           ],
         },
         {
@@ -550,7 +534,7 @@ const documents: Record<
       title: "Purchase Terms",
       description:
         "Terms for purchasing digital premium subscriptions on BrainStats (Pro and Elite).",
-      lastUpdated: "12 July 2026",
+      lastUpdated: "17 July 2026",
       sections: [
         {
           title: "1. Seller",
@@ -564,8 +548,7 @@ const documents: Record<
           ],
           bullets: [
             `Pro – ${companyInfo.plans.pro.priceEn}: unlimited AI analyses, deeper reports, full Brain Builder, saved history, form and statistics, up to 3 Brain Picks per analysis and 3 daily AI slips.`,
-            `Elite – ${companyInfo.plans.elite.priceEn}: everything in Pro plus AI Match of the Day, Daily Brain Picks, Value Bets, priority AI and early access to new features, up to 5 Brain Picks per analysis and 5 daily AI slips.`,
-            "The Free plan ($0) is not covered by these Purchase Terms but provides limited access under the Terms of Service.",
+            `Elite – ${companyInfo.plans.elite.priceEn}: everything in Pro plus AI Match of the Day, Value Bets, priority AI and early access to new features, up to 5 Brain Picks per analysis and 5 daily AI slips.`,
           ],
         },
         {
@@ -646,7 +629,7 @@ const documents: Record<
       title: "Privacy Policy",
       description:
         "How BrainStats collects, uses and protects personal data under GDPR.",
-      lastUpdated: "12 July 2026",
+      lastUpdated: "17 July 2026",
       sections: [
         {
           title: "1. Data controller",
@@ -668,13 +651,13 @@ const documents: Record<
           ],
         },
         {
-          title: "3. Why we process data",
+          title: "3. Why we process data (legal basis)",
           bullets: [
-            "Provide and improve the service (contract).",
+            "Provide and improve the service (contract, GDPR Art. 6(1)(b)).",
             "Manage login, account and premium (contract).",
             "Payments and billing via Stripe (contract / legal obligation).",
-            "Security, debugging and abuse prevention (legitimate interest).",
-            "Anonymous visit statistics via Vercel Analytics (legitimate interest / consent where required).",
+            "Security, debugging and abuse prevention (legitimate interest, Art. 6(1)(f)).",
+            "Anonymous visit statistics via Vercel Analytics (legitimate interest / consent where ePrivacy requires it).",
           ],
         },
         {
@@ -737,7 +720,7 @@ const documents: Record<
       title: "Cookie Policy",
       description:
         "Information about cookies, local storage and similar technologies on BrainStats.",
-      lastUpdated: "12 July 2026",
+      lastUpdated: "17 July 2026",
       sections: [
         {
           title: "1. What are cookies?",
@@ -776,12 +759,13 @@ const documents: Record<
       title: "Disclaimer",
       description:
         "Important information about AI analyses, responsible gambling and risk.",
-      lastUpdated: "12 July 2026",
+      lastUpdated: "17 July 2026",
       sections: [
         {
           title: "1. BrainStats is not a bookmaker",
           paragraphs: [
-            "BrainStats provides analysis, statistics and AI-based insights. We do not offer betting, odds, stake collection or payouts.",
+            "BrainStats provides analysis, statistics and AI-based insights. We do not offer betting, odds, stake collection or payouts. We are not a gambling operator and do not act as an affiliate earning commission on stakes placed elsewhere.",
+            "Content is for decision support and information for adults only. It is not personal financial advice.",
           ],
         },
         {
