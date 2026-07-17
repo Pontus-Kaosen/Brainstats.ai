@@ -5,6 +5,7 @@ import HomeCtaLink from "@/components/HomeCtaLink";
 import { getTrackRecordContent } from "@/lib/trackRecordContent";
 import { detectLanguage } from "@/lib/locale.server";
 import { createPageMetadata } from "@/lib/seo";
+import { getOutcomeLabelForTier, getSafetyGrade } from "@/lib/safetyGrades";
 
 export async function generateMetadata() {
   const language = await detectLanguage();
@@ -72,13 +73,21 @@ export default async function TrackRecordPage() {
                   </th>
                   <th className="px-4 py-4 sm:px-6">{t.tableHeaders.score}</th>
                   <th className="hidden px-4 py-4 md:table-cell md:px-6">
-                    {t.tableHeaders.risk}
+                    {t.tableHeaders.safetyGrade}
                   </th>
                   <th className="px-4 py-4 sm:px-6">{t.tableHeaders.result}</th>
                 </tr>
               </thead>
               <tbody>
-                {t.entries.map((entry) => (
+                {t.entries.map((entry) => {
+                  const grade = getSafetyGrade(entry.safetyTier, language);
+                  const missLabel = getOutcomeLabelForTier(
+                    entry.safetyTier,
+                    entry.outcome,
+                    language
+                  );
+
+                  return (
                   <tr
                     key={`${entry.date}-${entry.match}`}
                     className="border-b border-white/5 transition hover:bg-white/[0.02]"
@@ -102,15 +111,21 @@ export default async function TrackRecordPage() {
                       {entry.brainScore}
                     </td>
                     <td className="hidden px-4 py-4 text-[#A9A9A9] md:table-cell md:px-6">
-                      {entry.risk}
+                      {grade.label}
                     </td>
                     <td
                       className={`px-4 py-4 font-bold sm:px-6 ${outcomeClass(entry.outcome)}`}
                     >
-                      {t.outcomeLabels[entry.outcome]}
+                      <p>{t.outcomeLabels[entry.outcome]}</p>
+                      {missLabel && (
+                        <p className="mt-1 text-xs font-semibold text-red-300/90">
+                          {missLabel}
+                        </p>
+                      )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </section>

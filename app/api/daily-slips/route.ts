@@ -10,6 +10,12 @@ import {
   parseRequestLanguage,
   stripMetaPicks,
 } from "@/lib/aiPrompts";
+import {
+  getSafetyGrade,
+  resolveSafetyTier,
+  sortSlipsBySafety,
+} from "@/lib/safetyGrades";
+import type { Language } from "@/lib/translations";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -66,21 +72,27 @@ function calculateFairOdds(probability: number) {
   return Number((100 / safeProbability).toFixed(2));
 }
 
-function normalizeRisk(value: unknown, language: ReturnType<typeof parseRequestLanguage>) {
-  if (
-    value === "Lägre risk" ||
-    value === "Lower risk" ||
-    value === "Balanserad" ||
-    value === "Balanced" ||
-    value === "Value" ||
-    value === "Högre risk" ||
-    value === "Higher risk" ||
-    value === "Special"
-  ) {
-    return value;
+function normalizeRisk(
+  value: unknown,
+  slipIndex: number,
+  language: Language
+) {
+  const tier = slipIndex + 1;
+  const grade = getSafetyGrade(tier, language);
+
+  if (typeof value === "string") {
+    const resolved = resolveSafetyTier({
+      slipIndex: tier,
+      risk: value,
+      title: value,
+    });
+
+    if (resolved === tier) {
+      return grade.label;
+    }
   }
 
-  return language === "en" ? "Balanced" : "Balanserad";
+  return grade.label;
 }
 
 function serializeSlipsForResponse(
@@ -92,12 +104,30 @@ function serializeSlipsForResponse(
     risk: string;
     confidence: number;
     picks: import("@/lib/aiPrompts").SlipPickMeta[];
-  }>
+  }>,
+  language: Language
 ) {
-  return slips.map((slip) => ({
-    ...slip,
-    picks: stripMetaPicks(slip.picks),
-  }));
+  const enriched = slips.map((slip) => {
+    const tier = resolveSafetyTier({
+      slipIndex: slip.slip_index,
+      risk: slip.risk,
+      title: slip.title,
+    });
+    const grade = getSafetyGrade(tier, language);
+
+    return {
+      ...slip,
+      title: grade.label,
+      risk: grade.label,
+      safetyTier: tier,
+      safetyLabel: grade.label,
+      safetyDescription: grade.description,
+      safetyRank: tier,
+      picks: stripMetaPicks(slip.picks),
+    };
+  });
+
+  return sortSlipsBySafety(enriched);
 }
 
 async function fetchUpcomingFixtures() {
@@ -221,8 +251,6 @@ function parseGeneratedSlips(
     ? parsed.slips
     : [];
 
-  const fallbackTitle =
-    language === "en" ? "AI slip" : "AI-kupong";
   const unknownMatch =
     language === "en" ? "Unknown match" : "Okänd match";
   const unknownMarket =
@@ -235,12 +263,9 @@ function parseGeneratedSlips(
         slip: any,
         slipIndex: number
       ): GeneratedSlip => ({
-        title:
-          typeof slip?.title === "string"
-            ? slip.title
-            : `${fallbackTitle} ${slipIndex + 1}`,
+        risk: normalizeRisk(slip?.risk, slipIndex, language),
 
-        risk: normalizeRisk(slip?.risk, language),
+        title: getSafetyGrade(slipIndex + 1, language).label,
 
         confidence: Math.min(
           95,
@@ -390,7 +415,8 @@ export async function GET(request: Request) {
           fixturesFound: null,
           generatedToday: false,
           slips: serializeSlipsForResponse(
-            existingSlips.slice(0, slipLimit)
+            existingSlips.slice(0, slipLimit),
+            language
           ),
         });
       }
@@ -501,7 +527,7 @@ export async function GET(request: Request) {
       slipLimit,
       fixturesFound: fixtures.length,
       generatedToday: true,
-      slips: serializeSlipsForResponse(inserted || []),
+      slips: serializeSlipsForResponse(inserted || [], language),
     });
   } catch (error: unknown) {
     console.error(

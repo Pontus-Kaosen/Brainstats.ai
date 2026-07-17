@@ -6,6 +6,8 @@ export function getLocale(language: Language) {
 
 export function translateSlipRisk(risk: string, t: Translations) {
   if (
+    risk === "Lätt" ||
+    risk === "Easy" ||
     risk === "Lägre risk" ||
     risk === "Lower risk" ||
     risk === "Low"
@@ -14,21 +16,38 @@ export function translateSlipRisk(risk: string, t: Translations) {
   }
 
   if (
+    risk === "Medel-lätt" ||
+    risk === "Fairly easy" ||
+    risk === "Balanserad" ||
+    risk === "Balanced"
+  ) {
+    return t.aiBetSlip.riskFairlyEasy;
+  }
+
+  if (
+    risk === "Medel" ||
+    risk === "Medium" ||
+    risk === "Value"
+  ) {
+    return t.aiBetSlip.riskBalanced;
+  }
+
+  if (
+    risk === "Svår" ||
+    risk === "Hard" ||
     risk === "Högre risk" ||
     risk === "Higher risk" ||
     risk === "High"
   ) {
-    return t.aiBetSlip.riskHigh;
+    return t.aiBetSlip.riskHard;
   }
 
   if (
-    risk === "Balanserad" ||
-    risk === "Balanced" ||
-    risk === "Value" ||
-    risk === "Special" ||
-    risk === "Medium"
+    risk === "Väldigt svår" ||
+    risk === "Very hard" ||
+    risk === "Special"
   ) {
-    return t.aiBetSlip.riskBalanced;
+    return t.aiBetSlip.riskHigh;
   }
 
   return risk;
@@ -40,25 +59,6 @@ export function translateRiskLevel(
 ) {
   if (!risk || risk === "Unknown" || risk === "Okänd") {
     return t.common.riskUnknown;
-  }
-
-  if (risk === "Low" || risk === "Lägre risk" || risk === "Lower risk") {
-    return t.common.riskLow;
-  }
-
-  if (risk === "High" || risk === "Högre risk" || risk === "Higher risk") {
-    return t.common.riskHigh;
-  }
-
-  if (
-    risk === "Medium" ||
-    risk === "Medel risk" ||
-    risk === "Balanserad" ||
-    risk === "Balanced" ||
-    risk === "Value" ||
-    risk === "Special"
-  ) {
-    return t.common.riskMedium;
   }
 
   return translateSlipRisk(risk, t);

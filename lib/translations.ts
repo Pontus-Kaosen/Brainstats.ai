@@ -205,6 +205,9 @@ export const translations = {
         "Färre kuponger än väntat skapades. Ladda om sidan för ett nytt försök.",
       unknownMatch: "Okänd match",
       unknownMarket: "Okänd marknad",
+      rankingTitle: "Rankade efter svårighetsgrad",
+      rankingLegend:
+        "Lätt → Medel-lätt → Medel → Svår → Väldigt svår (säkrast till svårast)",
     },
 
     manageSubscription: {
@@ -678,9 +681,15 @@ export const translations = {
       combinedFairOdds: "Kombinerat fair odds",
       disclaimer:
         "Estimerade fair odds är ett AI-baserat jämförelsevärde och inte ett liveodds från ett spelbolag.",
-      riskLow: "Lägre risk",
-      riskBalanced: "Balanserad",
-      riskHigh: "Högre risk",
+      riskLow: "Lätt",
+      riskFairlyEasy: "Medel-lätt",
+      riskBalanced: "Medel",
+      riskHard: "Svår",
+      riskHigh: "Väldigt svår",
+      safetyLevel: "Svårighetsgrad",
+      rankLabel: "#{rank}",
+      rankSafest: "Säkrast",
+      rankHardest: "Svårast",
     },
 
     builderPicker: {
@@ -956,6 +965,9 @@ export const translations = {
         "Fewer slips than expected were created. Reload the page to try again.",
       unknownMatch: "Unknown match",
       unknownMarket: "Unknown market",
+      rankingTitle: "Ranked by difficulty",
+      rankingLegend:
+        "Easy → Fairly easy → Medium → Hard → Very hard (safest to hardest)",
     },
 
     manageSubscription: {
@@ -1429,9 +1441,15 @@ export const translations = {
       combinedFairOdds: "Combined fair odds",
       disclaimer:
         "Estimated fair odds are an AI-based comparison value and not live odds from a bookmaker.",
-      riskLow: "Lower risk",
-      riskBalanced: "Balanced",
-      riskHigh: "Higher risk",
+      riskLow: "Easy",
+      riskFairlyEasy: "Fairly easy",
+      riskBalanced: "Medium",
+      riskHard: "Hard",
+      riskHigh: "Very hard",
+      safetyLevel: "Difficulty",
+      rankLabel: "#{rank}",
+      rankSafest: "Safest",
+      rankHardest: "Hardest",
     },
 
     builderPicker: {

@@ -588,13 +588,15 @@ Create exactly ${slipLimit} separate AI bet slips.
 User plan:
 ${plan}
 
-Slip profiles in this order:
+Slip profiles in this order (safest first — tier 1 to 5):
 
-1. Lower risk
-2. Balanced
-3. Value
-4. Higher risk
-5. Special
+1. Easy (tier 1 — easiest / most conservative)
+2. Fairly easy (tier 2)
+3. Medium (tier 3)
+4. Hard (tier 4)
+5. Very hard (tier 5 — hardest / most aggressive)
+
+For each slip set title and risk to exactly the profile name above (e.g. "Easy", "Hard").
 
 Rules:
 
@@ -631,8 +633,8 @@ Respond exactly in this JSON structure:
 {
   "slips": [
     {
-      "title": "Lower risk",
-      "risk": "Lower risk",
+      "title": "Easy",
+      "risk": "Easy",
       "confidence": 78,
       "picks": [
         {
@@ -653,13 +655,15 @@ Skapa exakt ${slipLimit} separata AI-kuponger.
 Användarens plan är:
 ${plan}
 
-Kupongprofiler i denna ordning:
+Kupongprofiler i denna ordning (säkrast först — nivå 1 till 5):
 
-1. Lägre risk
-2. Balanserad
-3. Value
-4. Högre risk
-5. Special
+1. Lätt (nivå 1 — enklast / mest konservativ)
+2. Medel-lätt (nivå 2)
+3. Medel (nivå 3)
+4. Svår (nivå 4)
+5. Väldigt svår (nivå 5 — svårast / mest offensiv)
+
+Sätt title och risk till exakt profilnamnet ovan (t.ex. "Lätt", "Svår").
 
 Regler:
 
@@ -696,8 +700,8 @@ Svara exakt enligt denna JSON-struktur:
 {
   "slips": [
     {
-      "title": "Lägre risk",
-      "risk": "Lägre risk",
+      "title": "Lätt",
+      "risk": "Lätt",
       "confidence": 78,
       "picks": [
         {

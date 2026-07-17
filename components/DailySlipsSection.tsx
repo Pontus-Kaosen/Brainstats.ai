@@ -23,6 +23,9 @@ type DailySlip = {
   risk: string;
   confidence: number;
   picks: SlipPick[];
+  safetyTier?: number;
+  safetyLabel?: string;
+  safetyRank?: number;
 };
 
 type DailySlipsResponse = {
@@ -127,6 +130,15 @@ export default function DailySlipsSection() {
 
       <p className="mt-3 hidden text-sm text-[#777] md:block sm:mt-4">{t.dailySlips.disclaimer}</p>
 
+      {!loading && !error && slips.length > 0 && (
+        <div className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-4 sm:p-5">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-[#18ff6d]">
+            {t.dailySlips.rankingTitle}
+          </p>
+          <p className="mt-2 text-sm text-[#A9A9A9]">{t.dailySlips.rankingLegend}</p>
+        </div>
+      )}
+
       {loading && (
         <div className="mt-8 rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">
           <p className="font-semibold text-[#18ff6d]">
@@ -160,9 +172,12 @@ export default function DailySlipsSection() {
           {slips.map((slip) => (
             <AIBetSlip
               key={slip.id}
-              title={slip.title}
+              title={slip.safetyLabel || slip.title}
               confidence={slip.confidence}
               risk={slip.risk}
+              safetyTier={slip.safetyTier as 1 | 2 | 3 | 4 | 5 | undefined}
+              safetyLabel={slip.safetyLabel}
+              safetyRank={slip.safetyRank ?? slip.safetyTier ?? slip.slip_index}
               picks={slip.picks.map((pick) => ({
                 fixture:
                   pick.fixture || pick.match || t.dailySlips.unknownMatch,

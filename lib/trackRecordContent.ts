@@ -1,11 +1,12 @@
 import type { Language } from "@/lib/translations";
+import type { SafetyTier } from "@/lib/safetyGrades";
 
 export type TrackRecordEntry = {
   date: string;
   match: string;
   market: string;
   brainScore: number;
-  risk: string;
+  safetyTier: SafetyTier;
   outcome: "won" | "lost" | "void" | "pending";
   note: string;
 };
@@ -22,7 +23,7 @@ export type TrackRecordContent = {
     match: string;
     pick: string;
     score: string;
-    risk: string;
+    safetyGrade: string;
     result: string;
   };
   outcomeLabels: Record<TrackRecordEntry["outcome"], string>;
@@ -40,7 +41,7 @@ const entries: TrackRecordEntry[] = [
     match: "Arsenal vs Chelsea",
     market: "Over 2.5 goals",
     brainScore: 74,
-    risk: "Medium",
+    safetyTier: 3,
     outcome: "won",
     note: "AI Match of the Day — high tempo & open defensive records.",
   },
@@ -49,7 +50,7 @@ const entries: TrackRecordEntry[] = [
     match: "Malmö FF vs AIK",
     market: "Home win",
     brainScore: 68,
-    risk: "Medium",
+    safetyTier: 4,
     outcome: "lost",
     note: "Daily Brain Pick — home form strong but red card changed game.",
   },
@@ -58,7 +59,7 @@ const entries: TrackRecordEntry[] = [
     match: "Barcelona vs Sevilla",
     market: "Both teams to score",
     brainScore: 71,
-    risk: "Lower",
+    safetyTier: 1,
     outcome: "won",
     note: "Value Bet highlight — attacking xG trend on both sides.",
   },
@@ -67,7 +68,7 @@ const entries: TrackRecordEntry[] = [
     match: "Liverpool vs Brighton",
     market: "Liverpool -1 AH",
     brainScore: 66,
-    risk: "Higher",
+    safetyTier: 5,
     outcome: "pending",
     note: "Published pre-match — result updated after full time.",
   },
@@ -83,16 +84,16 @@ const content: Record<Language, TrackRecordContent> = {
       "BrainStats är ett analysverktyg, inte ett spelbolag. Tidigare analyser är ingen garanti. Uppdatera exemplen här regelbundet för att bygga förtroende.",
     howTitle: "Så funkar det",
     howSteps: [
-      "AI publicerar analys med BrainScore™, risk och marknad före match.",
+      "AI publicerar analys med BrainScore™, svårighetsgrad och marknad före match.",
       "Matchen spelas — vi uppdaterar resultatet efter slutwhistle.",
-      "Du ser analys vs utfall side-by-side. Transparent, inte hype.",
+      "Vid miss visas vilken nivå (lätt → väldigt svår) som inte gick in.",
     ],
     tableHeaders: {
       date: "Datum",
       match: "Match",
       pick: "Marknad",
       score: "BrainScore",
-      risk: "Risk",
+      safetyGrade: "Svårighetsgrad",
       result: "Resultat",
     },
     outcomeLabels: {
@@ -117,16 +118,16 @@ const content: Record<Language, TrackRecordContent> = {
       "BrainStats is an analysis tool, not a bookmaker. Past analyses are not a guarantee. Update these examples regularly to build trust.",
     howTitle: "How it works",
     howSteps: [
-      "AI publishes analysis with BrainScore™, risk and market before the match.",
+      "AI publishes analysis with BrainScore™, difficulty grade and market before the match.",
       "The match is played — we update the outcome after full time.",
-      "You see analysis vs result side-by-side. Transparent, not hype.",
+      "On a miss, we show which level (easy → very hard) did not hit.",
     ],
     tableHeaders: {
       date: "Date",
       match: "Match",
       pick: "Market",
       score: "BrainScore",
-      risk: "Risk",
+      safetyGrade: "Difficulty",
       result: "Outcome",
     },
     outcomeLabels: {
