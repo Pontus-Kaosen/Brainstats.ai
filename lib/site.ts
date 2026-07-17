@@ -1,19 +1,22 @@
 export const siteName = "BrainStats";
 
-const defaultProductionUrl = "https://brainstats.eu";
+const defaultProductionUrl = "https://www.brainstats.eu";
 
 export function getSiteUrl() {
   const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
 
-  if (configured) {
-    return configured;
+  const resolved =
+    configured ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : defaultProductionUrl);
+
+  // Apex redirects to www on Vercel — keep sitemap/canonical URLs consistent.
+  if (resolved === "https://brainstats.eu") {
+    return "https://www.brainstats.eu";
   }
 
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-
-  return defaultProductionUrl;
+  return resolved;
 }
 
 export const siteDescriptionSv =
