@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local marketing / promo assets (not part of the site)
+/public/ads/
+/public/promo/
+/public/tiktok/
+/public/promo-reel.html
+/scripts/record-promo-demo.mjs

@@ -23,7 +23,6 @@ function loadEnv() {
 
 function findTestImage() {
   const candidates = [
-    path.join(root, "public", "promo", "test-betslip.png"),
     path.join(root, "scripts", "fixtures", "test-betslip.png"),
     path.join(
       process.env.USERPROFILE || "",
