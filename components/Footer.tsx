@@ -18,6 +18,7 @@ export default function Footer() {
     { label: t.footer.linkAnalyze, href: "/analyze" },
     { label: t.footer.linkUpload, href: "/analyze?mode=image" },
     { label: t.footer.linkTrackRecord, href: "/track-record" },
+    { label: t.footer.linkStandings, href: "/standings" },
     { label: t.footer.linkFootballAnalysis, href: "/football-analysis" },
     { label: t.footer.linkPremium, href: "/premium" },
   ];

@@ -266,6 +266,7 @@ export default function Navbar() {
     { title: t.navbar.home, href: "/" },
     { title: t.navbar.analyze, href: "/analyze?mode=image" },
     { title: t.navbar.builder, href: "/builder" },
+    { title: t.navbar.standings, href: "/standings" },
     { title: t.navbar.aiTips, href: "/dashboard#ai-tips", highlight: true },
     { title: t.navbar.trackRecord, href: "/track-record" },
     { title: t.navbar.dashboard, href: "/dashboard" },

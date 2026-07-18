@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/analyze",
     "/premium",
     "/track-record",
+    "/standings",
     "/football-analysis",
     "/upload-bet-slip",
     "/legal",

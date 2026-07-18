@@ -23,17 +23,25 @@ export async function GET(request: NextRequest) {
         logo: team.team.logo,
         points: team.points,
         goalsDiff: team.goalsDiff,
+        goalsFor: team.all.goals.for,
+        goalsAgainst: team.all.goals.against,
         played: team.all.played,
         won: team.all.win,
         draw: team.all.draw,
         lost: team.all.lose,
+        form: team.form || "",
       })) || [];
+
+    const leagueInfo = data.response?.[0]?.league;
 
     return jsonWithCache(
       {
         success: true,
         league,
         season,
+        leagueName: leagueInfo?.name || null,
+        leagueLogo: leagueInfo?.logo || null,
+        country: leagueInfo?.country || null,
         standings,
         errors: data.errors,
       },
