@@ -171,6 +171,8 @@ type AnalyzePromptInput = {
   playerId: string | null;
   rotationRisks: RotationRisk[];
   playerLineupStatus?: PlayerLineupStatus | null;
+  structuredContext: string;
+  dataQualityNote: string;
 };
 
 export function buildAnalyzeSystemPrompt(language: Language) {
@@ -179,6 +181,8 @@ export function buildAnalyzeSystemPrompt(language: Language) {
       "You are Brain Engine, the AI engine behind BrainStats. Analyze football objectively and data-driven. " +
       "Never promise outcomes, never call a bet safe, and never encourage irresponsible gambling. " +
       "Use only data provided in the context and clearly state when data is missing. " +
+      "When market odds are provided, treat them as a reference anchor and avoid probabilities far above the market unless multiple strong signals support it. " +
+      "If data quality is low, use cautious language and lower probabilities. " +
       "Respond only with valid JSON. Write all user-facing text fields in English."
     );
   }
@@ -187,6 +191,8 @@ export function buildAnalyzeSystemPrompt(language: Language) {
     "Du är Brain Engine, AI-motorn bakom BrainStats. Analysera fotboll objektivt och datadrivet. " +
     "Lova aldrig resultat, kalla aldrig ett spel säkert och uppmuntra aldrig oansvarigt spelande. " +
     "Använd endast data som finns i underlaget och säg tydligt när data saknas. " +
+    "När marknadsodds finns ska de användas som referens — undvik sannolikheter långt över marknaden om inte flera starka signaler stödjer det. " +
+    "Vid låg datakvalitet ska språket vara försiktigt och sannolikheterna lägre. " +
     "Svara endast med giltig JSON. Skriv all användartext på svenska."
   );
 }
@@ -244,29 +250,17 @@ Lineup rules:
 - If a selected player is not in the starting XI, that must clearly affect risk and probability.
 - If lineups are missing, do not guess who starts.
 
-Home table position:
-${JSON.stringify(input.homeStanding || null, null, 2)}
+Structured match data:
+${input.structuredContext}
 
-Away table position:
-${JSON.stringify(input.awayStanding || null, null, 2)}
+Data quality note:
+${input.dataQualityNote}
 
-Home team statistics:
-${JSON.stringify(input.homeStats, null, 2)}
-
-Away team statistics:
-${JSON.stringify(input.awayStats, null, 2)}
-
-Head-to-head:
-${JSON.stringify(input.h2h, null, 2)}
-
-Home team last five:
-${JSON.stringify(input.homeLastMatches, null, 2)}
-
-Away team last five:
-${JSON.stringify(input.awayLastMatches, null, 2)}
-
-Injuries and absences:
-${JSON.stringify(input.injuries, null, 2)}
+Analysis rules:
+- Use the structured match data above as the primary source.
+- Mention missing data explicitly in risks when relevant.
+- Keep probabilities realistic and anchored to market odds when available.
+- Do not exceed 75% probability unless data quality is high and several signals align.
 
 Player statistics:
 ${summarizePlayerStatsForPrompt(input.playerStats, language)}
@@ -366,29 +360,17 @@ Viktigt om startelvor:
 - Om en vald spelare inte startar ska det tydligt påverka risk och sannolikhet.
 - Om startelvor saknas får du inte gissa vilka som startar.
 
-Tabell hemmalag:
-${JSON.stringify(input.homeStanding || null, null, 2)}
+Strukturerat matchunderlag:
+${input.structuredContext}
 
-Tabell bortalag:
-${JSON.stringify(input.awayStanding || null, null, 2)}
+Datakvalitet:
+${input.dataQualityNote}
 
-Hemmalag statistik:
-${JSON.stringify(input.homeStats, null, 2)}
-
-Bortalag statistik:
-${JSON.stringify(input.awayStats, null, 2)}
-
-Head-to-head:
-${JSON.stringify(input.h2h, null, 2)}
-
-Hemmalag senaste fem:
-${JSON.stringify(input.homeLastMatches, null, 2)}
-
-Bortalag senaste fem:
-${JSON.stringify(input.awayLastMatches, null, 2)}
-
-Skador och frånvaro:
-${JSON.stringify(input.injuries, null, 2)}
+Analysregler:
+- Använd strukturerat matchunderlag som primär källa.
+- Nämn saknad data tydligt i risker när det är relevant.
+- Håll sannolikheter realistiska och förankra dem i marknadsodds när de finns.
+- Överskrid inte 75% sannolikhet om inte datakvaliteten är hög och flera signaler pekar samma håll.
 
 Spelarstatistik:
 ${summarizePlayerStatsForPrompt(input.playerStats, language)}

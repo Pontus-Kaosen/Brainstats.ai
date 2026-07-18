@@ -21,6 +21,13 @@ import {
   resolveBetSides,
   type RotationRisk,
 } from "@/lib/matchImportance";
+import {
+  applyAnalysisSafetyGuardrails,
+  assessDataQuality,
+  buildStructuredAnalysisContext,
+  calculateEnhancedBrainScore,
+  summarizeRecentForm,
+} from "@/lib/analysisContext";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -247,6 +254,12 @@ async function getWeather(
   }
 }
 
+async function getOdds(fixtureId: string | null) {
+  if (!fixtureId) return [];
+
+  return apiFootball(`/odds?fixture=${fixtureId}`);
+}
+
 async function getPlayerStats(
   playerId: string | null,
   leagueId: string,
@@ -259,118 +272,6 @@ async function getPlayerStats(
   );
 
   return data?.[0] || null;
-}
-
-function calculateBrainScore(input: {
-  homeStanding: any;
-  awayStanding: any;
-  h2h: any[];
-  injuries: any[];
-  weather: any;
-  playerStats: any;
-  lineups: any[];
-  isPlayerProp: boolean;
-  playerLineupStatus?: PlayerLineupStatus | null;
-}) {
-  let score = 50;
-
-  const breakdown = {
-    form: 10,
-    table: 10,
-    h2h: 10,
-    stats: 10,
-    market: 10,
-    confidence: 10,
-  };
-
-  if (
-    input.homeStanding &&
-    input.awayStanding
-  ) {
-    const rankDiff =
-      Number(
-        input.awayStanding.rank || 0
-      ) -
-      Number(
-        input.homeStanding.rank || 0
-      );
-
-    if (rankDiff > 5) {
-      score += 8;
-      breakdown.table = 18;
-    }
-  }
-
-  if (input.h2h.length > 0) {
-    score += 5;
-    breakdown.h2h = 15;
-  }
-
-  if (
-    input.playerStats &&
-    input.isPlayerProp
-  ) {
-    score += 12;
-    breakdown.stats = 22;
-    breakdown.market = 18;
-  }
-
-  if (areLineupsConfirmed(input.lineups)) {
-    score += 3;
-    breakdown.confidence = 15;
-  }
-
-  if (input.isPlayerProp && input.playerLineupStatus === "starting") {
-    score += 5;
-    breakdown.confidence = Math.max(breakdown.confidence, 16);
-  }
-
-  if (input.isPlayerProp && input.playerLineupStatus === "bench") {
-    score -= 10;
-    breakdown.market = Math.max(0, breakdown.market - 8);
-  }
-
-  if (input.isPlayerProp && input.playerLineupStatus === "not_in_squad") {
-    score -= 18;
-    breakdown.market = Math.max(0, breakdown.market - 12);
-  }
-
-  if (input.injuries.length > 0) {
-    score -= Math.min(
-      input.injuries.length * 2,
-      10
-    );
-  }
-
-  if (input.weather) {
-    score += 2;
-    breakdown.confidence = Math.max(
-      breakdown.confidence,
-      12
-    );
-  }
-
-  const brainScore = Math.max(
-    0,
-    Math.min(100, score)
-  );
-
-  const riskLevel =
-    brainScore >= 80
-      ? "Low"
-      : brainScore < 60
-        ? "High"
-        : "Medium";
-
-  return {
-    brainScore,
-    riskLevel,
-    confidence: Math.min(
-      95,
-      Math.max(40, brainScore + 5)
-    ),
-    scoreBreakdown: breakdown,
-  };
 }
 
 function calculateFairOdds(
@@ -762,6 +663,7 @@ export async function POST(
       weather,
       playerStats,
       lineups,
+      oddsResponse,
     ] = await Promise.all([
       getTeamStats(
         homeTeamId,
@@ -804,6 +706,7 @@ export async function POST(
       ),
 
       getLineups(fixtureId, homeTeamId, awayTeamId),
+      getOdds(fixtureId),
     ]);
 
     const homeName = fixture?.teams?.home?.name ?? "";
@@ -882,10 +785,62 @@ export async function POST(
           String(awayTeamId)
       );
 
+    const homeForm = summarizeRecentForm(
+      homeLastMatches,
+      homeTeamId,
+      homeName || "Home",
+      language
+    );
+
+    const awayForm = summarizeRecentForm(
+      awayLastMatches,
+      awayTeamId,
+      awayName || "Away",
+      language
+    );
+
+    const dataQuality = assessDataQuality({
+      fixture,
+      homeStanding,
+      awayStanding,
+      homeForm,
+      awayForm,
+      homeStats,
+      awayStats,
+      h2h,
+      injuries,
+      lineups,
+      weather,
+      oddsResponse,
+      language,
+    });
+
+    const structuredContext = buildStructuredAnalysisContext({
+      fixture,
+      homeStanding,
+      awayStanding,
+      homeForm,
+      awayForm,
+      homeStats,
+      awayStats,
+      h2h,
+      homeLastMatches,
+      awayLastMatches,
+      injuries,
+      weather,
+      oddsResponse,
+      dataQuality,
+      language,
+    });
+
     const calculatedScore =
-      calculateBrainScore({
+      calculateEnhancedBrainScore({
         homeStanding,
         awayStanding,
+        homeForm,
+        awayForm,
+        homeStats,
+        awayStats,
         h2h,
         injuries,
         weather,
@@ -893,6 +848,7 @@ export async function POST(
         lineups,
         isPlayerProp,
         playerLineupStatus,
+        dataQuality,
       });
 
     const completion =
@@ -931,6 +887,8 @@ export async function POST(
               playerId,
               rotationRisks,
               playerLineupStatus,
+              structuredContext,
+              dataQualityNote: dataQuality.note,
             }),
           },
         ],
@@ -948,8 +906,17 @@ export async function POST(
         brainPickLimit
       );
 
+    const guardedAnalysis = applyAnalysisSafetyGuardrails(
+      aiAnalysis,
+      {
+        language,
+        dataQuality,
+        oddsResponse,
+      }
+    );
+
     const cleanAnalysis = {
-      ...aiAnalysis,
+      ...guardedAnalysis,
 
       brainScore:
         calculatedScore.brainScore,
@@ -1084,6 +1051,8 @@ export async function POST(
         injuries,
         lineups,
         weather,
+        oddsAvailable: oddsResponse.length > 0,
+        dataQuality,
 
         referee:
           fixture?.fixture?.referee ||
