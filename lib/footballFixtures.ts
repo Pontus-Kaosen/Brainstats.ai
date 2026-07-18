@@ -100,6 +100,30 @@ export const POPULAR_LEAGUE_IDS = [
   39, 140, 135, 78, 61, 2, 3, 848, 94, 88, 144, 179, 203, 253, 71, 128,
 ];
 
+/** Top leagues shown immediately in Brain Builder (today/tomorrow). */
+export const MAJOR_LEAGUE_IDS = [39, 140, 135, 78, 61, 113, 2, 3];
+
+export function isMajorLeague(leagueId: number) {
+  return MAJOR_LEAGUE_IDS.includes(leagueId);
+}
+
+export function partitionLeagueGroups<
+  T extends { league: { id: number }; fixtures: unknown[] },
+>(groups: T[]) {
+  const majorGroups: T[] = [];
+  const otherGroups: T[] = [];
+
+  for (const group of groups) {
+    if (isMajorLeague(group.league.id)) {
+      majorGroups.push(group);
+    } else {
+      otherGroups.push(group);
+    }
+  }
+
+  return { majorGroups, otherGroups };
+}
+
 export function sortFixturesByKickoff<T extends { fixture: { date: string } }>(
   fixtures: T[]
 ) {

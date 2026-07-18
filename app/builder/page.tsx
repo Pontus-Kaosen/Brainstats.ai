@@ -29,6 +29,7 @@ import {
   getFixtureStockholmDateKey,
   getStockholmDateKey,
 } from "@/lib/stockholmDate";
+import { MAJOR_LEAGUE_IDS } from "@/lib/footballFixtures";
 import {
   isCornerOverUnderMarketLabel,
   isCardOverUnderMarketLabel,
@@ -240,6 +241,8 @@ export default function BuilderPage() {
   const [slip, setSlip] = useState<SlipItem[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(false);
+  const [loadingBackgroundFixtures, setLoadingBackgroundFixtures] =
+    useState(false);
   const [matchError, setMatchError] = useState("");
 
   const specificLeagueId =
@@ -576,6 +579,32 @@ export default function BuilderPage() {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 25000);
 
+    async function loadMajorLeagueFixtures(date: string) {
+      const responses = await Promise.allSettled(
+        MAJOR_LEAGUE_IDS.map(async (id) => {
+          const season =
+            allLeagues.find((league) => league.id === id)?.currentSeason ||
+            new Date().getFullYear();
+
+          const response = await fetch(
+            `/api/football/fixtures?league=${id}&season=${season}&date=${date}`,
+            { signal: controller.signal }
+          );
+          const data = await response.json();
+
+          if (!response.ok || data.success === false) {
+            return [] as Fixture[];
+          }
+
+          return (data.fixtures || []) as Fixture[];
+        })
+      );
+
+      return responses.flatMap((result) =>
+        result.status === "fulfilled" ? result.value : []
+      );
+    }
+
     async function loadByDates(dates: string[]) {
       const responses = await Promise.all(
         dates.map(async (date) => {
@@ -606,6 +635,7 @@ export default function BuilderPage() {
 
     async function loadFixtures() {
       setLoadingMatches(true);
+      setLoadingBackgroundFixtures(false);
       setMatchError("");
       setFixtures([]);
       setForms({});
@@ -643,15 +673,40 @@ export default function BuilderPage() {
             specificLeagueId,
             selectedSeason
           );
+        } else if (
+          viewMode === "today" ||
+          viewMode === "tomorrow"
+        ) {
+          const dateKey =
+            viewMode === "today"
+              ? todayKey
+              : addDaysToDateKey(todayKey, 1);
+
+          const majorItems = await loadMajorLeagueFixtures(dateKey);
+          if (majorItems.length > 0) {
+            setFixtures(majorItems);
+            setLoadingMatches(false);
+          }
+
+          setLoadingBackgroundFixtures(true);
+          try {
+            items = await loadByDates([dateKey]);
+            setFixtures(items);
+          } catch (backgroundError) {
+            console.warn("Builder background fixture load failed:", backgroundError);
+            if (majorItems.length === 0) {
+              throw backgroundError;
+            }
+          } finally {
+            setLoadingBackgroundFixtures(false);
+          }
+
+          return;
         } else if (viewMode === "week") {
           const dates = Array.from({ length: 7 }, (_, index) =>
             addDaysToDateKey(todayKey, index)
           );
           items = await loadByDates(dates);
-        } else if (viewMode === "today") {
-          items = await loadByDates([todayKey]);
-        } else if (viewMode === "tomorrow") {
-          items = await loadByDates([addDaysToDateKey(todayKey, 1)]);
         }
 
         setFixtures(items);
@@ -666,6 +721,7 @@ export default function BuilderPage() {
         setFixtures([]);
       } finally {
         setLoadingMatches(false);
+        setLoadingBackgroundFixtures(false);
         window.clearTimeout(timeout);
       }
     }
@@ -680,6 +736,7 @@ export default function BuilderPage() {
     viewMode,
     specificLeagueId,
     selectedSeason,
+    allLeagues,
     fixturePreviewLimit,
     loadExtraMatchData,
     t.builder.errors.fixtures,
@@ -1379,6 +1436,11 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     selectedFixtureId={selectedFixtureId}
                     isInSlip={isFixtureSelectedInSlip}
                     onSelectFixture={selectFixture}
+                    collapseOtherLeagues={
+                      !specificLeagueId && !search.trim() && viewMode !== "live"
+                    }
+                    loadingMoreLeagues={loadingBackgroundFixtures}
+                    resetCollapseKey={`${viewMode}-${leagueId}-${country}-${search}`}
                   />
                 </div>
               )}
