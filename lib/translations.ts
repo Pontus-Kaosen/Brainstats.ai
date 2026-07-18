@@ -251,6 +251,7 @@ export const translations = {
       pickLeagueHint:
         "Välj en liga till vänster för att se tabell med poäng, gjorda mål (GM), insläppta mål (IM) och mer.",
       seasonLabel: "Säsong",
+      changeLeague: "Byt liga",
       unknownCountry: "Övrigt",
       columns: {
         rank: "#",
@@ -1060,6 +1061,7 @@ export const translations = {
       pickLeagueHint:
         "Select a league on the left to view points, goals for (GF), goals against (GA) and more.",
       seasonLabel: "Season",
+      changeLeague: "Change league",
       unknownCountry: "Other",
       columns: {
         rank: "#",

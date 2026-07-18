@@ -7,6 +7,7 @@ import FootballBackground from "@/components/FootballBackground";
 import BuilderPicker from "@/components/BuilderPicker";
 import StandingsTable, { type StandingRow } from "@/components/StandingsTable";
 import { useLanguage } from "@/components/LanguageProvider";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 type Country = {
   name: string;
@@ -40,6 +41,7 @@ const TOURNAMENT_IDS = new Set([1, 2, 3, 4, 5, 9, 848]);
 
 export default function StandingsPage() {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   const [countries, setCountries] = useState<Country[]>([]);
   const [allLeagues, setAllLeagues] = useState<League[]>([]);
@@ -55,6 +57,7 @@ export default function StandingsPage() {
   const [loadingLeagues, setLoadingLeagues] = useState(true);
   const [loadingTable, setLoadingTable] = useState(false);
   const [error, setError] = useState("");
+  const [mobilePickerOpen, setMobilePickerOpen] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,6 +153,9 @@ export default function StandingsPage() {
     setError("");
     setStandings([]);
     setTableMeta(null);
+    if (isMobile) {
+      setMobilePickerOpen(false);
+    }
 
     try {
       const season = league.currentSeason || new Date().getFullYear();
@@ -202,21 +208,27 @@ export default function StandingsPage() {
       <div className="relative z-10">
         <Navbar />
 
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-12">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-12">
           <section className="text-center">
             <p className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
               {t.standings.badge}
             </p>
-            <h1 className="mt-5 text-3xl font-black sm:text-5xl">
+            <h1 className="mt-4 text-2xl font-black sm:mt-5 sm:text-5xl">
               {t.standings.title}
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-[#A9A9A9]">
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9] sm:mt-4 sm:text-base sm:leading-8">
               {t.standings.description}
             </p>
           </section>
 
-          <section className="mt-8 grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
-            <aside className="rounded-[2rem] border border-white/10 bg-black/30 p-4 sm:p-5">
+          <section className="mt-6 grid gap-4 lg:mt-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
+            <aside
+              className={`rounded-[1.5rem] border border-white/10 bg-black/30 p-4 sm:rounded-[2rem] sm:p-5 ${
+                isMobile && selectedLeague && !mobilePickerOpen
+                  ? "hidden lg:block"
+                  : ""
+              }`}
+            >
               <BuilderPicker
                 label={t.standings.countryLabel}
                 icon="🌍"
@@ -260,7 +272,7 @@ export default function StandingsPage() {
                 </div>
               </div>
 
-              <div className="mt-6 max-h-[520px] overflow-y-auto pr-1">
+              <div className="mt-6 max-h-[240px] overflow-y-auto pr-1 sm:max-h-[360px] lg:max-h-[520px]">
                 {loadingLeagues ? (
                   <p className="text-sm text-[#888]">{t.standings.loadingLeagues}</p>
                 ) : groupedLeagues.length === 0 ? (
@@ -316,8 +328,18 @@ export default function StandingsPage() {
             </aside>
 
             <section className="min-w-0">
+              {selectedLeague && !mobilePickerOpen && (
+                <button
+                  type="button"
+                  onClick={() => setMobilePickerOpen(true)}
+                  className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d] lg:hidden"
+                >
+                  ← {t.standings.changeLeague}
+                </button>
+              )}
+
               {!selectedLeague && !loadingTable && (
-                <div className="flex min-h-[320px] items-center justify-center rounded-[2rem] border border-dashed border-white/10 bg-black/20 p-8 text-center">
+                <div className="flex min-h-[240px] items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-black/20 p-6 text-center sm:min-h-[320px] sm:rounded-[2rem] sm:p-8">
                   <p className="max-w-md text-sm leading-7 text-[#888]">
                     {t.standings.pickLeagueHint}
                   </p>
@@ -334,21 +356,21 @@ export default function StandingsPage() {
 
               {!loadingTable && selectedLeague && tableMeta && (
                 <div>
-                  <div className="mb-5 flex flex-wrap items-center gap-4">
+                  <div className="mb-4 flex items-center gap-3 sm:mb-5 sm:gap-4">
                     {tableMeta.leagueLogo ? (
                       <Image
                         src={tableMeta.leagueLogo}
                         alt=""
-                        width={48}
-                        height={48}
-                        className="h-12 w-12 object-contain"
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 object-contain sm:h-12 sm:w-12"
                       />
                     ) : null}
-                    <div>
-                      <h2 className="text-2xl font-black text-white">
+                    <div className="min-w-0">
+                      <h2 className="truncate text-xl font-black text-white sm:text-2xl">
                         {tableMeta.leagueName}
                       </h2>
-                      <p className="text-sm text-[#888]">
+                      <p className="text-xs text-[#888] sm:text-sm">
                         {t.standings.seasonLabel} {tableMeta.season}
                       </p>
                     </div>
