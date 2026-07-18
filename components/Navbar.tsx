@@ -288,7 +288,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="app-navbar relative border-b border-[#18ff6d22] bg-black/95 px-3 py-3 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
+    <nav className="app-navbar relative border-b border-[#18ff6d22] bg-black/95 px-4 py-3 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <Link href="/" className="flex min-w-0 items-center">
           <BrainStatsLogo variant="nav" />
@@ -451,7 +451,7 @@ export default function Navbar() {
             className="app-nav-overlay fixed inset-0 bg-black/70 lg:hidden"
           />
 
-          <div className="app-nav-overlay relative border-t border-[#18ff6d22] bg-black/95 px-3 py-4 lg:hidden sm:px-8">
+          <div className="app-nav-overlay relative border-t border-[#18ff6d22] bg-black/95 px-4 py-4 lg:hidden sm:px-8">
           <div className="mx-auto flex max-w-7xl flex-col gap-1">
             {navLinks.map((link) => (
               <Link

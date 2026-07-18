@@ -130,7 +130,7 @@ export default function PremiumPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
 
       <div className="relative z-10">
@@ -169,7 +169,7 @@ export default function PremiumPage() {
             </div>
           )}
 
-          <section className="mt-8 flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory max-md:scrollbar-none sm:mt-12 lg:grid lg:grid-cols-3 lg:gap-6 lg:overflow-visible">
+          <section className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 lg:grid-cols-3 lg:gap-6">
             {plans.map((plan) => {
               const isLoading =
                 plan.id !== "free" && loadingPlan === plan.id;
@@ -177,7 +177,7 @@ export default function PremiumPage() {
               return (
                 <article
                   key={plan.id}
-                  className={`relative flex min-h-0 w-[85vw] shrink-0 snap-center flex-col overflow-hidden rounded-[2rem] border p-5 max-md:backdrop-blur-none max-md:hover:translate-y-0 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 sm:min-h-[560px] sm:w-auto sm:shrink sm:p-8 lg:min-h-[560px] ${
+                  className={`relative flex min-h-0 w-full flex-col overflow-hidden rounded-[2rem] border p-5 max-md:backdrop-blur-none max-md:hover:translate-y-0 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 sm:min-h-[560px] sm:p-8 lg:min-h-[560px] ${
                     plan.popular
                       ? "border-[#18ff6d] bg-[#07140d]/90 shadow-[0_0_65px_rgba(24,255,109,0.2)]"
                       : plan.elite

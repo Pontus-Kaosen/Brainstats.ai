@@ -27,6 +27,37 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+.app-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) {
+  .app-container {
+    padding-inline: 2rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-hero {
+    text-align: center;
+  }
+
+  .mobile-hero > .inline-flex,
+  .mobile-hero > a.inline-flex {
+    margin-inline: auto;
+  }
+
+  .mobile-hero > h1,
+  .mobile-hero > h2,
+  .mobile-hero > p {
+    margin-inline: auto;
+  }
 }
 @keyframes shine {
   0% {

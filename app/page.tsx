@@ -66,7 +66,7 @@ export default async function Home() {
 
           <Link
             href="/premium"
-            className="mt-6 block w-full max-w-3xl rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-br from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 text-left transition hover:border-[#E8DCC8]/40 hover:shadow-[0_0_50px_rgba(232,220,200,.14)] sm:mt-8 sm:p-8"
+            className="mt-6 block w-full max-w-3xl rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-br from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 text-center transition hover:border-[#E8DCC8]/40 hover:shadow-[0_0_50px_rgba(232,220,200,.14)] sm:mt-8 sm:p-8 sm:text-left"
           >
             <p className="inline-flex rounded-full border border-[#E8DCC8]/30 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
               {t.trialBadge}
@@ -111,15 +111,15 @@ export default async function Home() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8 sm:pb-16">
-          <div className="grid gap-8 rounded-[2rem] border border-[#E8DCC8]/20 bg-gradient-to-br from-[#18ff6d]/5 via-black/40 to-[#2fbfff]/5 p-6 sm:grid-cols-2 sm:p-10">
-            <div className="text-left">
+          <div className="grid gap-8 rounded-[2rem] border border-[#E8DCC8]/20 bg-gradient-to-br from-[#18ff6d]/5 via-black/40 to-[#2fbfff]/5 p-6 text-center sm:grid-cols-2 sm:p-10 sm:text-left">
+            <div>
               <h2 className="text-2xl font-black text-white sm:text-3xl">
                 {t.brainScoreTitle}
               </h2>
               <p className="mt-4 text-sm leading-7 text-[#A9A9A9] sm:text-base">
                 {t.brainScoreText}
               </p>
-              <HomeCtaLink href="/analyze" className="mt-6 inline-flex">
+              <HomeCtaLink href="/analyze" className="mt-6 inline-flex max-sm:mx-auto">
                 {t.brainScoreCta}
               </HomeCtaLink>
             </div>
@@ -140,7 +140,7 @@ export default async function Home() {
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8 sm:pb-16">
           <Link
             href="/track-record"
-            className="block rounded-[2rem] border border-white/10 bg-black/30 p-6 text-left transition hover:border-[#18ff6d44] sm:p-8"
+            className="block rounded-[2rem] border border-white/10 bg-black/30 p-6 text-center transition hover:border-[#18ff6d44] sm:p-8 sm:text-left"
           >
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#18ff6d]">
               📊 Transparency
@@ -158,7 +158,7 @@ export default async function Home() {
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8">
           <Link
             href="/dashboard#ai-tips"
-            className="block w-full rounded-[2rem] border border-[#E8DCC8]/20 bg-gradient-to-br from-[#18ff6d]/10 via-[#E8DCC8]/5 to-[#2fbfff]/10 p-5 text-left transition hover:border-[#E8DCC8]/35 sm:p-8"
+            className="block w-full rounded-[2rem] border border-[#E8DCC8]/20 bg-gradient-to-br from-[#18ff6d]/10 via-[#E8DCC8]/5 to-[#2fbfff]/10 p-5 text-center transition hover:border-[#E8DCC8]/35 sm:p-8 sm:text-left"
           >
             <p className="inline-flex rounded-full border border-[#E8DCC8]/25 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
               🎯 {t.aiTipsBadge}
@@ -179,11 +179,11 @@ export default async function Home() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-8 sm:pb-24">
-          <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2 snap-x snap-mandatory max-md:scrollbar-none md:grid md:grid-cols-3 md:gap-5 md:overflow-visible">
+          <div className="grid gap-4 md:grid-cols-3 md:gap-5">
             {t.features.map((card) => (
               <article
                 key={card.title}
-                className="min-w-[78vw] shrink-0 snap-center rounded-3xl border border-white/5 bg-[#1A1A1A] p-4 max-md:last:mr-1 md:min-w-0 sm:p-8"
+                className="rounded-3xl border border-white/5 bg-[#1A1A1A] p-4 text-center sm:p-8 md:text-left"
               >
                 <h2 className="text-xl font-bold text-[#E8DCC8]">{card.title}</h2>
 

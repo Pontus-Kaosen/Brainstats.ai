@@ -42,7 +42,7 @@ export default function LegalLinksSection({
 
   return (
     <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-8 sm:pb-20">
-      <div className="rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-6 sm:p-10">
+      <div className="rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-6 text-center sm:p-10 sm:text-left">
         <p className="text-sm font-bold uppercase tracking-[0.3em] text-[#18ff6d]">
           {t.home.legalEyebrow}
         </p>

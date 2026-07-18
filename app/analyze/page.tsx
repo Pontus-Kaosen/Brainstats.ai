@@ -404,14 +404,14 @@ const brainPicks = useMemo(() => {
 }, [aiResult]);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
 
       <div className="relative z-10">
         <Navbar />
 
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
-          <section className="mt-4 overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-5 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:mt-14 sm:p-10">
+          <section className="mobile-hero mt-4 overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-5 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:mt-14 sm:p-10 md:text-left">
   <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
     {t.analyze.badge}
   </div>
@@ -1181,7 +1181,7 @@ function AnalyzeLoadingFallback() {
   const { t } = useLanguage();
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
       <div className="relative z-10">
         <Navbar />

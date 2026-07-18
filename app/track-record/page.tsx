@@ -30,7 +30,7 @@ export default async function TrackRecordPage() {
   const t = getTrackRecordContent(language);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
 
       <div className="relative z-10">
@@ -47,7 +47,7 @@ export default async function TrackRecordPage() {
             </p>
           </section>
 
-          <section className="mt-10 rounded-[2rem] border border-white/10 bg-black/30 p-6 sm:p-8">
+          <section className="mt-10 rounded-[2rem] border border-white/10 bg-black/30 p-6 text-center sm:p-8 sm:text-left">
             <h2 className="text-xl font-black text-white">{t.howTitle}</h2>
             <ol className="mt-4 space-y-3">
               {t.howSteps.map((step, i) => (

@@ -24,10 +24,10 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative z-10 border-t border-[#18ff6d22] bg-black/95 px-4 py-6 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-10">
+    <footer className="relative z-10 border-t border-[#18ff6d22] bg-black/95 px-4 py-6 text-[#FAFAF8] max-md:backdrop-blur-none max-md:text-center backdrop-blur-xl sm:px-8 sm:py-10">
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-8 md:grid-cols-[1.2fr_1fr_1fr]">
-          <div>
+        <div className="grid gap-8 max-md:justify-items-center md:grid-cols-[1.2fr_1fr_1fr] md:text-left">
+          <div className="max-md:flex max-md:flex-col max-md:items-center">
             <BrainStatsLogo variant="footer" />
 
             <p className="mt-2 max-w-md text-sm leading-6 text-[#A9A9A9] sm:mt-3 sm:leading-7">
@@ -91,7 +91,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-[#777] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-[#777] max-md:items-center sm:flex-row sm:items-center sm:justify-between">
           <p>{t.footer.copyright}</p>
           <p>{t.footer.responsibleGambling}</p>
         </div>

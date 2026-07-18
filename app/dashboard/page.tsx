@@ -227,14 +227,14 @@ export default function DashboardPage() {
 
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
 
       <div className="relative z-10">
         <Navbar />
 
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-10">
-          <section className="overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-4 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10">
+          <section className="mobile-hero overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-4 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10 md:text-left">
             <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
               {t.dashboard.badge}
             </div>
@@ -289,7 +289,7 @@ export default function DashboardPage() {
           ) : null}
 
           {!loading && plan === "free" ? (
-            <section className="mt-6 overflow-hidden rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-r from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 sm:mt-8 sm:p-8">
+            <section className="mobile-hero mt-6 overflow-hidden rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-r from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 sm:mt-8 sm:p-8 md:text-left">
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#E8DCC8]">
                 {t.premium.proTrialBadge}
               </p>

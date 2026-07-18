@@ -1200,8 +1200,8 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       <div className="relative z-10">
         <Navbar />
 
-        <div className="mx-auto max-w-7xl px-3 py-4 sm:px-8 sm:py-10">
-          <section className="mb-4 max-md:mb-3 sm:mb-10">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-8 sm:py-10">
+          <section className="mobile-hero mb-4 max-md:mb-3 sm:mb-10 md:text-left">
             <p className="brain-title text-sm font-semibold max-md:text-xs">
               {t.builder.pageBadge}
             </p>
