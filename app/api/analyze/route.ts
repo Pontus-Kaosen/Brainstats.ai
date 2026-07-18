@@ -28,6 +28,11 @@ import {
   calculateEnhancedBrainScore,
   summarizeRecentForm,
 } from "@/lib/analysisContext";
+import {
+  brainScoreToSafetyTier,
+  getTrackRecordCalibrationNote,
+  insertPublicTrackPick,
+} from "@/lib/trackRecordStore";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -833,6 +838,8 @@ export async function POST(
       language,
     });
 
+    const calibrationNote = await getTrackRecordCalibrationNote(language);
+
     const calculatedScore =
       calculateEnhancedBrainScore({
         homeStanding,
@@ -889,6 +896,7 @@ export async function POST(
               playerLineupStatus,
               structuredContext,
               dataQualityNote: dataQuality.note,
+              calibrationNote,
             }),
           },
         ],
@@ -997,6 +1005,26 @@ export async function POST(
           status: 500,
         }
       );
+    }
+
+    const primaryPick = cleanAnalysis.brainPicks[0];
+
+    if (fixtureId && primaryPick?.market) {
+      void insertPublicTrackPick({
+        sourceType: "analysis",
+        sourceRef: inserted?.[0]?.id ? String(inserted[0].id) : undefined,
+        fixtureId: Number(fixtureId),
+        matchLabel: match,
+        market: primaryPick.market,
+        brainScore: cleanAnalysis.brainScore,
+        safetyTier: brainScoreToSafetyTier(cleanAnalysis.brainScore),
+        probability: primaryPick.probability,
+        kickoffAt: fixture?.fixture?.date || null,
+        note:
+          language === "en"
+            ? "Featured Brain Pick from user analysis"
+            : "Utvalt Brain Pick från användaranalys",
+      });
     }
 
     return NextResponse.json({

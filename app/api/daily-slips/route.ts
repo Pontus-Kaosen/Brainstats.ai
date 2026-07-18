@@ -15,6 +15,8 @@ import {
   resolveSafetyTier,
   sortSlipsBySafety,
 } from "@/lib/safetyGrades";
+import { findFixtureIdFromLabel } from "@/lib/pickOutcomeResolver";
+import { insertPublicTrackPick } from "@/lib/trackRecordStore";
 import type { Language } from "@/lib/translations";
 
 type UserPlan = "free" | "pro" | "elite";
@@ -23,6 +25,8 @@ type GeneratedPick = {
   match: string;
   market: string;
   probability: number;
+  fixtureId?: number | null;
+  kickoffAt?: string | null;
 };
 
 type GeneratedSlip = {
@@ -242,7 +246,13 @@ function cleanOpenAIJson(content: string) {
 function parseGeneratedSlips(
   content: string,
   limit: number,
-  language: ReturnType<typeof parseRequestLanguage>
+  language: ReturnType<typeof parseRequestLanguage>,
+  fixtures: Array<{
+    fixtureId: number;
+    date?: string;
+    homeTeam: string;
+    awayTeam: string;
+  }>
 ): GeneratedSlip[] {
   const cleaned = cleanOpenAIJson(content);
   const parsed = JSON.parse(cleaned);
@@ -278,27 +288,33 @@ function parseGeneratedSlips(
         picks: Array.isArray(slip?.picks)
           ? slip.picks
               .slice(0, 3)
-              .map((pick: any) => ({
-                match:
+              .map((pick: any) => {
+                const match =
                   typeof pick?.match === "string"
                     ? pick.match
-                    : unknownMatch,
+                    : unknownMatch;
+                const fixtureId = findFixtureIdFromLabel(match, fixtures);
+                const fixtureMeta = fixtures.find(
+                  (item) => item.fixtureId === fixtureId
+                );
 
-                market:
-                  typeof pick?.market === "string"
-                    ? pick.market
-                    : unknownMarket,
-
-                probability: Math.min(
-                  95,
-                  Math.max(
-                    10,
-                    Number(
-                      pick?.probability || 55
+                return {
+                  match,
+                  market:
+                    typeof pick?.market === "string"
+                      ? pick.market
+                      : unknownMarket,
+                  probability: Math.min(
+                    95,
+                    Math.max(
+                      10,
+                      Number(pick?.probability || 55)
                     )
-                  )
-                ),
-              }))
+                  ),
+                  fixtureId,
+                  kickoffAt: fixtureMeta?.date || null,
+                };
+              })
           : [],
       })
     )
@@ -471,7 +487,8 @@ export async function GET(request: Request) {
     const generatedSlips = parseGeneratedSlips(
       content,
       slipLimit,
-      language
+      language,
+      fixtures
     );
 
     if (generatedSlips.length < slipLimit) {
@@ -495,6 +512,8 @@ export async function GET(request: Request) {
             market: pick.market,
             probability: pick.probability,
             estimatedOdds: calculateFairOdds(pick.probability),
+            fixtureId: pick.fixtureId || undefined,
+            kickoffAt: pick.kickoffAt || undefined,
           })),
           language
         ),
@@ -519,6 +538,36 @@ export async function GET(request: Request) {
 
     if (insertError) {
       throw insertError;
+    }
+
+    for (const [index, slip] of generatedSlips.entries()) {
+      const featuredPick = slip.picks.find((pick) => pick.fixtureId);
+
+      if (!featuredPick?.fixtureId) {
+        continue;
+      }
+
+      const tier = resolveSafetyTier({
+        slipIndex: index + 1,
+        risk: slip.risk,
+        title: slip.title,
+      });
+
+      void insertPublicTrackPick({
+        sourceType: "daily_slip",
+        sourceRef: `${user.id}:${today}:${index + 1}`,
+        fixtureId: featuredPick.fixtureId,
+        matchLabel: featuredPick.match,
+        market: featuredPick.market,
+        brainScore: slip.confidence,
+        safetyTier: tier,
+        probability: featuredPick.probability,
+        kickoffAt: featuredPick.kickoffAt || null,
+        note:
+          language === "en"
+            ? `Daily Brain Pick (${slip.title})`
+            : `Dagligt AI-tips (${slip.title})`,
+      });
     }
 
     return NextResponse.json({

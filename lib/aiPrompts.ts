@@ -173,6 +173,7 @@ type AnalyzePromptInput = {
   playerLineupStatus?: PlayerLineupStatus | null;
   structuredContext: string;
   dataQualityNote: string;
+  calibrationNote?: string;
 };
 
 export function buildAnalyzeSystemPrompt(language: Language) {
@@ -255,6 +256,9 @@ ${input.structuredContext}
 
 Data quality note:
 ${input.dataQualityNote}
+
+Historical calibration:
+${input.calibrationNote || (language === "en" ? "Not enough resolved public picks yet." : "Inte tillräckligt med avgjorda publika tips ännu.")}
 
 Analysis rules:
 - Use the structured match data above as the primary source.
@@ -365,6 +369,9 @@ ${input.structuredContext}
 
 Datakvalitet:
 ${input.dataQualityNote}
+
+Historisk kalibrering:
+${input.calibrationNote || "Inte tillräckligt med avgjorda publika tips ännu."}
 
 Analysregler:
 - Använd strukturerat matchunderlag som primär källa.
@@ -728,6 +735,8 @@ export type SlipPickMeta = {
   probability?: number;
   estimatedOdds?: number;
   reason?: string;
+  fixtureId?: number;
+  kickoffAt?: string;
   isMeta?: boolean;
   metaLanguage?: Language;
 };

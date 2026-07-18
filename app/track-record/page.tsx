@@ -2,14 +2,14 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 import HomeCtaLink from "@/components/HomeCtaLink";
-import { getTrackRecordContent } from "@/lib/trackRecordContent";
+import { getTrackRecordPageData } from "@/lib/trackRecordData";
 import { detectLanguage } from "@/lib/locale.server";
 import { createPageMetadata } from "@/lib/seo";
 import { getOutcomeLabelForTier, getSafetyGrade } from "@/lib/safetyGrades";
 
 export async function generateMetadata() {
   const language = await detectLanguage();
-  const t = getTrackRecordContent(language);
+  const t = await getTrackRecordPageData(language);
 
   return createPageMetadata({
     title: t.title,
@@ -27,7 +27,7 @@ function outcomeClass(outcome: string) {
 
 export default async function TrackRecordPage() {
   const language = await detectLanguage();
-  const t = getTrackRecordContent(language);
+  const t = await getTrackRecordPageData(language);
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
@@ -45,7 +45,41 @@ export default async function TrackRecordPage() {
             <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-[#A9A9A9]">
               {t.description}
             </p>
+            {t.usingLiveData ? (
+              <p className="mx-auto mt-3 inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-xs font-semibold text-[#18ff6d]">
+                Live data
+              </p>
+            ) : null}
           </section>
+
+          {t.stats && t.stats.resolved > 0 ? (
+            <section className="mt-8 grid gap-4 sm:grid-cols-3">
+              <div className="rounded-[1.5rem] border border-[#18ff6d22] bg-[#121212]/75 p-5 text-center">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#747474]">
+                  {t.statsHitRate}
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#18ff6d]">
+                  {t.stats.hitRate != null ? `${t.stats.hitRate}%` : "—"}
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-black/30 p-5 text-center">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#747474]">
+                  {t.statsResolved}
+                </p>
+                <p className="mt-2 text-3xl font-black text-white">
+                  {t.stats.hits}/{t.stats.hits + t.stats.misses}
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-black/30 p-5 text-center">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#747474]">
+                  {t.statsPending}
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#E8DCC8]">
+                  {t.stats.pending}
+                </p>
+              </div>
+            </section>
+          ) : null}
 
           <section className="mt-10 rounded-[2rem] border border-white/10 bg-black/30 p-6 text-center sm:p-8 sm:text-left">
             <h2 className="text-xl font-black text-white">{t.howTitle}</h2>
@@ -88,42 +122,42 @@ export default async function TrackRecordPage() {
                   );
 
                   return (
-                  <tr
-                    key={`${entry.date}-${entry.match}`}
-                    className="border-b border-white/5 transition hover:bg-white/[0.02]"
-                  >
-                    <td className="px-4 py-4 text-[#A9A9A9] sm:px-6">
-                      {entry.date}
-                    </td>
-                    <td className="px-4 py-4 sm:px-6">
-                      <p className="font-semibold text-white">{entry.match}</p>
-                      <p className="mt-1 text-xs text-[#888] sm:hidden">
-                        {entry.market}
-                      </p>
-                      <p className="mt-1 hidden text-xs text-[#777] sm:block">
-                        {entry.note}
-                      </p>
-                    </td>
-                    <td className="hidden px-4 py-4 text-[#D8D8D8] sm:table-cell sm:px-6">
-                      {entry.market}
-                    </td>
-                    <td className="px-4 py-4 font-black text-[#18ff6d] sm:px-6">
-                      {entry.brainScore}
-                    </td>
-                    <td className="hidden px-4 py-4 text-[#A9A9A9] md:table-cell md:px-6">
-                      {grade.label}
-                    </td>
-                    <td
-                      className={`px-4 py-4 font-bold sm:px-6 ${outcomeClass(entry.outcome)}`}
+                    <tr
+                      key={`${entry.date}-${entry.match}-${entry.market}`}
+                      className="border-b border-white/5 transition hover:bg-white/[0.02]"
                     >
-                      <p>{t.outcomeLabels[entry.outcome]}</p>
-                      {missLabel && (
-                        <p className="mt-1 text-xs font-semibold text-red-300/90">
-                          {missLabel}
+                      <td className="px-4 py-4 text-[#A9A9A9] sm:px-6">
+                        {entry.date}
+                      </td>
+                      <td className="px-4 py-4 sm:px-6">
+                        <p className="font-semibold text-white">{entry.match}</p>
+                        <p className="mt-1 text-xs text-[#888] sm:hidden">
+                          {entry.market}
                         </p>
-                      )}
-                    </td>
-                  </tr>
+                        <p className="mt-1 hidden text-xs text-[#777] sm:block">
+                          {entry.note}
+                        </p>
+                      </td>
+                      <td className="hidden px-4 py-4 text-[#D8D8D8] sm:table-cell sm:px-6">
+                        {entry.market}
+                      </td>
+                      <td className="px-4 py-4 font-black text-[#18ff6d] sm:px-6">
+                        {entry.brainScore}
+                      </td>
+                      <td className="hidden px-4 py-4 text-[#A9A9A9] md:table-cell md:px-6">
+                        {grade.label}
+                      </td>
+                      <td
+                        className={`px-4 py-4 font-bold sm:px-6 ${outcomeClass(entry.outcome)}`}
+                      >
+                        <p>{t.outcomeLabels[entry.outcome]}</p>
+                        {missLabel && (
+                          <p className="mt-1 text-xs font-semibold text-red-300/90">
+                            {missLabel}
+                          </p>
+                        )}
+                      </td>
+                    </tr>
                   );
                 })}
               </tbody>
