@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import AIBetSlip from "@/components/AIBetSlip";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import { useLanguage } from "@/components/LanguageProvider";
-import { formatTranslation } from "@/lib/locale";
+import { formatTranslation, formatStockholmKickoffTime } from "@/lib/locale";
 
 type SlipPick = {
   fixture?: string;
@@ -14,6 +14,7 @@ type SlipPick = {
   probability?: number;
   estimatedOdds?: number;
   reason?: string;
+  kickoffAt?: string;
 };
 
 type DailySlip = {
@@ -129,6 +130,10 @@ export default function DailySlipsSection() {
         </div>
       </div>
 
+      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#72d5ff] sm:text-sm">
+        {t.dailySlips.todayOnlyBadge}
+      </p>
+
       <p className="mt-3 hidden text-sm text-[#777] md:block sm:mt-4">{t.dailySlips.disclaimer}</p>
 
       <ResponsibleUseNotice compact className="mt-4 hidden md:flex" />
@@ -187,6 +192,11 @@ export default function DailySlipsSection() {
                 market: pick.market || t.dailySlips.unknownMarket,
                 odds: Number(pick.estimatedOdds || 1),
                 reason: pick.reason,
+                kickoffLabel: pick.kickoffAt
+                  ? formatTranslation(t.aiBetSlip.kickoffToday, {
+                      time: formatStockholmKickoffTime(pick.kickoffAt, language),
+                    })
+                  : undefined,
               }))}
             />
           ))}

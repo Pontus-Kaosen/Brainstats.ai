@@ -221,6 +221,7 @@ export const translations = {
       rankingTitle: "Rankade efter svårighetsgrad",
       rankingLegend:
         "Lätt → Medel-lätt → Medel → Svår → Väldigt svår (säkrast till svårast)",
+      todayOnlyBadge: "Endast matcher idag",
     },
 
     manageSubscription: {
@@ -741,6 +742,7 @@ export const translations = {
       rankLabel: "#{rank}",
       rankSafest: "Säkrast",
       rankHardest: "Svårast",
+      kickoffToday: "Idag {time}",
     },
 
     builderPicker: {
@@ -1033,6 +1035,7 @@ export const translations = {
       rankingTitle: "Ranked by difficulty",
       rankingLegend:
         "Easy → Fairly easy → Medium → Hard → Very hard (safest to hardest)",
+      todayOnlyBadge: "Today's matches only",
     },
 
     manageSubscription: {
@@ -1553,6 +1556,7 @@ export const translations = {
       rankLabel: "#{rank}",
       rankSafest: "Safest",
       rankHardest: "Hardest",
+      kickoffToday: "Today {time}",
     },
 
     builderPicker: {

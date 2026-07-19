@@ -9,6 +9,7 @@ type Pick = {
   market: string;
   odds: number;
   reason?: string;
+  kickoffLabel?: string;
 };
 
 type Props = {
@@ -103,6 +104,12 @@ export default function AIBetSlip({
 
                   <p className="font-bold text-white">{pick.fixture}</p>
                 </div>
+
+                {pick.kickoffLabel ? (
+                  <p className="mt-2 pl-10 text-xs font-semibold uppercase tracking-[0.16em] text-[#72d5ff]">
+                    {pick.kickoffLabel}
+                  </p>
+                ) : null}
 
                 <p className="mt-3 pl-10 text-lg font-black text-[#18ff6d]">
                   {pick.market}

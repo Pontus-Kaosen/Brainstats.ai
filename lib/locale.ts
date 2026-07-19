@@ -4,6 +4,17 @@ export function getLocale(language: Language) {
   return language === "sv" ? "sv-SE" : "en-US";
 }
 
+export function formatStockholmKickoffTime(
+  kickoffAt: string,
+  language: Language
+) {
+  return new Intl.DateTimeFormat(getLocale(language), {
+    timeZone: "Europe/Stockholm",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(kickoffAt));
+}
+
 export function translateSlipRisk(risk: string, t: Translations) {
   if (
     risk === "Lätt" ||

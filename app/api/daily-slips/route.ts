@@ -5,8 +5,10 @@ import {
   attachSlipLanguage,
   buildDailySlipsSystemPrompt,
   buildDailySlipsUserPrompt,
+  DAILY_SLIPS_VERSION,
   getDailySlipsApiMessages,
   getSlipLanguage,
+  getSlipVersion,
   parseRequestLanguage,
   stripMetaPicks,
 } from "@/lib/aiPrompts";
@@ -103,18 +105,69 @@ function isKickoffToday(kickoffAt: string | null | undefined, todayKey: string) 
 }
 
 function filterSlipPicksToToday<
-  T extends { kickoffAt?: string | null },
->(picks: T[], todayKey: string) {
-  return picks.filter((pick) => isKickoffToday(pick.kickoffAt, todayKey));
+  T extends { kickoffAt?: string | null; fixtureId?: number | null },
+>(picks: T[], todayKey: string, todayFixtureIds: Set<number>) {
+  return picks.filter(
+    (pick) =>
+      typeof pick.fixtureId === "number" &&
+      todayFixtureIds.has(pick.fixtureId) &&
+      isKickoffToday(pick.kickoffAt, todayKey)
+  );
 }
 
-function slipsOnlyContainTodayMatches(
-  slips: Array<{ picks: import("@/lib/aiPrompts").SlipPickMeta[] }>,
-  todayKey: string
+function slipHasOnlyTodayPicks(
+  slip: { picks: import("@/lib/aiPrompts").SlipPickMeta[] },
+  todayKey: string,
+  todayFixtureIds: Set<number>
 ) {
-  return slips.every((slip) =>
-    slip.picks.every((pick) => isKickoffToday(pick.kickoffAt, todayKey))
+  const picks = stripMetaPicks(slip.picks);
+
+  if (picks.length < 2) {
+    return false;
+  }
+
+  return picks.every(
+    (pick) =>
+      typeof pick.fixtureId === "number" &&
+      todayFixtureIds.has(pick.fixtureId) &&
+      isKickoffToday(pick.kickoffAt, todayKey)
   );
+}
+
+function cachedSlipsAreValid(
+  slips: Array<{ picks: import("@/lib/aiPrompts").SlipPickMeta[] }>,
+  todayKey: string,
+  todayFixtureIds: Set<number>,
+  language: Language,
+  slipLimit: number
+) {
+  if (slips.length < slipLimit) {
+    return false;
+  }
+
+  if (getSlipVersion(slips[0]?.picks || []) !== DAILY_SLIPS_VERSION) {
+    return false;
+  }
+
+  if ((getSlipLanguage(slips[0]?.picks || []) ?? "sv") !== language) {
+    return false;
+  }
+
+  return slips
+    .slice(0, slipLimit)
+    .every((slip) => slipHasOnlyTodayPicks(slip, todayKey, todayFixtureIds));
+}
+
+async function deleteTodaySlipsForUser(userId: string, todayKey: string) {
+  const { error } = await supabaseAdmin
+    .from("daily_slips")
+    .delete()
+    .eq("user_id", userId)
+    .eq("valid_date", todayKey);
+
+  if (error) {
+    throw error;
+  }
 }
 
 function serializeSlipsForResponse(
@@ -128,7 +181,8 @@ function serializeSlipsForResponse(
     picks: import("@/lib/aiPrompts").SlipPickMeta[];
   }>,
   language: Language,
-  todayKey: string
+  todayKey: string,
+  todayFixtureIds: Set<number>
 ) {
   const enriched = slips
     .map((slip) => {
@@ -138,7 +192,11 @@ function serializeSlipsForResponse(
         title: slip.title,
       });
       const grade = getSafetyGrade(tier, language);
-      const picks = filterSlipPicksToToday(stripMetaPicks(slip.picks), todayKey);
+      const picks = filterSlipPicksToToday(
+        stripMetaPicks(slip.picks),
+        todayKey,
+        todayFixtureIds
+      );
 
       return {
         ...slip,
@@ -156,7 +214,16 @@ function serializeSlipsForResponse(
   return sortSlipsBySafety(enriched);
 }
 
-async function fetchTodayFixtures(todayKey: string) {
+async function fetchTodayFixtures(todayKey: string): Promise<
+  Array<{
+    fixtureId: number;
+    date: string;
+    league: string;
+    country: string;
+    homeTeam: string;
+    awayTeam: string;
+  }>
+> {
   const apiKey = process.env.API_FOOTBALL_KEY;
 
   if (!apiKey) {
@@ -247,7 +314,8 @@ function parseGeneratedSlips(
     homeTeam: string;
     awayTeam: string;
   }>,
-  todayKey: string
+  todayKey: string,
+  todayFixtureIds: Set<number>
 ): GeneratedSlip[] {
   const cleaned = cleanOpenAIJson(content);
   const parsed = JSON.parse(cleaned);
@@ -311,7 +379,8 @@ function parseGeneratedSlips(
                     kickoffAt: fixtureMeta?.date || null,
                   };
                 }),
-              todayKey
+              todayKey,
+              todayFixtureIds
             )
           : [],
       })
@@ -380,6 +449,8 @@ export async function GET(request: Request) {
 
     const slipLimit = getSlipLimit(plan);
     const today = getStockholmDateKey();
+    const fixtures = await fetchTodayFixtures(today);
+    const todayFixtureIds = new Set(fixtures.map((fixture) => fixture.fixtureId));
 
     /*
      * Kontrollera om dagens kuponger redan finns
@@ -405,52 +476,33 @@ export async function GET(request: Request) {
 
     const existingSlips = existing || [];
 
-    if (existingSlips.length > 0) {
-      const storedLanguage =
-        getSlipLanguage(
-          (existingSlips[0]?.picks as Array<Record<string, unknown>>) || []
-        ) ?? "sv";
-
-      if (storedLanguage !== language) {
-        const { error: deleteError } = await supabaseAdmin
-          .from("daily_slips")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("valid_date", today);
-
-        if (deleteError) {
-          throw deleteError;
-        }
-      } else if (
-        existingSlips.length >= slipLimit &&
-        slipsOnlyContainTodayMatches(existingSlips, today)
-      ) {
-        return NextResponse.json({
-          success: true,
-          plan,
-          slipLimit,
-          fixturesFound: null,
-          generatedToday: false,
-          slips: serializeSlipsForResponse(
-            existingSlips.slice(0, slipLimit),
-            language,
-            today
-          ),
-        });
-      } else if (existingSlips.length > 0) {
-        const { error: deleteError } = await supabaseAdmin
-          .from("daily_slips")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("valid_date", today);
-
-        if (deleteError) {
-          throw deleteError;
-        }
-      }
+    if (
+      cachedSlipsAreValid(
+        existingSlips,
+        today,
+        todayFixtureIds,
+        language,
+        slipLimit
+      )
+    ) {
+      return NextResponse.json({
+        success: true,
+        plan,
+        slipLimit,
+        fixturesFound: fixtures.length,
+        generatedToday: false,
+        slips: serializeSlipsForResponse(
+          existingSlips.slice(0, slipLimit),
+          language,
+          today,
+          todayFixtureIds
+        ),
+      });
     }
 
-    const fixtures = await fetchTodayFixtures(today);
+    if (existingSlips.length > 0) {
+      await deleteTodaySlipsForUser(user.id, today);
+    }
 
     console.log(
       `Daily slips: ${fixtures.length} dagens matcher hittades.`
@@ -500,7 +552,8 @@ export async function GET(request: Request) {
       slipLimit,
       language,
       fixtures,
-      today
+      today,
+      todayFixtureIds
     );
 
     if (generatedSlips.length < slipLimit) {
@@ -588,7 +641,7 @@ export async function GET(request: Request) {
       slipLimit,
       fixturesFound: fixtures.length,
       generatedToday: true,
-      slips: serializeSlipsForResponse(inserted || [], language, today),
+      slips: serializeSlipsForResponse(inserted || [], language, today, todayFixtureIds),
     });
   } catch (error: unknown) {
     console.error(

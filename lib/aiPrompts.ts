@@ -551,7 +551,7 @@ export function buildDailySlipsSystemPrompt(language: Language) {
     return (
       "You create neutral, data-driven football bet slips. " +
       "Never call a bet safe, guaranteed or risk-free. " +
-      "Use only matches from the provided list. " +
+      "Use only matches from the provided list that are played today. " +
       "Respond only with valid JSON. Write all user-facing text in English."
     );
   }
@@ -559,7 +559,7 @@ export function buildDailySlipsSystemPrompt(language: Language) {
   return (
     "Du skapar neutrala, datadrivna fotbollskuponger. " +
     "Du får aldrig kalla ett spel säkert, garanterat eller riskfritt. " +
-    "Använd endast matcher som finns i listan. " +
+    "Använd endast matcher i listan som spelas idag. " +
     "Svara endast med giltig JSON. Skriv all användartext på svenska."
   );
 }
@@ -729,6 +729,8 @@ export function getDailySlipsApiMessages(language: Language) {
   };
 }
 
+export const DAILY_SLIPS_VERSION = 2;
+
 export type SlipPickMeta = {
   match?: string;
   market?: string;
@@ -739,6 +741,7 @@ export type SlipPickMeta = {
   kickoffAt?: string;
   isMeta?: boolean;
   metaLanguage?: Language;
+  metaVersion?: number;
 };
 
 export function attachSlipLanguage(
@@ -754,8 +757,15 @@ export function attachSlipLanguage(
       estimatedOdds: 0,
       isMeta: true,
       metaLanguage: language,
+      metaVersion: DAILY_SLIPS_VERSION,
     },
   ];
+}
+
+export function getSlipVersion(picks: SlipPickMeta[]): number | null {
+  const meta = picks.find((pick) => pick.isMeta);
+
+  return typeof meta?.metaVersion === "number" ? meta.metaVersion : null;
 }
 
 export function getSlipLanguage(
