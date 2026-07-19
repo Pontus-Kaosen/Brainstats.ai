@@ -551,7 +551,7 @@ export function buildDailySlipsSystemPrompt(language: Language) {
     return (
       "You create neutral, data-driven football bet slips. " +
       "Never call a bet safe, guaranteed or risk-free. " +
-      "Use only matches from the provided list that are played today. " +
+      "Use only matches from the provided list that are played today in major leagues. " +
       "Respond only with valid JSON. Write all user-facing text in English."
     );
   }
@@ -559,7 +559,7 @@ export function buildDailySlipsSystemPrompt(language: Language) {
   return (
     "Du skapar neutrala, datadrivna fotbollskuponger. " +
     "Du får aldrig kalla ett spel säkert, garanterat eller riskfritt. " +
-    "Använd endast matcher i listan som spelas idag. " +
+    "Använd endast matcher i listan som spelas idag i större ligor. " +
     "Svara endast med giltig JSON. Skriv all användartext på svenska."
   );
 }
@@ -613,7 +613,7 @@ Use only these markets:
 - Under 3.5 goals
 - Both teams to score
 
-Use only matches played today (Stockholm time) from this list:
+Use only matches played today (Stockholm time) from major leagues in this list:
 
 ${JSON.stringify(fixtures, null, 2)}
 
@@ -680,7 +680,7 @@ Använd bara dessa marknader:
 - Under 3.5 mål
 - Båda lagen gör mål
 
-Använd endast matcher som spelas idag (Stockholm-tid) från denna lista:
+Använd endast matcher som spelas idag (Stockholm-tid) i större ligor från denna lista:
 
 ${JSON.stringify(fixtures, null, 2)}
 
@@ -711,7 +711,7 @@ export function getDailySlipsApiMessages(language: Language) {
       mustLogin: "You must be signed in.",
       authFailed: "Sign-in could not be verified.",
       notEnoughFixtures:
-        "There are not enough matches today to create today's slips.",
+        "There are not enough matches today in major leagues to create today's slips.",
       createFailed: "Today's slips could not be created.",
       regenerateFailed: (generated: number, limit: number) =>
         `AI created only ${generated} of ${limit} slips. Try again.`,
@@ -722,14 +722,14 @@ export function getDailySlipsApiMessages(language: Language) {
     mustLogin: "Du måste vara inloggad.",
     authFailed: "Inloggningen kunde inte verifieras.",
     notEnoughFixtures:
-      "Det finns inte tillräckligt många matcher idag för att skapa dagens kuponger.",
+      "Det finns inte tillräckligt många matcher idag i större ligor för att skapa dagens kuponger.",
     createFailed: "Dagens kuponger kunde inte skapas.",
     regenerateFailed: (generated: number, limit: number) =>
       `AI skapade endast ${generated} av ${limit} kuponger. Försök igen.`,
   };
 }
 
-export const DAILY_SLIPS_VERSION = 2;
+export const DAILY_SLIPS_VERSION = 3;
 
 export type SlipPickMeta = {
   match?: string;

@@ -22,6 +22,7 @@ import {
   getFixtureStockholmDateKey,
   getStockholmDateKey,
 } from "@/lib/stockholmDate";
+import { isAiDailySlipLeague } from "@/lib/footballFixtures";
 import { insertPublicTrackPick } from "@/lib/trackRecordStore";
 import type { Language } from "@/lib/translations";
 
@@ -277,18 +278,21 @@ async function fetchTodayFixtures(todayKey: string): Promise<
       (fixture: any) =>
         fixture.fixture?.id &&
         fixture.fixture?.date &&
+        fixture.league?.id &&
+        isAiDailySlipLeague(fixture.league.id) &&
         fixture.teams?.home?.name &&
         fixture.teams?.away?.name &&
         getFixtureStockholmDateKey(fixture.fixture.date) === todayKey
     );
 
   console.log(
-    `Daily slips: ${fixtures.length} matcher hittades för ${todayKey}.`
+    `Daily slips: ${fixtures.length} matcher i större ligor hittades för ${todayKey}.`
   );
 
-  return fixtures.slice(0, 100).map((fixture: any) => ({
+  return fixtures.slice(0, 60).map((fixture: any) => ({
     fixtureId: fixture.fixture.id,
     date: fixture.fixture.date,
+    leagueId: fixture.league.id,
     league: fixture.league?.name || "Okänd liga",
     country: fixture.league?.country || "Okänt land",
     homeTeam: fixture.teams.home.name,
@@ -505,7 +509,7 @@ export async function GET(request: Request) {
     }
 
     console.log(
-      `Daily slips: ${fixtures.length} dagens matcher hittades.`
+      `Daily slips: ${fixtures.length} matcher i större ligor hittades.`
     );
 
     if (fixtures.length < 3) {

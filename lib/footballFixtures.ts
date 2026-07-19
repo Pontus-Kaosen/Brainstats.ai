@@ -103,8 +103,31 @@ export const POPULAR_LEAGUE_IDS = [
 /** Top leagues shown immediately in Brain Builder (today/tomorrow). */
 export const MAJOR_LEAGUE_IDS = [39, 140, 135, 78, 61, 113, 2, 3];
 
+/** Leagues allowed in daily AI slips — top leagues + a few major secondary ones. */
+export const AI_DAILY_SLIP_LEAGUE_IDS = [
+  ...MAJOR_LEAGUE_IDS,
+  848, // Conference League
+  88, // Eredivisie
+  94, // Primeira Liga
+  144, // Jupiler Pro League
+  179, // Scottish Premiership
+  203, // Süper Lig
+  71, // Brasileirão
+  128, // Liga Profesional Argentina
+  253, // MLS
+  1, // World Cup
+  4, // Euro Championship
+  5, // Nations League
+];
+
+const AI_DAILY_SLIP_LEAGUE_ID_SET = new Set(AI_DAILY_SLIP_LEAGUE_IDS);
+
 export function isMajorLeague(leagueId: number) {
   return MAJOR_LEAGUE_IDS.includes(leagueId);
+}
+
+export function isAiDailySlipLeague(leagueId: number) {
+  return AI_DAILY_SLIP_LEAGUE_ID_SET.has(leagueId);
 }
 
 export function partitionLeagueGroups<

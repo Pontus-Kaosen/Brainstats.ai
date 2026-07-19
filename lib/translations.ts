@@ -204,7 +204,7 @@ export const translations = {
       subtitle: "Daily Intelligence",
       title: "🧠 Dagens AI-kuponger",
       description:
-        "Färdiga AI-kuponger med matcher som spelas idag, olika riskprofil och estimerade fair odds.",
+        "Färdiga AI-kuponger med dagens matcher i större ligor, olika riskprofil och estimerade fair odds.",
       available: "{count} av {limit} tillgängliga",
       disclaimer:
         "AI-estimerade fair odds. Inte liveodds och inga resultat är garanterade.",
@@ -221,7 +221,7 @@ export const translations = {
       rankingTitle: "Rankade efter svårighetsgrad",
       rankingLegend:
         "Lätt → Medel-lätt → Medel → Svår → Väldigt svår (säkrast till svårast)",
-      todayOnlyBadge: "Endast matcher idag",
+      todayOnlyBadge: "Större ligor · endast matcher idag",
     },
 
     manageSubscription: {
@@ -1018,7 +1018,7 @@ export const translations = {
       subtitle: "Daily Intelligence",
       title: "🧠 Today's AI slips",
       description:
-        "Ready-made AI slips for matches played today, with different risk profiles and estimated fair odds.",
+        "Ready-made AI slips for today's matches in major leagues, with different risk profiles and estimated fair odds.",
       available: "{count} of {limit} available",
       disclaimer:
         "AI-estimated fair odds. Not live odds and no results are guaranteed.",
@@ -1035,7 +1035,7 @@ export const translations = {
       rankingTitle: "Ranked by difficulty",
       rankingLegend:
         "Easy → Fairly easy → Medium → Hard → Very hard (safest to hardest)",
-      todayOnlyBadge: "Today's matches only",
+      todayOnlyBadge: "Major leagues · today's matches only",
     },
 
     manageSubscription: {
