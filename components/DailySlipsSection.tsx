@@ -203,7 +203,7 @@ export default function DailySlipsSection() {
         </div>
       )}
 
-      {!loading && !error && slips.length < slipLimit && (
+      {!loading && !error && slips.length === 0 && (
         <p className="mt-6 text-sm text-yellow-200">
           {t.dailySlips.fewerThanExpected}
         </p>

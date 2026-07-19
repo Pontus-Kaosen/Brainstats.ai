@@ -572,7 +572,7 @@ export function buildDailySlipsUserPrompt(
 ) {
   if (language === "en") {
     return `
-Create exactly ${slipLimit} separate AI bet slips.
+Create up to ${slipLimit} separate AI bet slips. At least 1 slip is required when matches exist.
 
 User plan:
 ${plan}
@@ -589,7 +589,8 @@ For each slip set title and risk to exactly the profile name above (e.g. "Easy",
 
 Rules:
 
-- Each slip must contain exactly 3 picks.
+- Each slip must contain at least 1 pick and at most 3 picks.
+- Use fewer picks when there are not enough different matches.
 - Each pick must come from a match in the list.
 - Do not use the same match more than once in the same slip.
 - Do not use the exact same combination in multiple slips.
@@ -639,7 +640,7 @@ Respond exactly in this JSON structure:
   }
 
   return `
-Skapa exakt ${slipLimit} separata AI-kuponger.
+Skapa upp till ${slipLimit} separata AI-kuponger. Minst 1 kupong krävs när matcher finns.
 
 Användarens plan är:
 ${plan}
@@ -656,7 +657,8 @@ Sätt title och risk till exakt profilnamnet ovan (t.ex. "Lätt", "Svår").
 
 Regler:
 
-- Varje kupong ska innehålla exakt 3 val.
+- Varje kupong ska innehålla minst 1 val och högst 3 val.
+- Använd färre val om det inte finns tillräckligt med olika matcher.
 - Varje val ska komma från en match i listan.
 - Använd inte samma match mer än en gång i samma kupong.
 - Använd inte exakt samma kombination i flera kuponger.
@@ -711,7 +713,7 @@ export function getDailySlipsApiMessages(language: Language) {
       mustLogin: "You must be signed in.",
       authFailed: "Sign-in could not be verified.",
       notEnoughFixtures:
-        "There are not enough matches today in major leagues to create today's slips.",
+        "No matches today in major leagues — no AI slip could be created.",
       createFailed: "Today's slips could not be created.",
       regenerateFailed: (generated: number, limit: number) =>
         `AI created only ${generated} of ${limit} slips. Try again.`,
@@ -722,14 +724,14 @@ export function getDailySlipsApiMessages(language: Language) {
     mustLogin: "Du måste vara inloggad.",
     authFailed: "Inloggningen kunde inte verifieras.",
     notEnoughFixtures:
-      "Det finns inte tillräckligt många matcher idag i större ligor för att skapa dagens kuponger.",
+      "Inga matcher idag i större ligor — inget AI-tips kunde skapas.",
     createFailed: "Dagens kuponger kunde inte skapas.",
     regenerateFailed: (generated: number, limit: number) =>
       `AI skapade endast ${generated} av ${limit} kuponger. Försök igen.`,
   };
 }
 
-export const DAILY_SLIPS_VERSION = 3;
+export const DAILY_SLIPS_VERSION = 4;
 
 export type SlipPickMeta = {
   match?: string;

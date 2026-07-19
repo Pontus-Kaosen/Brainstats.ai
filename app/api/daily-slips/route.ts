@@ -123,7 +123,7 @@ function slipHasOnlyTodayPicks(
 ) {
   const picks = stripMetaPicks(slip.picks);
 
-  if (picks.length < 2) {
+  if (picks.length < 1) {
     return false;
   }
 
@@ -135,17 +135,17 @@ function slipHasOnlyTodayPicks(
   );
 }
 
-function cachedSlipsAreValid(
-  slips: Array<{ picks: import("@/lib/aiPrompts").SlipPickMeta[] }>,
-  todayKey: string,
-  todayFixtureIds: Set<number>,
-  language: Language,
-  slipLimit: number
-) {
-  if (slips.length < slipLimit) {
-    return false;
-  }
+function getValidCachedSlips<
+  T extends { picks: import("@/lib/aiPrompts").SlipPickMeta[] },
+>(slips: T[], todayKey: string, todayFixtureIds: Set<number>) {
+  return slips.filter((slip) =>
+    slipHasOnlyTodayPicks(slip, todayKey, todayFixtureIds)
+  );
+}
 
+function cachedSlipsAreValid<
+  T extends { picks: import("@/lib/aiPrompts").SlipPickMeta[] },
+>(slips: T[], todayKey: string, todayFixtureIds: Set<number>, language: Language) {
   if (getSlipVersion(slips[0]?.picks || []) !== DAILY_SLIPS_VERSION) {
     return false;
   }
@@ -154,9 +154,7 @@ function cachedSlipsAreValid(
     return false;
   }
 
-  return slips
-    .slice(0, slipLimit)
-    .every((slip) => slipHasOnlyTodayPicks(slip, todayKey, todayFixtureIds));
+  return getValidCachedSlips(slips, todayKey, todayFixtureIds).length >= 1;
 }
 
 async function deleteTodaySlipsForUser(userId: string, todayKey: string) {
@@ -210,21 +208,61 @@ function serializeSlipsForResponse(
         picks,
       };
     })
-    .filter((slip) => slip.picks.length >= 2);
+    .filter((slip) => slip.picks.length >= 1);
 
   return sortSlipsBySafety(enriched);
 }
 
-async function fetchTodayFixtures(todayKey: string): Promise<
-  Array<{
-    fixtureId: number;
-    date: string;
-    league: string;
-    country: string;
-    homeTeam: string;
-    awayTeam: string;
-  }>
-> {
+type TodayFixture = {
+  fixtureId: number;
+  date: string;
+  league: string;
+  country: string;
+  homeTeam: string;
+  awayTeam: string;
+};
+
+function buildFallbackSlips(
+  fixtures: TodayFixture[],
+  limit: number,
+  language: Language
+): GeneratedSlip[] {
+  if (fixtures.length === 0) {
+    return [];
+  }
+
+  const markets =
+    language === "en"
+      ? ["Double chance", "Over 1.5 goals", "Home win"]
+      : ["Dubbelchans", "Över 1.5 mål", "Hemmalag vinner"];
+
+  const slips: GeneratedSlip[] = [];
+  const targetCount = Math.min(limit, fixtures.length);
+
+  for (let index = 0; index < targetCount; index += 1) {
+    const fixture = fixtures[index];
+    const grade = getSafetyGrade(index + 1, language);
+
+    slips.push({
+      title: grade.label,
+      risk: grade.label,
+      confidence: Math.max(55, 78 - index * 5),
+      picks: [
+        {
+          match: `${fixture.homeTeam} - ${fixture.awayTeam}`,
+          market: markets[index % markets.length],
+          probability: Math.max(55, 68 - index * 3),
+          fixtureId: fixture.fixtureId,
+          kickoffAt: fixture.date,
+        },
+      ],
+    });
+  }
+
+  return slips.length > 0 ? slips : [];
+}
+
+async function fetchTodayFixtures(todayKey: string): Promise<TodayFixture[]> {
   const apiKey = process.env.API_FOOTBALL_KEY;
 
   if (!apiKey) {
@@ -389,9 +427,7 @@ function parseGeneratedSlips(
           : [],
       })
     )
-    .filter((slip: GeneratedSlip) => {
-      return slip.picks.length >= 2;
-    });
+    .filter((slip: GeneratedSlip) => slip.picks.length >= 1);
 }
 
 export async function GET(request: Request) {
@@ -485,10 +521,15 @@ export async function GET(request: Request) {
         existingSlips,
         today,
         todayFixtureIds,
-        language,
-        slipLimit
+        language
       )
     ) {
+      const validCachedSlips = getValidCachedSlips(
+        existingSlips,
+        today,
+        todayFixtureIds
+      ).slice(0, slipLimit);
+
       return NextResponse.json({
         success: true,
         plan,
@@ -496,7 +537,7 @@ export async function GET(request: Request) {
         fixturesFound: fixtures.length,
         generatedToday: false,
         slips: serializeSlipsForResponse(
-          existingSlips.slice(0, slipLimit),
+          validCachedSlips,
           language,
           today,
           todayFixtureIds
@@ -512,7 +553,7 @@ export async function GET(request: Request) {
       `Daily slips: ${fixtures.length} matcher i större ligor hittades.`
     );
 
-    if (fixtures.length < 3) {
+    if (fixtures.length < 1) {
       return NextResponse.json(
         {
           success: false,
@@ -522,6 +563,8 @@ export async function GET(request: Request) {
         { status: 404 }
       );
     }
+
+    const targetSlipCount = Math.min(slipLimit, fixtures.length);
 
     const completion =
       await openai.chat.completions.create({
@@ -539,7 +582,7 @@ export async function GET(request: Request) {
             role: "user",
             content: buildDailySlipsUserPrompt(
               language,
-              slipLimit,
+              targetSlipCount,
               plan,
               fixtures
             ),
@@ -551,19 +594,21 @@ export async function GET(request: Request) {
       completion.choices[0]?.message
         ?.content || "{}";
 
-    const generatedSlips = parseGeneratedSlips(
+    let generatedSlips = parseGeneratedSlips(
       content,
-      slipLimit,
+      targetSlipCount,
       language,
       fixtures,
       today,
       todayFixtureIds
     );
 
-    if (generatedSlips.length < slipLimit) {
-      throw new Error(
-        messages.regenerateFailed(generatedSlips.length, slipLimit)
-      );
+    if (generatedSlips.length === 0) {
+      generatedSlips = buildFallbackSlips(fixtures, targetSlipCount, language);
+    }
+
+    if (generatedSlips.length === 0) {
+      throw new Error(messages.notEnoughFixtures);
     }
 
     const rows = generatedSlips.map(
