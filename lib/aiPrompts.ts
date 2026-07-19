@@ -613,7 +613,7 @@ Use only these markets:
 - Under 3.5 goals
 - Both teams to score
 
-Use only these upcoming matches:
+Use only matches played today (Stockholm time) from this list:
 
 ${JSON.stringify(fixtures, null, 2)}
 
@@ -680,7 +680,7 @@ Använd bara dessa marknader:
 - Under 3.5 mål
 - Båda lagen gör mål
 
-Använd endast dessa kommande matcher:
+Använd endast matcher som spelas idag (Stockholm-tid) från denna lista:
 
 ${JSON.stringify(fixtures, null, 2)}
 
@@ -711,7 +711,7 @@ export function getDailySlipsApiMessages(language: Language) {
       mustLogin: "You must be signed in.",
       authFailed: "Sign-in could not be verified.",
       notEnoughFixtures:
-        "There are not enough upcoming matches to create today's slips.",
+        "There are not enough matches today to create today's slips.",
       createFailed: "Today's slips could not be created.",
       regenerateFailed: (generated: number, limit: number) =>
         `AI created only ${generated} of ${limit} slips. Try again.`,
@@ -722,7 +722,7 @@ export function getDailySlipsApiMessages(language: Language) {
     mustLogin: "Du måste vara inloggad.",
     authFailed: "Inloggningen kunde inte verifieras.",
     notEnoughFixtures:
-      "Det finns inte tillräckligt många kommande matcher för att skapa dagens kuponger.",
+      "Det finns inte tillräckligt många matcher idag för att skapa dagens kuponger.",
     createFailed: "Dagens kuponger kunde inte skapas.",
     regenerateFailed: (generated: number, limit: number) =>
       `AI skapade endast ${generated} av ${limit} kuponger. Försök igen.`,
