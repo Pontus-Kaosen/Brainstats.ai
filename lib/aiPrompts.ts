@@ -731,7 +731,14 @@ export function getDailySlipsApiMessages(language: Language) {
   };
 }
 
-export const DAILY_SLIPS_VERSION = 4;
+export const DAILY_SLIPS_VERSION = 5;
+
+export type DailySlipFixtureScope =
+  | "major_today"
+  | "popular_today"
+  | "all_today"
+  | "upcoming"
+  | "placeholder";
 
 export type SlipPickMeta = {
   match?: string;
@@ -744,11 +751,13 @@ export type SlipPickMeta = {
   isMeta?: boolean;
   metaLanguage?: Language;
   metaVersion?: number;
+  metaFixtureScope?: DailySlipFixtureScope;
 };
 
 export function attachSlipLanguage(
   picks: SlipPickMeta[],
-  language: Language
+  language: Language,
+  fixtureScope: DailySlipFixtureScope
 ) {
   return [
     ...picks,
@@ -760,8 +769,17 @@ export function attachSlipLanguage(
       isMeta: true,
       metaLanguage: language,
       metaVersion: DAILY_SLIPS_VERSION,
+      metaFixtureScope: fixtureScope,
     },
   ];
+}
+
+export function getSlipFixtureScope(
+  picks: SlipPickMeta[]
+): DailySlipFixtureScope | null {
+  const meta = picks.find((pick) => pick.isMeta);
+
+  return meta?.metaFixtureScope ?? null;
 }
 
 export function getSlipVersion(picks: SlipPickMeta[]): number | null {

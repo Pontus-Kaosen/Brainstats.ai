@@ -5,7 +5,9 @@ import { supabase } from "@/lib/supabase";
 import AIBetSlip from "@/components/AIBetSlip";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import { useLanguage } from "@/components/LanguageProvider";
-import { formatTranslation, formatStockholmKickoffTime } from "@/lib/locale";
+import { formatTranslation, formatKickoffLabel } from "@/lib/locale";
+import { getStockholmDateKey } from "@/lib/stockholmDate";
+import type { DailySlipFixtureScope } from "@/lib/aiPrompts";
 
 type SlipPick = {
   fixture?: string;
@@ -35,8 +37,25 @@ type DailySlipsResponse = {
   plan?: "free" | "pro" | "elite";
   slipLimit?: number;
   slips?: DailySlip[];
+  fixtureScope?: DailySlipFixtureScope;
+  referenceDateKey?: string;
   error?: string;
 };
+
+function getScopeBadge(scope: DailySlipFixtureScope, t: ReturnType<typeof useLanguage>["t"]) {
+  switch (scope) {
+    case "popular_today":
+      return t.dailySlips.popularTodayBadge;
+    case "all_today":
+      return t.dailySlips.allTodayBadge;
+    case "upcoming":
+      return t.dailySlips.upcomingBadge;
+    case "placeholder":
+      return t.dailySlips.placeholderBadge;
+    default:
+      return t.dailySlips.todayOnlyBadge;
+  }
+}
 
 export default function DailySlipsSection() {
   const { t, language } = useLanguage();
@@ -44,6 +63,9 @@ export default function DailySlipsSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [slipLimit, setSlipLimit] = useState(1);
+  const [fixtureScope, setFixtureScope] =
+    useState<DailySlipFixtureScope>("major_today");
+  const [referenceDateKey, setReferenceDateKey] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -80,6 +102,8 @@ export default function DailySlipsSection() {
 
         setSlips(data.slips || []);
         setSlipLimit(data.slipLimit || 1);
+        setFixtureScope(data.fixtureScope || "major_today");
+        setReferenceDateKey(data.referenceDateKey || getStockholmDateKey());
       } catch (loadError) {
         console.error("Daily slips error:", loadError);
 
@@ -131,7 +155,7 @@ export default function DailySlipsSection() {
       </div>
 
       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#72d5ff] sm:text-sm">
-        {t.dailySlips.todayOnlyBadge}
+        {getScopeBadge(fixtureScope, t)}
       </p>
 
       <p className="mt-3 hidden text-sm text-[#777] md:block sm:mt-4">{t.dailySlips.disclaimer}</p>
@@ -193,9 +217,12 @@ export default function DailySlipsSection() {
                 odds: Number(pick.estimatedOdds || 1),
                 reason: pick.reason,
                 kickoffLabel: pick.kickoffAt
-                  ? formatTranslation(t.aiBetSlip.kickoffToday, {
-                      time: formatStockholmKickoffTime(pick.kickoffAt, language),
-                    })
+                  ? formatKickoffLabel(
+                      pick.kickoffAt,
+                      referenceDateKey || getStockholmDateKey(),
+                      language,
+                      t
+                    )
                   : undefined,
               }))}
             />

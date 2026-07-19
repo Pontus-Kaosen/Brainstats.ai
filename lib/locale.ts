@@ -1,3 +1,8 @@
+import {
+  addDaysToDateKey,
+  getFixtureStockholmDateKey,
+  getStockholmDateKey,
+} from "@/lib/stockholmDate";
 import type { Language, Translations } from "@/lib/translations";
 
 export function getLocale(language: Language) {
@@ -13,6 +18,40 @@ export function formatStockholmKickoffTime(
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(kickoffAt));
+}
+
+export function formatKickoffLabel(
+  kickoffAt: string | undefined,
+  referenceDateKey: string,
+  language: Language,
+  t: Translations
+) {
+  if (!kickoffAt) {
+    return undefined;
+  }
+
+  const kickoffDateKey = getFixtureStockholmDateKey(kickoffAt);
+  const time = formatStockholmKickoffTime(kickoffAt, language);
+
+  if (kickoffDateKey === referenceDateKey) {
+    return formatTranslation(t.aiBetSlip.kickoffToday, { time });
+  }
+
+  if (kickoffDateKey === addDaysToDateKey(referenceDateKey, 1)) {
+    return formatTranslation(t.aiBetSlip.kickoffTomorrow, { time });
+  }
+
+  const weekday = new Intl.DateTimeFormat(getLocale(language), {
+    timeZone: "Europe/Stockholm",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(new Date(kickoffAt));
+
+  return formatTranslation(t.aiBetSlip.kickoffDate, {
+    date: weekday,
+    time,
+  });
 }
 
 export function translateSlipRisk(risk: string, t: Translations) {

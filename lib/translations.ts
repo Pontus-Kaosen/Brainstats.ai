@@ -222,6 +222,10 @@ export const translations = {
       rankingLegend:
         "Lätt → Medel-lätt → Medel → Svår → Väldigt svår (säkrast till svårast)",
       todayOnlyBadge: "Större ligor · endast matcher idag",
+      popularTodayBadge: "Populära ligor · matcher idag",
+      allTodayBadge: "Matcher idag",
+      upcomingBadge: "Nästa matcher i större ligor",
+      placeholderBadge: "BrainStats AI-tips",
     },
 
     manageSubscription: {
@@ -743,6 +747,8 @@ export const translations = {
       rankSafest: "Säkrast",
       rankHardest: "Svårast",
       kickoffToday: "Idag {time}",
+      kickoffTomorrow: "Imorgon {time}",
+      kickoffDate: "{date} {time}",
     },
 
     builderPicker: {
@@ -1036,6 +1042,10 @@ export const translations = {
       rankingLegend:
         "Easy → Fairly easy → Medium → Hard → Very hard (safest to hardest)",
       todayOnlyBadge: "Major leagues · today's matches only",
+      popularTodayBadge: "Popular leagues · matches today",
+      allTodayBadge: "Matches today",
+      upcomingBadge: "Upcoming major-league matches",
+      placeholderBadge: "BrainStats AI picks",
     },
 
     manageSubscription: {
@@ -1557,6 +1567,8 @@ export const translations = {
       rankSafest: "Safest",
       rankHardest: "Hardest",
       kickoffToday: "Today {time}",
+      kickoffTomorrow: "Tomorrow {time}",
+      kickoffDate: "{date} {time}",
     },
 
     builderPicker: {

@@ -6,7 +6,9 @@ import {
   buildDailySlipsSystemPrompt,
   buildDailySlipsUserPrompt,
   DAILY_SLIPS_VERSION,
+  type DailySlipFixtureScope,
   getDailySlipsApiMessages,
+  getSlipFixtureScope,
   getSlipLanguage,
   getSlipVersion,
   parseRequestLanguage,
@@ -19,10 +21,14 @@ import {
 } from "@/lib/safetyGrades";
 import { findFixtureIdFromLabel } from "@/lib/pickOutcomeResolver";
 import {
+  addDaysToDateKey,
   getFixtureStockholmDateKey,
   getStockholmDateKey,
 } from "@/lib/stockholmDate";
-import { isAiDailySlipLeague } from "@/lib/footballFixtures";
+import {
+  isAiDailySlipLeague,
+  POPULAR_LEAGUE_IDS,
+} from "@/lib/footballFixtures";
 import { insertPublicTrackPick } from "@/lib/trackRecordStore";
 import type { Language } from "@/lib/translations";
 
@@ -97,29 +103,38 @@ function normalizeRisk(
   return grade.label;
 }
 
-function isKickoffToday(kickoffAt: string | null | undefined, todayKey: string) {
-  if (!kickoffAt) {
-    return false;
-  }
+const EXCLUDED_LEAGUE_PATTERN =
+  /\b(women|woman|women's|feminine|female|youth|u17|u18|u19|u20|u21|u23|reserve|reserves|academy|amateur)\b/i;
 
-  return getFixtureStockholmDateKey(kickoffAt) === todayKey;
+const POPULAR_LEAGUE_ID_SET = new Set(POPULAR_LEAGUE_IDS);
+
+function isAllowedLeagueName(name: string) {
+  return !EXCLUDED_LEAGUE_PATTERN.test(name);
 }
 
-function filterSlipPicksToToday<
-  T extends { kickoffAt?: string | null; fixtureId?: number | null },
->(picks: T[], todayKey: string, todayFixtureIds: Set<number>) {
-  return picks.filter(
-    (pick) =>
+function filterSlipPicksToPool<
+  T extends { fixtureId?: number | null; match?: string },
+>(
+  picks: T[],
+  allowedFixtureIds: Set<number>,
+  allowPlaceholder = false
+) {
+  return picks.filter((pick) => {
+    if (allowPlaceholder && !pick.fixtureId && pick.match) {
+      return true;
+    }
+
+    return (
       typeof pick.fixtureId === "number" &&
-      todayFixtureIds.has(pick.fixtureId) &&
-      isKickoffToday(pick.kickoffAt, todayKey)
-  );
+      allowedFixtureIds.has(pick.fixtureId)
+    );
+  });
 }
 
-function slipHasOnlyTodayPicks(
+function slipHasValidPicks(
   slip: { picks: import("@/lib/aiPrompts").SlipPickMeta[] },
-  todayKey: string,
-  todayFixtureIds: Set<number>
+  allowedFixtureIds: Set<number>,
+  fixtureScope: DailySlipFixtureScope
 ) {
   const picks = stripMetaPicks(slip.picks);
 
@@ -127,25 +142,41 @@ function slipHasOnlyTodayPicks(
     return false;
   }
 
+  if (fixtureScope === "placeholder") {
+    return picks.every((pick) => !pick.fixtureId && Boolean(pick.match));
+  }
+
   return picks.every(
     (pick) =>
       typeof pick.fixtureId === "number" &&
-      todayFixtureIds.has(pick.fixtureId) &&
-      isKickoffToday(pick.kickoffAt, todayKey)
+      allowedFixtureIds.has(pick.fixtureId)
   );
 }
 
 function getValidCachedSlips<
   T extends { picks: import("@/lib/aiPrompts").SlipPickMeta[] },
->(slips: T[], todayKey: string, todayFixtureIds: Set<number>) {
+>(
+  slips: T[],
+  allowedFixtureIds: Set<number>,
+  fixtureScope: DailySlipFixtureScope
+) {
   return slips.filter((slip) =>
-    slipHasOnlyTodayPicks(slip, todayKey, todayFixtureIds)
+    slipHasValidPicks(slip, allowedFixtureIds, fixtureScope)
   );
 }
 
 function cachedSlipsAreValid<
   T extends { picks: import("@/lib/aiPrompts").SlipPickMeta[] },
->(slips: T[], todayKey: string, todayFixtureIds: Set<number>, language: Language) {
+>(
+  slips: T[],
+  allowedFixtureIds: Set<number>,
+  language: Language,
+  fixtureScope: DailySlipFixtureScope
+) {
+  if (slips.length < 1) {
+    return false;
+  }
+
   if (getSlipVersion(slips[0]?.picks || []) !== DAILY_SLIPS_VERSION) {
     return false;
   }
@@ -154,7 +185,11 @@ function cachedSlipsAreValid<
     return false;
   }
 
-  return getValidCachedSlips(slips, todayKey, todayFixtureIds).length >= 1;
+  if (getSlipFixtureScope(slips[0]?.picks || []) !== fixtureScope) {
+    return false;
+  }
+
+  return getValidCachedSlips(slips, allowedFixtureIds, fixtureScope).length >= 1;
 }
 
 async function deleteTodaySlipsForUser(userId: string, todayKey: string) {
@@ -180,8 +215,8 @@ function serializeSlipsForResponse(
     picks: import("@/lib/aiPrompts").SlipPickMeta[];
   }>,
   language: Language,
-  todayKey: string,
-  todayFixtureIds: Set<number>
+  allowedFixtureIds: Set<number>,
+  fixtureScope: DailySlipFixtureScope
 ) {
   const enriched = slips
     .map((slip) => {
@@ -191,10 +226,10 @@ function serializeSlipsForResponse(
         title: slip.title,
       });
       const grade = getSafetyGrade(tier, language);
-      const picks = filterSlipPicksToToday(
+      const picks = filterSlipPicksToPool(
         stripMetaPicks(slip.picks),
-        todayKey,
-        todayFixtureIds
+        allowedFixtureIds,
+        fixtureScope === "placeholder"
       );
 
       return {
@@ -216,11 +251,58 @@ function serializeSlipsForResponse(
 type TodayFixture = {
   fixtureId: number;
   date: string;
+  leagueId: number;
   league: string;
   country: string;
   homeTeam: string;
   awayTeam: string;
 };
+
+type FixturePool = {
+  fixtures: TodayFixture[];
+  scope: DailySlipFixtureScope;
+  referenceDateKey: string;
+};
+
+function buildStaticPlaceholderSlip(language: Language): GeneratedSlip[] {
+  const grade = getSafetyGrade(1, language);
+
+  if (language === "en") {
+    return [
+      {
+        title: grade.label,
+        risk: grade.label,
+        confidence: 60,
+        picks: [
+          {
+            match: "BrainStats AI picks",
+            market: "New picks appear when upcoming matches are available",
+            probability: 50,
+            fixtureId: null,
+            kickoffAt: null,
+          },
+        ],
+      },
+    ];
+  }
+
+  return [
+    {
+      title: grade.label,
+      risk: grade.label,
+      confidence: 60,
+      picks: [
+        {
+          match: "BrainStats AI-tips",
+          market: "Nya tips visas när kommande matcher finns tillgängliga",
+          probability: 50,
+          fixtureId: null,
+          kickoffAt: null,
+        },
+      ],
+    },
+  ];
+}
 
 function buildFallbackSlips(
   fixtures: TodayFixture[],
@@ -262,7 +344,10 @@ function buildFallbackSlips(
   return slips.length > 0 ? slips : [];
 }
 
-async function fetchTodayFixtures(todayKey: string): Promise<TodayFixture[]> {
+async function fetchFixturesForDate(
+  dateKey: string,
+  allowLeague: (leagueId: number, leagueName: string) => boolean
+): Promise<TodayFixture[]> {
   const apiKey = process.env.API_FOOTBALL_KEY;
 
   if (!apiKey) {
@@ -270,7 +355,7 @@ async function fetchTodayFixtures(todayKey: string): Promise<TodayFixture[]> {
   }
 
   const query = new URLSearchParams({
-    date: todayKey,
+    date: dateKey,
     timezone: "Europe/Stockholm",
   });
 
@@ -288,7 +373,7 @@ async function fetchTodayFixtures(todayKey: string): Promise<TodayFixture[]> {
 
   if (!response.ok) {
     console.error(
-      `API-Football misslyckades för ${todayKey}:`,
+      `API-Football misslyckades för ${dateKey}:`,
       response.status,
       data
     );
@@ -301,43 +386,125 @@ async function fetchTodayFixtures(todayKey: string): Promise<TodayFixture[]> {
     typeof data.errors === "object" &&
     Object.keys(data.errors).length > 0
   ) {
-    console.error(`API-Football-fel för ${todayKey}:`, data.errors);
+    console.error(`API-Football-fel för ${dateKey}:`, data.errors);
 
     return [];
   }
 
-  const fixtures = (Array.isArray(data?.response) ? data.response : [])
+  return (Array.isArray(data?.response) ? data.response : [])
     .filter((fixture: any) => {
       const status = fixture.fixture?.status?.short;
 
       return status === "NS" || status === "TBD";
     })
-    .filter(
-      (fixture: any) =>
+    .filter((fixture: any) => {
+      const leagueId = fixture.league?.id;
+      const leagueName = fixture.league?.name || "";
+
+      return (
         fixture.fixture?.id &&
         fixture.fixture?.date &&
-        fixture.league?.id &&
-        isAiDailySlipLeague(fixture.league.id) &&
+        leagueId &&
+        allowLeague(leagueId, leagueName) &&
         fixture.teams?.home?.name &&
         fixture.teams?.away?.name &&
-        getFixtureStockholmDateKey(fixture.fixture.date) === todayKey
-    );
+        getFixtureStockholmDateKey(fixture.fixture.date) === dateKey
+      );
+    })
+    .sort(
+      (a: any, b: any) =>
+        new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime()
+    )
+    .slice(0, 60)
+    .map((fixture: any) => ({
+      fixtureId: fixture.fixture.id,
+      date: fixture.fixture.date,
+      leagueId: fixture.league.id,
+      league: fixture.league?.name || "Okänd liga",
+      country: fixture.league?.country || "Okänt land",
+      homeTeam: fixture.teams.home.name,
+      awayTeam: fixture.teams.away.name,
+    }));
+}
 
-  console.log(
-    `Daily slips: ${fixtures.length} matcher i större ligor hittades för ${todayKey}.`
+async function resolveDailySlipFixtures(
+  todayKey: string
+): Promise<FixturePool> {
+  const majorToday = await fetchFixturesForDate(todayKey, (leagueId) =>
+    isAiDailySlipLeague(leagueId)
   );
 
-  return fixtures.slice(0, 60).map((fixture: any) => ({
-    fixtureId: fixture.fixture.id,
-    date: fixture.fixture.date,
-    leagueId: fixture.league.id,
-    league: fixture.league?.name || "Okänd liga",
-    country: fixture.league?.country || "Okänt land",
-    homeTeam: fixture.teams.home.name,
-    awayTeam: fixture.teams.away.name,
-  }));
+  if (majorToday.length > 0) {
+    console.log(
+      `Daily slips: ${majorToday.length} matcher i större ligor idag.`
+    );
+
+    return {
+      fixtures: majorToday,
+      scope: "major_today",
+      referenceDateKey: todayKey,
+    };
+  }
+
+  const popularToday = await fetchFixturesForDate(
+    todayKey,
+    (leagueId) => POPULAR_LEAGUE_ID_SET.has(leagueId)
+  );
+
+  if (popularToday.length > 0) {
+    console.log(
+      `Daily slips: ${popularToday.length} matcher i populära ligor idag.`
+    );
+
+    return {
+      fixtures: popularToday,
+      scope: "popular_today",
+      referenceDateKey: todayKey,
+    };
+  }
+
+  const allToday = await fetchFixturesForDate(todayKey, (_leagueId, leagueName) =>
+    isAllowedLeagueName(leagueName)
+  );
+
+  if (allToday.length > 0) {
+    console.log(`Daily slips: ${allToday.length} matcher idag (alla ligor).`);
+
+    return {
+      fixtures: allToday,
+      scope: "all_today",
+      referenceDateKey: todayKey,
+    };
+  }
+
+  for (let offset = 1; offset <= 14; offset += 1) {
+    const dateKey = addDaysToDateKey(todayKey, offset);
+    const upcomingMajor = await fetchFixturesForDate(dateKey, (leagueId) =>
+      isAiDailySlipLeague(leagueId)
+    );
+
+    if (upcomingMajor.length > 0) {
+      console.log(
+        `Daily slips: ${upcomingMajor.length} kommande matcher i större ligor (${dateKey}).`
+      );
+
+      return {
+        fixtures: upcomingMajor,
+        scope: "upcoming",
+        referenceDateKey: dateKey,
+      };
+    }
+  }
+
+  console.log("Daily slips: inga matcher hittades — använder platshållare.");
+
+  return {
+    fixtures: [],
+    scope: "placeholder",
+    referenceDateKey: todayKey,
+  };
 }
-  
+
 function cleanOpenAIJson(content: string) {
   return content
     .replace(/^```json\s*/i, "")
@@ -356,8 +523,7 @@ function parseGeneratedSlips(
     homeTeam: string;
     awayTeam: string;
   }>,
-  todayKey: string,
-  todayFixtureIds: Set<number>
+  allowedFixtureIds: Set<number>
 ): GeneratedSlip[] {
   const cleaned = cleanOpenAIJson(content);
   const parsed = JSON.parse(cleaned);
@@ -391,7 +557,7 @@ function parseGeneratedSlips(
         ),
 
         picks: Array.isArray(slip?.picks)
-          ? filterSlipPicksToToday(
+          ? filterSlipPicksToPool(
               slip.picks
                 .slice(0, 3)
                 .map((pick: any) => {
@@ -421,8 +587,7 @@ function parseGeneratedSlips(
                     kickoffAt: fixtureMeta?.date || null,
                   };
                 }),
-              todayKey,
-              todayFixtureIds
+              allowedFixtureIds
             )
           : [],
       })
@@ -489,8 +654,11 @@ export async function GET(request: Request) {
 
     const slipLimit = getSlipLimit(plan);
     const today = getStockholmDateKey();
-    const fixtures = await fetchTodayFixtures(today);
-    const todayFixtureIds = new Set(fixtures.map((fixture) => fixture.fixtureId));
+    const fixturePool = await resolveDailySlipFixtures(today);
+    const { fixtures, scope: fixtureScope, referenceDateKey } = fixturePool;
+    const allowedFixtureIds = new Set(
+      fixtures.map((fixture) => fixture.fixtureId)
+    );
 
     /*
      * Kontrollera om dagens kuponger redan finns
@@ -519,28 +687,30 @@ export async function GET(request: Request) {
     if (
       cachedSlipsAreValid(
         existingSlips,
-        today,
-        todayFixtureIds,
-        language
+        allowedFixtureIds,
+        language,
+        fixtureScope
       )
     ) {
       const validCachedSlips = getValidCachedSlips(
         existingSlips,
-        today,
-        todayFixtureIds
+        allowedFixtureIds,
+        fixtureScope
       ).slice(0, slipLimit);
 
       return NextResponse.json({
         success: true,
         plan,
         slipLimit,
+        fixtureScope,
+        referenceDateKey,
         fixturesFound: fixtures.length,
         generatedToday: false,
         slips: serializeSlipsForResponse(
           validCachedSlips,
           language,
-          today,
-          todayFixtureIds
+          allowedFixtureIds,
+          fixtureScope
         ),
       });
     }
@@ -549,66 +719,64 @@ export async function GET(request: Request) {
       await deleteTodaySlipsForUser(user.id, today);
     }
 
-    console.log(
-      `Daily slips: ${fixtures.length} matcher i större ligor hittades.`
-    );
+    let generatedSlips: GeneratedSlip[] = [];
 
-    if (fixtures.length < 1) {
-      return NextResponse.json(
-        {
-          success: false,
-          fixturesFound: fixtures.length,
-          error: messages.notEnoughFixtures,
-        },
-        { status: 404 }
+    if (fixtureScope === "placeholder") {
+      generatedSlips = buildStaticPlaceholderSlip(language);
+    } else {
+      const targetSlipCount = Math.max(
+        1,
+        Math.min(slipLimit, fixtures.length)
       );
+
+      try {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4.1-mini",
+          temperature: 0.3,
+          response_format: {
+            type: "json_object",
+          },
+          messages: [
+            {
+              role: "system",
+              content: buildDailySlipsSystemPrompt(language),
+            },
+            {
+              role: "user",
+              content: buildDailySlipsUserPrompt(
+                language,
+                targetSlipCount,
+                plan,
+                fixtures
+              ),
+            },
+          ],
+        });
+
+        const content = completion.choices[0]?.message?.content || "{}";
+
+        generatedSlips = parseGeneratedSlips(
+          content,
+          targetSlipCount,
+          language,
+          fixtures,
+          allowedFixtureIds
+        );
+      } catch (generationError) {
+        console.warn("Daily slips AI generation failed:", generationError);
+      }
+
+      if (generatedSlips.length === 0) {
+        generatedSlips = buildFallbackSlips(
+          fixtures,
+          Math.max(1, Math.min(slipLimit, fixtures.length)),
+          language
+        );
+      }
     }
 
-    const targetSlipCount = Math.min(slipLimit, fixtures.length);
-
-    const completion =
-      await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
-        temperature: 0.3,
-        response_format: {
-          type: "json_object",
-        },
-        messages: [
-          {
-            role: "system",
-            content: buildDailySlipsSystemPrompt(language),
-          },
-          {
-            role: "user",
-            content: buildDailySlipsUserPrompt(
-              language,
-              targetSlipCount,
-              plan,
-              fixtures
-            ),
-          },
-        ],
-      });
-
-    const content =
-      completion.choices[0]?.message
-        ?.content || "{}";
-
-    let generatedSlips = parseGeneratedSlips(
-      content,
-      targetSlipCount,
-      language,
-      fixtures,
-      today,
-      todayFixtureIds
-    );
-
     if (generatedSlips.length === 0) {
-      generatedSlips = buildFallbackSlips(fixtures, targetSlipCount, language);
-    }
-
-    if (generatedSlips.length === 0) {
-      throw new Error(messages.notEnoughFixtures);
+      generatedSlips = buildStaticPlaceholderSlip(language);
     }
 
     const rows = generatedSlips.map(
@@ -629,7 +797,8 @@ export async function GET(request: Request) {
             fixtureId: pick.fixtureId || undefined,
             kickoffAt: pick.kickoffAt || undefined,
           })),
-          language
+          language,
+          fixtureScope
         ),
       })
     );
@@ -688,30 +857,75 @@ export async function GET(request: Request) {
       success: true,
       plan,
       slipLimit,
+      fixtureScope,
+      referenceDateKey,
       fixturesFound: fixtures.length,
       generatedToday: true,
-      slips: serializeSlipsForResponse(inserted || [], language, today, todayFixtureIds),
+      slips: serializeSlipsForResponse(
+        inserted || [],
+        language,
+        allowedFixtureIds,
+        fixtureScope
+      ),
     });
   } catch (error: unknown) {
-    console.error(
-      "DAILY SLIPS ERROR:",
-      error
-    );
+    console.error("DAILY SLIPS ERROR:", error);
 
     const fallbackLanguage = parseRequestLanguage(
       new URL(request.url).searchParams.get("lang")
     );
-    const fallbackMessages = getDailySlipsApiMessages(fallbackLanguage);
 
-    return NextResponse.json(
-      {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : fallbackMessages.createFailed,
-      },
-      { status: 500 }
-    );
+    try {
+      const today = getStockholmDateKey();
+      const emergencySlips = buildStaticPlaceholderSlip(fallbackLanguage);
+
+      return NextResponse.json({
+        success: true,
+        plan: "free",
+        slipLimit: 1,
+        fixtureScope: "placeholder",
+        referenceDateKey: today,
+        fixturesFound: 0,
+        generatedToday: true,
+        slips: serializeSlipsForResponse(
+          [
+            {
+              id: "placeholder",
+              valid_date: today,
+              slip_index: 1,
+              title: emergencySlips[0].title,
+              risk: emergencySlips[0].risk,
+              confidence: emergencySlips[0].confidence,
+              picks: attachSlipLanguage(
+                emergencySlips[0].picks.map((pick) => ({
+                  match: pick.match,
+                  market: pick.market,
+                  probability: pick.probability,
+                  estimatedOdds: calculateFairOdds(pick.probability),
+                })),
+                fallbackLanguage,
+                "placeholder"
+              ),
+            },
+          ],
+          fallbackLanguage,
+          new Set<number>(),
+          "placeholder"
+        ),
+      });
+    } catch {
+      const fallbackMessages = getDailySlipsApiMessages(fallbackLanguage);
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : fallbackMessages.createFailed,
+        },
+        { status: 500 }
+      );
+    }
   }
 }
