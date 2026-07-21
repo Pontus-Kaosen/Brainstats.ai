@@ -206,6 +206,7 @@ function AnalyzePageContent() {
   const [usedData, setUsedData] = useState<UsedData | null>(null);
   const [premiumError, setPremiumError] = useState("");
   const [analysisError, setAnalysisError] = useState("");
+  const [saveWarning, setSaveWarning] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [plan, setPlan] = useState<"free" | "pro" | "elite">("free");
   const [remainingToday, setRemainingToday] = useState<number | null>(null);
@@ -331,6 +332,7 @@ function AnalyzePageContent() {
     setUsedData(null);
     setPremiumError("");
     setAnalysisError("");
+    setSaveWarning("");
 
     const {
       data: { session },
@@ -360,26 +362,30 @@ function AnalyzePageContent() {
       return;
     }
 
-    if (!response.ok || !data.success || !data.analysis) {
+    if (data.analysis) {
+      setAiResult(data.analysis);
+      setUsedData(data.usedData || null);
       setLoading(false);
-      setAnalysisError(data.error || t.analyze.analysisFailed);
+      setShowReport(true);
 
-      if (response.status === 401) {
-        sessionStorage.setItem(ANALYZE_DRAFT_KEY, betText);
+      if (data.saveWarning || (!data.success && data.error)) {
+        setSaveWarning(data.saveWarning || t.analyze.saveWarning);
+      }
+
+      if (plan === "free" && data.success !== false) {
+        setRemainingToday((current) =>
+          current === null ? null : Math.max(0, current - 1)
+        );
       }
 
       return;
     }
 
-    setAiResult(data.analysis);
-    setUsedData(data.usedData || null);
     setLoading(false);
-    setShowReport(true);
+    setAnalysisError(data.error || t.analyze.analysisFailed);
 
-    if (plan === "free") {
-      setRemainingToday((current) =>
-        current === null ? null : Math.max(0, current - 1)
-      );
+    if (response.status === 401) {
+      sessionStorage.setItem(ANALYZE_DRAFT_KEY, betText);
     }
   }
 
@@ -667,6 +673,12 @@ const brainPicks = useMemo(() => {
 
           {showReport && aiResult && (
             <section className="mt-8 space-y-8">
+              {saveWarning ? (
+                <div className="rounded-2xl border border-yellow-500/40 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+                  {t.analyze.saveWarning}
+                </div>
+              ) : null}
+
               {isSampleReport ? (
                 <div className="rounded-2xl border border-[#2fbfff33] bg-[#071018]/90 p-5">
                   <p className="text-sm leading-7 text-[#D8D8D8]">
@@ -776,7 +788,7 @@ const brainPicks = useMemo(() => {
                 )}
               </section>
 
-              <CollapsibleReportSection title={t.analyze.detailsSection}>
+              <CollapsibleReportSection title={t.analyze.detailsSection} defaultOpen>
               {(rotationSummaries.length > 0 || scheduleStatusMessage) ? (
                 <div
                   className={`mb-6 rounded-3xl border p-6 sm:p-8 ${

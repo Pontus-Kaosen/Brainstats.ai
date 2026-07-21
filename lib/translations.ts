@@ -449,6 +449,8 @@ export const translations = {
       remainingAnalysesLow:
         "Bara {remaining} analys kvar idag — överväg Pro för obegränsat.",
       analysisFailed: "Analysen kunde inte slutföras. Försök igen.",
+      saveWarning:
+        "Analysen är klar men kunde inte sparas i historiken just nu. Du ser resultatet här nedan.",
       scheduleContextTitle: "Matchschema & rotationsrisk",
       scheduleContextHint:
         "Viktiga matcher före eller efter kan påverka lagets intensitet och startelva.",
@@ -1352,6 +1354,8 @@ export const translations = {
       remainingAnalysesLow:
         "Only {remaining} analysis left today — consider Pro for unlimited.",
       analysisFailed: "The analysis could not be completed. Try again.",
+      saveWarning:
+        "The analysis is ready but could not be saved to your history right now. You can still read the full result below.",
       scheduleContextTitle: "Schedule & rotation risk",
       scheduleContextHint:
         "Important fixtures before or after may affect intensity and the starting lineup.",

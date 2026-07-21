@@ -1030,24 +1030,68 @@ export async function POST(
       insertError = insertWithWorthBetting.error;
     }
 
+    const usedData = {
+      fixtureId,
+      homeTeamId,
+      awayTeamId,
+      leagueId,
+      season,
+
+      hasFixture: Boolean(fixture),
+
+      hasHomeStats: Boolean(homeStats),
+
+      hasAwayStats: Boolean(awayStats),
+
+      hasStandings: standings.length > 0,
+
+      hasH2H: h2h.length > 0,
+
+      hasHomeLastMatches: homeLastMatches.length > 0,
+
+      hasAwayLastMatches: awayLastMatches.length > 0,
+
+      hasInjuries: injuries.length > 0,
+
+      hasLineups: lineups.length > 0,
+
+      confirmedLineups,
+
+      playerLineupStatus,
+
+      lastMatches: {
+        home: homeLastMatches,
+        away: awayLastMatches,
+      },
+
+      injuries,
+      lineups,
+      weather,
+      oddsAvailable: oddsResponse.length > 0,
+      dataQuality,
+
+      referee: fixture?.fixture?.referee || null,
+
+      rotationRisks,
+      scheduleContext,
+      scheduleTeamsChecked: betTeams.map((team) => team.name),
+    };
+
     if (insertError) {
       console.error(
         "Kunde inte spara analysen:",
         insertError
       );
 
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            insertError.message,
-          analysis:
-            finalAnalysis,
-        },
-        {
-          status: 500,
-        }
-      );
+      return NextResponse.json({
+        success: true,
+        userPlan,
+        brainPickLimit,
+        saved: null,
+        saveWarning: insertError.message,
+        usedData,
+        analysis: finalAnalysis,
+      });
     }
 
     const primaryPick = finalAnalysis.brainPicks[0];
@@ -1075,65 +1119,7 @@ export async function POST(
       userPlan,
       brainPickLimit,
       saved: inserted,
-
-      usedData: {
-        fixtureId,
-        homeTeamId,
-        awayTeamId,
-        leagueId,
-        season,
-
-        hasFixture:
-          Boolean(fixture),
-
-        hasHomeStats:
-          Boolean(homeStats),
-
-        hasAwayStats:
-          Boolean(awayStats),
-
-        hasStandings:
-          standings.length > 0,
-
-        hasH2H:
-          h2h.length > 0,
-
-        hasHomeLastMatches:
-          homeLastMatches.length > 0,
-
-        hasAwayLastMatches:
-          awayLastMatches.length > 0,
-
-        hasInjuries:
-          injuries.length > 0,
-
-        hasLineups:
-          lineups.length > 0,
-
-        confirmedLineups,
-
-        playerLineupStatus,
-
-        lastMatches: {
-          home: homeLastMatches,
-          away: awayLastMatches,
-        },
-
-        injuries,
-        lineups,
-        weather,
-        oddsAvailable: oddsResponse.length > 0,
-        dataQuality,
-
-        referee:
-          fixture?.fixture?.referee ||
-          null,
-
-        rotationRisks,
-        scheduleContext,
-        scheduleTeamsChecked: betTeams.map((team) => team.name),
-      },
-
+      usedData,
       analysis: finalAnalysis,
     });
   } catch (error: unknown) {
