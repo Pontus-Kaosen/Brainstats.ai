@@ -695,7 +695,19 @@ export const translations = {
       slipEmptyHint:
         "Välj en match, bygg din marknad och lägg till här — precis som en bet builder.",
       matchTapHint:
-        "Tryck på en match för att välja den, välj marknad och lägg till i BrainSlip.",
+        "Tryck på en match, välj marknad och tryck Analysera — du behöver inte fylla BrainSlip om du bara vill testa ett spel.",
+      showAdvancedFilters: "Visa land & liga",
+      hideAdvancedFilters: "Dölj land & liga",
+      popularMarketsTitle: "Populära marknader",
+      showMoreMarkets: "Visa {count} fler marknader",
+      showFewerMarkets: "Visa färre marknader",
+      hiddenSelectedMarkets: "{count} valda dolda",
+      analyzeDirect: "Analysera direkt",
+      analyzeDirectHint:
+        "Hoppa över BrainSlip och kör Brain Engine på ditt val direkt.",
+      stickySlipReady: "{count} spel i BrainSlip",
+      stickySelectionReady: "{count} val klara att analyseras",
+      lineupsSection: "Startelvor (valfritt)",
       slipReadyHint:
         "Matcher tillagda! Lägg till fler om du vill, eller tryck Analysera.",
       steps: {
@@ -1586,7 +1598,19 @@ export const translations = {
       slipEmptyHint:
         "Select a match, build your market, and add it here — just like a bet builder.",
       matchTapHint:
-        "Tap a match to select it, choose a market, and add it to BrainSlip.",
+        "Tap a match, pick a market and hit Analyze — you do not need BrainSlip for a single bet.",
+      showAdvancedFilters: "Show country & league",
+      hideAdvancedFilters: "Hide country & league",
+      popularMarketsTitle: "Popular markets",
+      showMoreMarkets: "Show {count} more markets",
+      showFewerMarkets: "Show fewer markets",
+      hiddenSelectedMarkets: "{count} selected hidden",
+      analyzeDirect: "Analyze now",
+      analyzeDirectHint:
+        "Skip BrainSlip and run Brain Engine on your selection directly.",
+      stickySlipReady: "{count} bets in BrainSlip",
+      stickySelectionReady: "{count} picks ready to analyze",
+      lineupsSection: "Starting lineups (optional)",
       slipReadyHint:
         "Matches added! Add more if you like, or tap Analyze.",
       steps: {

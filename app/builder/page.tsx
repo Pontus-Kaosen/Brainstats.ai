@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import BuilderSlipPanel from "./components/BuilderSlipPanel";
 import BuilderHowItWorks from "./components/BuilderHowItWorks";
+import BuilderStickyBar from "./components/BuilderStickyBar";
+import CollapsibleReportSection from "@/components/CollapsibleReportSection";
 import BuilderViewTabs, {
   type BuilderViewMode,
 } from "./components/BuilderViewTabs";
@@ -254,6 +256,7 @@ export default function BuilderPage() {
   const [loadingBackgroundFixtures, setLoadingBackgroundFixtures] =
     useState(false);
   const [matchError, setMatchError] = useState("");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const specificLeagueId =
     typeof leagueId === "number" ? leagueId : null;
@@ -1241,10 +1244,10 @@ export default function BuilderPage() {
     setPlayerPickDrafts([]);
   }
 
-  function analyze() {
-    if (slip.length === 0) return;
+  function redirectToAnalyze(items: SlipItem[]) {
+    if (items.length === 0) return;
 
-    const text = slip
+    const text = items
       .map(
         (item) => `${item.homeTeam} - ${item.awayTeam}
 ${item.market}
@@ -1260,6 +1263,30 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       "/analyze?text=" + encodeURIComponent(text);
   }
 
+  function analyzeSelectionDirect() {
+    if (!selectedFixture || totalPendingPicks === 0) {
+      setBuilderError(t.builder.selectMarketsFirst);
+      return;
+    }
+
+    setBuilderError("");
+
+    const items = [
+      ...selectedMarkets.map((marketName) =>
+        createSlipItem(selectedFixture, marketName)
+      ),
+      ...playerPickDrafts.map((draft) =>
+        createSlipItemFromDraft(selectedFixture, draft)
+      ),
+    ];
+
+    redirectToAnalyze(items);
+  }
+
+  function analyze() {
+    redirectToAnalyze(slip);
+  }
+
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
@@ -1267,7 +1294,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       <div className="relative z-10">
         <Navbar />
 
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-8 sm:py-10">
+        <div className="mx-auto max-w-7xl px-4 py-4 pb-28 sm:px-8 sm:py-10 xl:pb-10">
           <section className="mobile-hero mb-4 max-md:mb-3 sm:mb-10 md:text-left">
             <p className="brain-title text-sm font-semibold max-md:text-xs">
               {t.builder.pageBadge}
@@ -1277,9 +1304,14 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               {t.builder.pageTitle}
             </h1>
 
-            <p className="mt-4 hidden max-w-2xl text-[#A9A9A9] md:block">
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9] sm:mt-4 sm:text-base">
               {t.builder.pageDescription}
             </p>
+
+            <BuilderHowItWorks
+              filtersReady={Boolean(selectedFixture)}
+              slipCount={slip.length || totalPendingPicks}
+            />
           </section>
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-start xl:gap-8">
@@ -1300,67 +1332,81 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   </p>
                 </div>
               ) : (
-                <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-5">
-                  <BuilderPicker
-                    label={t.builder.labels.country}
-                    icon="🌍"
-                    value={country}
-                    onChange={setCountry}
-                    options={[
-                      {
-                        label: t.builder.allCountries,
-                        value: ALL_COUNTRIES_VALUE,
-                        icon: "🌍",
-                        description: t.builder.allCountriesDescription,
-                      },
-                      {
-                        label: t.builder.tournaments,
-                        value: TOURNAMENTS_VALUE,
-                        icon: "🌍",
-                        description: t.builder.tournamentsDescription,
-                      },
-                      ...countries.map((item) => ({
-                        label: item.name,
-                        value: item.name,
-                        image: item.flag || undefined,
-                        description: t.builder.nationalLeaguesDescription,
-                      })),
-                    ]}
-                  />
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedFilters((value) => !value)}
+                    className="mt-5 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-[#E8DCC8] transition hover:border-[#18ff6d44] sm:w-auto"
+                  >
+                    {showAdvancedFilters
+                      ? t.builder.hideAdvancedFilters
+                      : t.builder.showAdvancedFilters}
+                  </button>
 
-                  <BuilderPicker
-                    label={t.builder.labels.league}
-                    icon="🏆"
-                    value={leagueId}
-                    onChange={(value) => {
-                      if (value === ALL_LEAGUES_VALUE) {
-                        setLeagueId(ALL_LEAGUES_VALUE);
-                        return;
-                      }
+                  {showAdvancedFilters ? (
+                    <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-5">
+                      <BuilderPicker
+                        label={t.builder.labels.country}
+                        icon="🌍"
+                        value={country}
+                        onChange={setCountry}
+                        options={[
+                          {
+                            label: t.builder.allCountries,
+                            value: ALL_COUNTRIES_VALUE,
+                            icon: "🌍",
+                            description: t.builder.allCountriesDescription,
+                          },
+                          {
+                            label: t.builder.tournaments,
+                            value: TOURNAMENTS_VALUE,
+                            icon: "🌍",
+                            description: t.builder.tournamentsDescription,
+                          },
+                          ...countries.map((item) => ({
+                            label: item.name,
+                            value: item.name,
+                            image: item.flag || undefined,
+                            description: t.builder.nationalLeaguesDescription,
+                          })),
+                        ]}
+                      />
 
-                      setLeagueId(Number(value));
-                    }}
-                    options={[
-                      {
-                        label: t.builder.allLeagues,
-                        value: ALL_LEAGUES_VALUE,
-                        icon: "🏆",
-                        description: t.builder.allLeaguesDescription,
-                      },
-                      ...leagues.map((league) => ({
-                        label: league.name,
-                        value: league.id,
-                        image: league.logo || undefined,
-                        icon: "🏆",
-                        description: league.currentSeason
-                          ? formatTranslation(t.builder.seasonLabel, {
-                              season: league.currentSeason,
-                            })
-                          : league.type,
-                      })),
-                    ]}
-                  />
-                </div>
+                      <BuilderPicker
+                        label={t.builder.labels.league}
+                        icon="🏆"
+                        value={leagueId}
+                        onChange={(value) => {
+                          if (value === ALL_LEAGUES_VALUE) {
+                            setLeagueId(ALL_LEAGUES_VALUE);
+                            return;
+                          }
+
+                          setLeagueId(Number(value));
+                        }}
+                        options={[
+                          {
+                            label: t.builder.allLeagues,
+                            value: ALL_LEAGUES_VALUE,
+                            icon: "🏆",
+                            description: t.builder.allLeaguesDescription,
+                          },
+                          ...leagues.map((league) => ({
+                            label: league.name,
+                            value: league.id,
+                            image: league.logo || undefined,
+                            icon: "🏆",
+                            description: league.currentSeason
+                              ? formatTranslation(t.builder.seasonLabel, {
+                                  season: league.currentSeason,
+                                })
+                              : league.type,
+                          })),
+                        ]}
+                      />
+                    </div>
+                  ) : null}
+                </>
               )}
 
               <div className="mt-5 flex flex-col gap-4 sm:mt-6 md:flex-row md:items-end md:justify-between">
@@ -1476,7 +1522,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     onClick={() => selectFixture(selectedFixture)}
                   />
 
-                  <div className="mt-5 max-h-[50vh] overflow-y-auto overscroll-contain pr-1 sm:max-h-[55vh]">
+                  <div className="mt-5 max-h-[42vh] overflow-y-auto overscroll-contain pr-1 sm:max-h-[55vh]">
                     <BuilderMarketGrid
                       markets={markets}
                       selectedMarkets={selectedMarkets}
@@ -1486,14 +1532,36 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       playerDraftCountForMarket={playerDraftCountForMarket}
                       isMarketInSlip={isMarketInSlip}
                       getMarketDisplayLabel={getMarketDisplayLabel}
+                      simpleMode
                     />
                   </div>
 
                   {totalPendingPicks > 0 ? (
-                    <p className="mt-4 text-sm font-semibold text-[#18ff6d]">
-                      {formatTranslation(t.builder.totalSelectionCount, {
-                        count: totalPendingPicks,
-                      })}
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      <Button
+                        onClick={analyzeSelectionDirect}
+                        className="w-full py-3"
+                      >
+                        {t.builder.analyzeDirect}
+                      </Button>
+
+                      <Button
+                        variant="secondary"
+                        onClick={addSelectedMarketsToSlip}
+                        className="w-full py-3"
+                      >
+                        {totalPendingPicks === 1
+                          ? t.builder.addOneMarket
+                          : formatTranslation(t.builder.addSelectedMarkets, {
+                              count: totalPendingPicks,
+                            })}
+                      </Button>
+                    </div>
+                  ) : null}
+
+                  {totalPendingPicks > 0 ? (
+                    <p className="mt-3 text-xs leading-relaxed text-[#777]">
+                      {t.builder.analyzeDirectHint}
                     </p>
                   ) : null}
 
@@ -1696,26 +1764,11 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
               {selectedFixture ? (
                 <>
-              <div className="xl:hidden">
-                <BuilderHowItWorks
-                  filtersReady={Boolean(selectedFixture && market)}
-                  slipCount={slip.length}
-                />
-              </div>
-
-              <Button
-                onClick={addSelectedMarketsToSlip}
-                disabled={!selectedFixture || totalPendingPicks === 0}
-                className="mt-6 w-full"
+              <CollapsibleReportSection
+                title={t.builder.lineupsSection}
+                className="mt-5 sm:mt-8"
               >
-                {totalPendingPicks === 1
-                  ? t.builder.addOneMarket
-                  : formatTranslation(t.builder.addSelectedMarkets, {
-                      count: totalPendingPicks,
-                    })}
-              </Button>
-
-              <section className="mt-5 rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 sm:mt-8 sm:p-6">
+              <section className="rounded-3xl border border-[#18ff6d22] bg-black/25 p-4 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
@@ -1863,6 +1916,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   </div>
                 )}
               </section>
+              </CollapsibleReportSection>
                 </>
               ) : null}
 
@@ -1895,6 +1949,13 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
             </aside>
           </div>
         </div>
+
+        <BuilderStickyBar
+          slipCount={slip.length}
+          pendingCount={totalPendingPicks}
+          onAnalyzeSlip={analyze}
+          onAnalyzeSelection={analyzeSelectionDirect}
+        />
       </div>
     </main>
   );

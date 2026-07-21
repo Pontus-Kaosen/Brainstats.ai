@@ -135,3 +135,38 @@ export function groupMarkets(markets: readonly string[]) {
 
   return groups;
 }
+
+const popularMarketMatchers = [
+  /^hemmalag vinner$/i,
+  /^bortalag vinner$/i,
+  /^home win$/i,
+  /^away win$/i,
+  /^oavgjort$/i,
+  /^draw$/i,
+  /^över 2\.5 mål$/i,
+  /^under 2\.5 mål$/i,
+  /^over 2\.5 goals$/i,
+  /^under 2\.5 goals$/i,
+  /^båda lagen gör mål$/i,
+  /^both teams to score$/i,
+];
+
+export function isPopularMarket(market: string) {
+  const normalized = market.trim();
+  return popularMarketMatchers.some((pattern) => pattern.test(normalized));
+}
+
+export function splitPopularMarkets(markets: readonly string[]) {
+  const popular: string[] = [];
+  const other: string[] = [];
+
+  for (const market of markets) {
+    if (isPopularMarket(market)) {
+      popular.push(market);
+    } else {
+      other.push(market);
+    }
+  }
+
+  return { popular, other };
+}
