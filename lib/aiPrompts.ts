@@ -289,12 +289,27 @@ Schedule rules:
 - This is especially important for team-win, team performance and player markets on that team.
 - Adjust risks and probability accordingly, but do not name specific rested players unless lineups confirm it.
 
+Evaluate the user's specific bet idea from the input text above:
+- Add worthBetting that answers whether data supports what the user wants to play — not generic betting advice.
+- verdict must be exactly one of: worth_it, risky, not_worth_it, wait
+- worth_it: data and signals clearly support the user's market idea
+- risky: some support but meaningful counter-signals or variance
+- not_worth_it: data and risks suggest the user's idea is weak
+- wait: insufficient data, unpublished lineups, or timing makes assessment unreliable
+- headline: one short neutral sentence (max 12 words)
+- reason: 2-4 sentences with concrete data points — never encourage gambling or call a bet safe
+
 Respond in exactly this JSON structure:
 
 {
   "summary": "Professional summary in English",
   "strengths": ["strength 1", "strength 2", "strength 3"],
   "risks": ["risk 1", "risk 2", "risk 3"],
+  "worthBetting": {
+    "verdict": "risky",
+    "headline": "Short neutral headline about the user's bet idea in English",
+    "reason": "2-4 sentences evaluating the user's bet idea in English"
+  },
   "recommendation": "Neutral recommendation in English",
   "brainScore": 75,
   "riskLevel": "Medium",
@@ -400,12 +415,27 @@ Regler för matchschema:
 - Detta är särskilt viktigt vid lagvinst, lagprestation och spelarmarknader för det laget.
 - Justera risker och sannolikhet därefter, men gissa inte vilka spelare som vilar om startelvor inte bekräftar det.
 
+Bedöm användarens specifika spelidé från texten ovan:
+- Lägg till worthBetting som svarar på om datat stödjer det användaren vill spela — inte generellt spelråd.
+- verdict måste vara exakt en av: worth_it, risky, not_worth_it, wait
+- worth_it: data och signaler stödjer tydligt användarens marknad
+- risky: viss stöd men tydliga motpoler eller hög varians
+- not_worth_it: data och risker tyder på att idén är svag
+- wait: otillräcklig data, opublicerade startelvor eller dålig timing
+- headline: en kort neutral mening (max 12 ord)
+- reason: 2-4 meningar med konkreta datapunkter — uppmuntra aldrig spel eller kalla ett spel säkert
+
 Svara i exakt denna JSON-struktur:
 
 {
   "summary": "Professionell sammanfattning på svenska",
   "strengths": ["styrka 1", "styrka 2", "styrka 3"],
   "risks": ["risk 1", "risk 2", "risk 3"],
+  "worthBetting": {
+    "verdict": "risky",
+    "headline": "Kort neutral rubrik om användarens spelidé på svenska",
+    "reason": "2-4 meningar som bedömer användarens spelidé på svenska"
+  },
   "recommendation": "Neutral rekommendation på svenska",
   "brainScore": 75,
   "riskLevel": "Medium",

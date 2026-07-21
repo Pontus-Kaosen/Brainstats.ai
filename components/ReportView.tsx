@@ -2,11 +2,13 @@
 
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
+import WorthBettingBlock from "@/components/WorthBettingBlock";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   formatTranslation,
   translateRiskLevel,
 } from "@/lib/locale";
+import type { WorthBetting } from "@/lib/worthBetting";
 
 type BrainPick = {
   id?: number;
@@ -24,6 +26,7 @@ export type ReportAnalysis = {
   confidence?: number | null;
   summary?: string | null;
   recommendation?: string | null;
+  worth_betting?: WorthBetting | null;
   brain_picks?: BrainPick[] | null;
   strengths?: string[] | null;
   risks?: string[] | null;
@@ -194,6 +197,13 @@ export default function ReportView({
               {analysis.summary || t.report.noSummary}
             </p>
           </section>
+
+          {analysis.worth_betting ? (
+            <WorthBettingBlock
+              worthBetting={analysis.worth_betting}
+              className="mt-8"
+            />
+          ) : null}
 
           <section className="mt-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

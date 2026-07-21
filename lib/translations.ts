@@ -508,6 +508,19 @@ export const translations = {
       suspenseLoading: "Laddar...",
     },
 
+    worthBetting: {
+      title: "Är det värt att spela?",
+      subtitle: "Bedömning av din idé",
+      disclaimer:
+        "AI-bedömning av din spelidé — inte ett råd att satsa pengar eller en garanti.",
+      verdicts: {
+        worth_it: "Stöd i datat",
+        risky: "Blandat underlag",
+        not_worth_it: "Svagt stöd",
+        wait: "Vänta på mer data",
+      },
+    },
+
     builder: {
       tournaments: "Turneringar",
       tournamentsDescription: "Internationella cuper och mästerskap",
@@ -1326,6 +1339,19 @@ export const translations = {
       parsedMatch: "Match",
       parsedMarkets: "Markets",
       suspenseLoading: "Loading...",
+    },
+
+    worthBetting: {
+      title: "Worth playing your idea?",
+      subtitle: "Your bet idea assessment",
+      disclaimer:
+        "AI assessment of your bet idea — not advice to stake money or a guarantee.",
+      verdicts: {
+        worth_it: "Data supports it",
+        risky: "Mixed case",
+        not_worth_it: "Weak support",
+        wait: "Wait for more data",
+      },
     },
 
     builder: {

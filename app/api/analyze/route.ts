@@ -33,6 +33,12 @@ import {
   getTrackRecordCalibrationNote,
   insertPublicTrackPick,
 } from "@/lib/trackRecordStore";
+import {
+  applyWorthBettingGuardrails,
+  deriveWorthBettingFallback,
+  normalizeWorthBetting,
+  type WorthBetting,
+} from "@/lib/worthBetting";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -422,6 +428,8 @@ function safeAnalysis(
     recommendation:
       analysis?.recommendation ||
       "Ingen rekommendation tillgänglig.",
+
+    worthBetting: analysis?.worthBetting,
 
     brainScore: Number(
       analysis?.brainScore || 75
@@ -939,6 +947,32 @@ export async function POST(
         calculatedScore.scoreBreakdown,
     };
 
+    const worthBettingFallback = deriveWorthBettingFallback(
+      {
+        brainScore: cleanAnalysis.brainScore,
+        riskLevel: cleanAnalysis.riskLevel,
+        dataQualityTier: dataQuality.tier,
+      },
+      language
+    );
+
+    const worthBetting: WorthBetting = applyWorthBettingGuardrails(
+      normalizeWorthBetting(
+        parsedAnalysis?.worthBetting ??
+          (guardedAnalysis as { worthBetting?: unknown }).worthBetting,
+        worthBettingFallback
+      ),
+      {
+        dataQualityTier: dataQuality.tier,
+        language,
+      }
+    );
+
+    const finalAnalysis = {
+      ...cleanAnalysis,
+      worthBetting,
+    };
+
     const lines = text
       .split("\n")
       .map(
@@ -962,28 +996,31 @@ export async function POST(
         markets,
 
         score:
-          cleanAnalysis.brainScore,
+          finalAnalysis.brainScore,
 
         risk:
-          cleanAnalysis.riskLevel,
+          finalAnalysis.riskLevel,
 
         confidence:
-          cleanAnalysis.confidence,
+          finalAnalysis.confidence,
 
         summary:
-          cleanAnalysis.summary,
+          finalAnalysis.summary,
 
         strengths:
-          cleanAnalysis.strengths,
+          finalAnalysis.strengths,
 
         risks:
-          cleanAnalysis.risks,
+          finalAnalysis.risks,
 
         recommendation:
-          cleanAnalysis.recommendation,
+          finalAnalysis.recommendation,
+
+        worth_betting:
+          finalAnalysis.worthBetting,
 
         brain_picks:
-          cleanAnalysis.brainPicks,
+          finalAnalysis.brainPicks,
       })
       .select();
 
@@ -999,7 +1036,7 @@ export async function POST(
           error:
             insertError.message,
           analysis:
-            cleanAnalysis,
+            finalAnalysis,
         },
         {
           status: 500,
@@ -1007,7 +1044,7 @@ export async function POST(
       );
     }
 
-    const primaryPick = cleanAnalysis.brainPicks[0];
+    const primaryPick = finalAnalysis.brainPicks[0];
 
     if (fixtureId && primaryPick?.market) {
       void insertPublicTrackPick({
@@ -1016,8 +1053,8 @@ export async function POST(
         fixtureId: Number(fixtureId),
         matchLabel: match,
         market: primaryPick.market,
-        brainScore: cleanAnalysis.brainScore,
-        safetyTier: brainScoreToSafetyTier(cleanAnalysis.brainScore),
+        brainScore: finalAnalysis.brainScore,
+        safetyTier: brainScoreToSafetyTier(finalAnalysis.brainScore),
         probability: primaryPick.probability,
         kickoffAt: fixture?.fixture?.date || null,
         note:
@@ -1091,7 +1128,7 @@ export async function POST(
         scheduleTeamsChecked: betTeams.map((team) => team.name),
       },
 
-      analysis: cleanAnalysis,
+      analysis: finalAnalysis,
     });
   } catch (error: unknown) {
     console.error(

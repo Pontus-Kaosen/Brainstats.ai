@@ -21,6 +21,8 @@ import {
 import BetSlipImageUpload from "@/components/BetSlipImageUpload";
 import AnalyzeQuickStart from "@/components/AnalyzeQuickStart";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
+import WorthBettingBlock from "@/components/WorthBettingBlock";
+import type { WorthBetting } from "@/lib/worthBetting";
 import {
   summarizeRotationRisksForUi,
   type RotationRisk,
@@ -101,6 +103,7 @@ type AIResult = {
   strengths: string[];
   risks: string[];
   recommendation: string;
+  worthBetting?: WorthBetting;
   brainScore?: number;
   riskLevel?: string;
   confidence?: number;
@@ -1055,6 +1058,13 @@ const brainPicks = useMemo(() => {
                   {betText}
                 </pre>
               </div>
+
+              {aiResult.worthBetting ? (
+                <WorthBettingBlock
+                  worthBetting={aiResult.worthBetting}
+                  className="mt-8"
+                />
+              ) : null}
 
               <section className="mt-8">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
