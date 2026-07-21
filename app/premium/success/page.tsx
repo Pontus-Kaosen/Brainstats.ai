@@ -18,6 +18,9 @@ function PremiumSuccessPageContent() {
   const [status, setStatus] = useState<Status>("loading");
   const [message, setMessage] = useState("");
 
+  const isStripeTestMode =
+    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.includes("_test_") ?? true;
+
   useEffect(() => {
     if (!sessionId) {
       setStatus("error");
@@ -122,9 +125,11 @@ function PremiumSuccessPageContent() {
                   {message}
                 </p>
 
-                <p className="mx-auto mt-3 max-w-xl text-sm text-[#888]">
-                  {t.premiumSuccess.testModeNote}
-                </p>
+                {isStripeTestMode ? (
+                  <p className="mx-auto mt-3 max-w-xl text-sm text-[#888]">
+                    {t.premiumSuccess.testModeNote}
+                  </p>
+                ) : null}
 
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
                   <Button

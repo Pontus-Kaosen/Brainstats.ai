@@ -10,6 +10,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
 import PurchasePreContractBox from "@/components/PurchasePreContractBox";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
+import PlanComparisonTable from "@/components/PlanComparisonTable";
 
 type PaidPlan = "pro" | "elite";
 
@@ -150,7 +151,7 @@ export default function PremiumPage() {
               {t.premium.description}
             </p>
 
-            <p className="mx-auto mt-2 hidden max-w-2xl text-sm text-[#747474] md:block sm:mt-3">
+            <p className="mx-auto mt-2 max-w-2xl text-sm text-[#747474] sm:mt-3">
               {t.premium.disclaimer}
             </p>
 
@@ -168,6 +169,10 @@ export default function PremiumPage() {
               <p className="mt-2 text-sm text-red-200/80">{error}</p>
             </div>
           )}
+
+          <div className="mx-auto mt-8 max-w-4xl">
+            <PlanComparisonTable />
+          </div>
 
           <section className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 lg:grid-cols-3 lg:gap-6">
             {plans.map((plan) => {

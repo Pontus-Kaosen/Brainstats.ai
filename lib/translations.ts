@@ -85,6 +85,9 @@ export const translations = {
       legalDescription:
         "BrainStats är ett AI-analysverktyg – inte ett spelbolag. Här hittar du tydlig information om vad tjänsten gör, hur vi behandlar data och vilka regler som gäller vid köp av Pro eller Elite.",
       legalSellerLabel: "Säljare och kontakt",
+      trackRecordStat:
+        "{rate}% träff på {resolved} avgjorda publika tips —",
+      trackRecordStatLink: "se track record",
     },
 
     login: {
@@ -337,8 +340,9 @@ export const translations = {
           features: [
             "3 analyser per dag",
             "BrainScore™",
-            "Grundrapport",
-            "Enkel risknivå",
+            "1 Brain Pick per analys",
+            "1 AI-kupong per dag",
+            "Brain Builder",
           ],
         },
         pro: {
@@ -348,10 +352,10 @@ export const translations = {
           description: "För dig som vill analysera mer seriöst.",
           features: [
             "Obegränsade analyser",
-            "Djupare AI-rapporter",
-            "Full Brain Builder",
+            "3 Brain Picks per analys",
+            "3 AI-kuponger per dag",
             "Sparad historik",
-            "Form och statistik",
+            "Djupare rapporter",
           ],
         },
         elite: {
@@ -361,9 +365,8 @@ export const translations = {
           description: "För dig som vill ha maximal insikt.",
           features: [
             "Allt i Pro",
-            "AI Match of the Day",
-            "Daily Brain Picks",
-            "Value Bets",
+            "5 Brain Picks per analys",
+            "5 AI-kuponger per dag",
             "Prioriterad AI",
             "Tidiga nya funktioner",
           ],
@@ -460,8 +463,15 @@ export const translations = {
       playerOnBenchWarningReport:
         "Vald spelare är avbytare, inte i startelvan.",
       selectedPlayerBadge: "Din spelare",
-      reportSubtitle: "Brain Engine™ Report",
-      reportTitle: "AI Match Analysis",
+      reportSubtitle: "Brain Engine™-rapport",
+      reportTitle: "AI-matchanalys",
+      executiveSummaryBadge: "Snabb slutsats",
+      jumpToPicks: "Hoppa till Brain Picks",
+      viewSampleReport: "Se exempelrapport utan konto",
+      sampleBanner:
+        "Detta är en exempelrapport. Skapa konto och kör Brain Engine på din egen spelidé.",
+      sampleCta: "Analysera min spelidé",
+      detailsSection: "Detaljerad analys",
       brainScore: "/100 BrainScore™",
       riskLevel: "Risknivå",
       confidence: "Confidence",
@@ -519,6 +529,53 @@ export const translations = {
         not_worth_it: "Svagt stöd",
         wait: "Vänta på mer data",
       },
+    },
+
+    planComparison: {
+      subtitle: "Planer",
+      title: "Vad ingår i varje plan?",
+      featureCol: "Funktion",
+      rows: [
+        {
+          label: "Analyser per dag",
+          free: "3",
+          pro: "Obegränsat",
+          elite: "Obegränsat",
+        },
+        {
+          label: "Brain Picks per analys",
+          free: "1",
+          pro: "3",
+          elite: "5",
+        },
+        {
+          label: "AI-kuponger per dag",
+          free: "1",
+          pro: "3",
+          elite: "5",
+        },
+        {
+          label: "Sparad historik",
+          free: "Ja",
+          pro: "Ja",
+          elite: "Ja",
+        },
+        {
+          label: "Brain Builder",
+          free: "Ja",
+          pro: "Ja",
+          elite: "Ja",
+        },
+      ],
+    },
+
+    dailySlipsTeaser: {
+      badge: "Dagliga AI-kuponger",
+      title: "Färdiga AI-kuponger varje dag",
+      description:
+        "BrainStats skapar dagliga kuponger med olika riskprofil och estimerade fair odds.",
+      lockText: "Logga in gratis för att se dagens AI-kuponger i dashboarden.",
+      cta: "Logga in och lås upp",
     },
 
     builder: {
@@ -729,6 +786,7 @@ export const translations = {
       verdictTitle: "🎯 Rekommendation",
       verdictSubtitle: "Final Verdict",
       noRecommendation: "Ingen rekommendation tillgänglig.",
+      analyzeSimilar: "Analysera liknande spelidé",
       unknownMatch: "Okänd match",
     },
 
@@ -918,6 +976,9 @@ export const translations = {
       legalDescription:
         "BrainStats is an AI analysis tool — not a bookmaker. Here you will find clear information about what the service does, how we handle data and the rules that apply when purchasing Pro or Elite.",
       legalSellerLabel: "Seller and contact",
+      trackRecordStat:
+        "{rate}% hit rate on {resolved} resolved public picks —",
+      trackRecordStatLink: "view track record",
     },
 
     login: {
@@ -1170,8 +1231,9 @@ export const translations = {
           features: [
             "3 analyses per day",
             "BrainScore™",
-            "Basic report",
-            "Simple risk level",
+            "1 Brain Pick per analysis",
+            "1 AI slip per day",
+            "Brain Builder",
           ],
         },
         pro: {
@@ -1181,10 +1243,10 @@ export const translations = {
           description: "For serious analysis.",
           features: [
             "Unlimited analyses",
-            "Deeper AI reports",
-            "Full Brain Builder",
+            "3 Brain Picks per analysis",
+            "3 AI slips per day",
             "Saved history",
-            "Form and statistics",
+            "Deeper reports",
           ],
         },
         elite: {
@@ -1194,9 +1256,8 @@ export const translations = {
           description: "For maximum insight.",
           features: [
             "Everything in Pro",
-            "AI Match of the Day",
-            "Daily Brain Picks",
-            "Value Bets",
+            "5 Brain Picks per analysis",
+            "5 AI slips per day",
             "Priority AI",
             "Early access to new features",
           ],
@@ -1295,6 +1356,13 @@ export const translations = {
       selectedPlayerBadge: "Your player",
       reportSubtitle: "Brain Engine™ Report",
       reportTitle: "AI Match Analysis",
+      executiveSummaryBadge: "Quick verdict",
+      jumpToPicks: "Jump to Brain Picks",
+      viewSampleReport: "See sample report without an account",
+      sampleBanner:
+        "This is a sample report. Create an account and run Brain Engine on your own bet idea.",
+      sampleCta: "Analyze my bet idea",
+      detailsSection: "Detailed analysis",
       brainScore: "/100 BrainScore™",
       riskLevel: "Risk level",
       confidence: "Confidence",
@@ -1352,6 +1420,53 @@ export const translations = {
         not_worth_it: "Weak support",
         wait: "Wait for more data",
       },
+    },
+
+    planComparison: {
+      subtitle: "Plans",
+      title: "What's included in each plan?",
+      featureCol: "Feature",
+      rows: [
+        {
+          label: "Analyses per day",
+          free: "3",
+          pro: "Unlimited",
+          elite: "Unlimited",
+        },
+        {
+          label: "Brain Picks per analysis",
+          free: "1",
+          pro: "3",
+          elite: "5",
+        },
+        {
+          label: "AI slips per day",
+          free: "1",
+          pro: "3",
+          elite: "5",
+        },
+        {
+          label: "Saved history",
+          free: "Yes",
+          pro: "Yes",
+          elite: "Yes",
+        },
+        {
+          label: "Brain Builder",
+          free: "Yes",
+          pro: "Yes",
+          elite: "Yes",
+        },
+      ],
+    },
+
+    dailySlipsTeaser: {
+      badge: "Daily AI slips",
+      title: "Ready-made AI slips every day",
+      description:
+        "BrainStats creates daily slips with different risk profiles and estimated fair odds.",
+      lockText: "Sign in free to see today's AI slips in your dashboard.",
+      cta: "Sign in and unlock",
     },
 
     builder: {
@@ -1562,6 +1677,7 @@ export const translations = {
       verdictTitle: "🎯 Recommendation",
       verdictSubtitle: "Final Verdict",
       noRecommendation: "No recommendation available.",
+      analyzeSimilar: "Analyze a similar bet idea",
       unknownMatch: "Unknown match",
     },
 

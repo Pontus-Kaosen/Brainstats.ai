@@ -3,6 +3,8 @@ import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 import HomeCtaLink from "@/components/HomeCtaLink";
 import BrainStatsLogo from "@/components/BrainStatsLogo";
+import TrackRecordSnippet from "@/components/TrackRecordSnippet";
+import DailySlipsTeaser from "@/components/DailySlipsTeaser";
 import { getHomeContent } from "@/lib/homeContent";
 import { detectLanguage } from "@/lib/locale.server";
 
@@ -53,6 +55,10 @@ export default async function Home() {
 
             <HomeCtaLink href="/analyze" className="w-full">
               📝 {t.pasteBet}
+            </HomeCtaLink>
+
+            <HomeCtaLink href="/analyze?sample=1" variant="secondary" className="w-full sm:col-span-2">
+              🧠 {t.sampleReportCta}
             </HomeCtaLink>
 
             <HomeCtaLink
@@ -119,7 +125,10 @@ export default async function Home() {
               <p className="mt-4 text-sm leading-7 text-[#A9A9A9] sm:text-base">
                 {t.brainScoreText}
               </p>
-              <HomeCtaLink href="/analyze" className="mt-6 inline-flex max-sm:mx-auto">
+              <HomeCtaLink href="/analyze?sample=1" className="mt-6 inline-flex max-sm:mx-auto">
+                {t.sampleReportCta}
+              </HomeCtaLink>
+              <HomeCtaLink href="/analyze" variant="secondary" className="mt-3 inline-flex max-sm:mx-auto sm:ml-4">
                 {t.brainScoreCta}
               </HomeCtaLink>
             </div>
@@ -149,6 +158,7 @@ export default async function Home() {
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9]">
               {t.trackRecordText}
             </p>
+            <TrackRecordSnippet />
             <span className="mt-5 inline-flex text-sm font-bold text-[#18ff6d]">
               {t.trackRecordCta} →
             </span>
@@ -156,26 +166,7 @@ export default async function Home() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8">
-          <Link
-            href="/dashboard#ai-tips"
-            className="block w-full rounded-[2rem] border border-[#E8DCC8]/20 bg-gradient-to-br from-[#18ff6d]/10 via-[#E8DCC8]/5 to-[#2fbfff]/10 p-5 text-center transition hover:border-[#E8DCC8]/35 sm:p-8 sm:text-left"
-          >
-            <p className="inline-flex rounded-full border border-[#E8DCC8]/25 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
-              🎯 {t.aiTipsBadge}
-            </p>
-
-            <h2 className="mt-4 text-2xl font-black text-white sm:text-3xl">
-              {t.aiTipsTitle}
-            </h2>
-
-            <p className="mt-3 text-sm leading-7 text-[#A9A9A9] sm:text-base">
-              {t.aiTipsText}
-            </p>
-
-            <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#18ff6d] sm:text-base">
-              {t.aiTipsCta} →
-            </span>
-          </Link>
+          <DailySlipsTeaser />
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-8 sm:pb-24">

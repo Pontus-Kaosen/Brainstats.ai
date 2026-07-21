@@ -8,6 +8,10 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation, formatKickoffLabel } from "@/lib/locale";
 import { getStockholmDateKey } from "@/lib/stockholmDate";
 import type { DailySlipFixtureScope } from "@/lib/aiPrompts";
+import {
+  markOnboardingStepDone,
+  ONBOARDING_AI_TIPS_KEY,
+} from "@/lib/onboarding";
 
 type SlipPick = {
   fixture?: string;
@@ -104,6 +108,8 @@ export default function DailySlipsSection() {
         setSlipLimit(data.slipLimit || 1);
         setFixtureScope(data.fixtureScope || "major_today");
         setReferenceDateKey(data.referenceDateKey || getStockholmDateKey());
+        markOnboardingStepDone(ONBOARDING_AI_TIPS_KEY);
+        window.dispatchEvent(new Event("brainstats-onboarding-update"));
       } catch (loadError) {
         console.error("Daily slips error:", loadError);
 
@@ -141,7 +147,7 @@ export default function DailySlipsSection() {
 
           <h2 className="mt-2 text-2xl font-black sm:mt-3 sm:text-4xl">{t.dailySlips.title}</h2>
 
-          <p className="mt-2 hidden max-w-2xl text-sm text-[#A9A9A9] md:block sm:mt-3">
+          <p className="mt-2 max-w-2xl text-sm text-[#A9A9A9] md:hidden sm:mt-3">
             {t.dailySlips.description}
           </p>
         </div>
@@ -158,9 +164,9 @@ export default function DailySlipsSection() {
         {getScopeBadge(fixtureScope, t)}
       </p>
 
-      <p className="mt-3 hidden text-sm text-[#777] md:block sm:mt-4">{t.dailySlips.disclaimer}</p>
+      <p className="mt-3 text-sm text-[#777] sm:mt-4">{t.dailySlips.disclaimer}</p>
 
-      <ResponsibleUseNotice compact className="mt-4 hidden md:flex" />
+      <ResponsibleUseNotice compact className="mt-4 flex" />
 
       {!loading && !error && slips.length > 0 && (
         <div className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-4 sm:p-5">

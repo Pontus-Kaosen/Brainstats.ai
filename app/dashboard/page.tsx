@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import ManageSubscriptionButton from "@/components/ManageSubscriptionButton";
 import DailySlipsSection from "@/components/DailySlipsSection";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
+import PlanComparisonTable from "@/components/PlanComparisonTable";
 import { useIsMobile } from "@/lib/useMediaQuery";
 import { formatTranslation } from "@/lib/locale";
 import type { Translations } from "@/lib/translations";
@@ -267,6 +268,12 @@ export default function DashboardPage() {
           </section>
 
           <OnboardingChecklist analysisCount={total} />
+
+          {!loading && plan === "free" ? (
+            <div className="mt-6 sm:mt-8">
+              <PlanComparisonTable />
+            </div>
+          ) : null}
 
           {!loading && trialDaysLeft !== null && plan === "pro" ? (
             <section className="mt-6 rounded-[2rem] border border-[#18ff6d33] bg-[#18ff6d]/10 p-5 sm:mt-8 sm:p-6">

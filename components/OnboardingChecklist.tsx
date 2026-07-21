@@ -6,6 +6,9 @@ import { useLanguage } from "@/components/LanguageProvider";
 import {
   dismissOnboarding,
   isOnboardingDismissed,
+  isOnboardingStepDone,
+  ONBOARDING_AI_TIPS_KEY,
+  ONBOARDING_BUILDER_KEY,
 } from "@/lib/onboarding";
 
 type OnboardingChecklistProps = {
@@ -17,9 +20,23 @@ export default function OnboardingChecklist({
 }: OnboardingChecklistProps) {
   const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
+  const [aiTipsDone, setAiTipsDone] = useState(false);
+  const [builderDone, setBuilderDone] = useState(false);
 
   useEffect(() => {
     setVisible(!isOnboardingDismissed());
+
+    function refreshSteps() {
+      setAiTipsDone(isOnboardingStepDone(ONBOARDING_AI_TIPS_KEY));
+      setBuilderDone(isOnboardingStepDone(ONBOARDING_BUILDER_KEY));
+    }
+
+    refreshSteps();
+    window.addEventListener("brainstats-onboarding-update", refreshSteps);
+
+    return () => {
+      window.removeEventListener("brainstats-onboarding-update", refreshSteps);
+    };
   }, []);
 
   if (!visible) return null;
@@ -35,12 +52,12 @@ export default function OnboardingChecklist({
       href: "/analyze?mode=image",
     },
     {
-      done: false,
+      done: aiTipsDone,
       label: t.onboarding.stepAiTips,
       href: "/dashboard#ai-tips",
     },
     {
-      done: false,
+      done: builderDone,
       label: t.onboarding.stepBuilder,
       href: "/builder",
     },

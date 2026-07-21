@@ -99,10 +99,20 @@ function LoginForm() {
           return;
         }
 
-        setMessage(t.login.accountCreated);
-        switchMode("login");
-        setAcceptedTerms(false);
-        setLoading(false);
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) {
+          setMessage(t.login.accountCreated);
+          switchMode("login");
+          setAcceptedTerms(false);
+          setLoading(false);
+          return;
+        }
+
+        window.location.href = nextPath;
         return;
       }
 

@@ -27,6 +27,7 @@ export type HomeContent = {
   trackRecordTitle: string;
   trackRecordText: string;
   trackRecordCta: string;
+  sampleReportCta: string;
   features: Array<{ title: string; text: string }>;
 };
 
@@ -82,6 +83,7 @@ const homeContent: Record<Language, HomeContent> = {
     trackRecordText:
       "Vi visar exempel på AI-analyser före match och vad som hände efter — inga dolda vinster, inga garantier.",
     trackRecordCta: "Se analys vs resultat",
+    sampleReportCta: "Se exempelrapport",
     features: [
       {
         title: "📸 Ladda upp kupong",
@@ -148,6 +150,7 @@ const homeContent: Record<Language, HomeContent> = {
     trackRecordText:
       "See examples of AI analyses before kick-off and what happened after — no hidden wins, no guarantees.",
     trackRecordCta: "View analysis vs outcome",
+    sampleReportCta: "See sample report",
     features: [
       {
         title: "📸 Upload bet slip",

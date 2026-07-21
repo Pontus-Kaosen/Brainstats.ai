@@ -2,7 +2,8 @@
 
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
-import WorthBettingBlock from "@/components/WorthBettingBlock";
+import AnalysisExecutiveSummary from "@/components/AnalysisExecutiveSummary";
+import CollapsibleReportSection from "@/components/CollapsibleReportSection";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   formatTranslation,
@@ -193,17 +194,15 @@ export default function ReportView({
               {t.report.summaryTitle}
             </h2>
 
-            <p className="mt-6 whitespace-pre-wrap leading-8 text-[#D8D8D8]">
-              {analysis.summary || t.report.noSummary}
-            </p>
-          </section>
-
-          {analysis.worth_betting ? (
-            <WorthBettingBlock
-              worthBetting={analysis.worth_betting}
-              className="mt-8"
+            <AnalysisExecutiveSummary
+              summary={analysis.summary || t.report.noSummary}
+              brainScore={Number(analysis.score || 0)}
+              riskLevel={analysis.risk}
+              confidence={analysis.confidence}
+              worthBetting={analysis.worth_betting ?? null}
+              showJumpLink={false}
             />
-          ) : null}
+          </section>
 
           <section className="mt-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -290,13 +289,11 @@ export default function ReportView({
           </section>
 
           <section className="mt-8 grid gap-6 md:grid-cols-2">
-            <div className={cardClass}>
-              <h2 className="text-2xl font-black">{t.report.strengths}</h2>
-
+            <CollapsibleReportSection title={t.report.strengths} defaultOpen>
               {strengths.length === 0 ? (
-                <p className="mt-5 text-[#A9A9A9]">{t.report.noStrengths}</p>
+                <p className="text-[#A9A9A9]">{t.report.noStrengths}</p>
               ) : (
-                <ul className="mt-5 space-y-4 text-[#D8D8D8]">
+                <ul className="space-y-4 text-[#D8D8D8]">
                   {strengths.map((item, index) => (
                     <li key={`${item}-${index}`} className="flex gap-3">
                       <span className="text-[#18ff6d]">✓</span>
@@ -305,15 +302,13 @@ export default function ReportView({
                   ))}
                 </ul>
               )}
-            </div>
+            </CollapsibleReportSection>
 
-            <div className={cardClass}>
-              <h2 className="text-2xl font-black">{t.report.risksTitle}</h2>
-
+            <CollapsibleReportSection title={t.report.risksTitle} defaultOpen>
               {risks.length === 0 ? (
-                <p className="mt-5 text-[#A9A9A9]">{t.report.noRisks}</p>
+                <p className="text-[#A9A9A9]">{t.report.noRisks}</p>
               ) : (
-                <ul className="mt-5 space-y-4 text-[#D8D8D8]">
+                <ul className="space-y-4 text-[#D8D8D8]">
                   {risks.map((item, index) => (
                     <li key={`${item}-${index}`} className="flex gap-3">
                       <span className="text-yellow-300">•</span>
@@ -322,7 +317,7 @@ export default function ReportView({
                   ))}
                 </ul>
               )}
-            </div>
+            </CollapsibleReportSection>
           </section>
 
           <section className="mt-8 rounded-3xl border border-[#18ff6d33] bg-[#07140d]/80 p-7 sm:p-8">
@@ -339,6 +334,13 @@ export default function ReportView({
             <p className="mt-5 whitespace-pre-wrap leading-8 text-[#D8D8D8]">
               {analysis.recommendation || t.report.noRecommendation}
             </p>
+
+            <a
+              href="/analyze"
+              className="mt-6 inline-flex rounded-2xl border border-[#18ff6d55] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15"
+            >
+              {t.report.analyzeSimilar} →
+            </a>
           </section>
         </div>
       </div>

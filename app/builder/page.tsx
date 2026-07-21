@@ -31,6 +31,10 @@ import {
 } from "@/lib/stockholmDate";
 import { MAJOR_LEAGUE_IDS } from "@/lib/footballFixtures";
 import {
+  markOnboardingStepDone,
+  ONBOARDING_BUILDER_KEY,
+} from "@/lib/onboarding";
+import {
   isCornerOverUnderMarketLabel,
   isCardOverUnderMarketLabel,
   isPlayerMarketLabel,
@@ -187,6 +191,12 @@ export default function BuilderPage() {
   const liveRefreshMs = isMobile ? 120_000 : 60_000;
   const markets = t.builder.markets;
   const builderPanelRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    markOnboardingStepDone(ONBOARDING_BUILDER_KEY);
+    window.dispatchEvent(new Event("brainstats-onboarding-update"));
+  }, []);
+
   const [countries, setCountries] = useState<Country[]>([]);
   const [allLeagues, setAllLeagues] = useState<League[]>([]);
   const [leagues, setLeagues] = useState<League[]>([]);
