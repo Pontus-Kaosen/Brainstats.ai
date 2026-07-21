@@ -985,44 +985,50 @@ export async function POST(
 
     const markets = lines.slice(1);
 
-    const {
-      data: inserted,
-      error: insertError,
-    } = await supabaseAdmin
+    const analysisInsertBase = {
+      user_id: userId,
+      match,
+      markets,
+      score: finalAnalysis.brainScore,
+      risk: finalAnalysis.riskLevel,
+      confidence: finalAnalysis.confidence,
+      summary: finalAnalysis.summary,
+      strengths: finalAnalysis.strengths,
+      risks: finalAnalysis.risks,
+      recommendation: finalAnalysis.recommendation,
+      brain_picks: finalAnalysis.brainPicks,
+    };
+
+    let inserted = null;
+    let insertError: { message: string } | null = null;
+
+    const insertWithWorthBetting = await supabaseAdmin
       .from("analyses")
       .insert({
-        user_id: userId,
-        match,
-        markets,
-
-        score:
-          finalAnalysis.brainScore,
-
-        risk:
-          finalAnalysis.riskLevel,
-
-        confidence:
-          finalAnalysis.confidence,
-
-        summary:
-          finalAnalysis.summary,
-
-        strengths:
-          finalAnalysis.strengths,
-
-        risks:
-          finalAnalysis.risks,
-
-        recommendation:
-          finalAnalysis.recommendation,
-
-        worth_betting:
-          finalAnalysis.worthBetting,
-
-        brain_picks:
-          finalAnalysis.brainPicks,
+        ...analysisInsertBase,
+        worth_betting: finalAnalysis.worthBetting,
       })
       .select();
+
+    if (
+      insertWithWorthBetting.error &&
+      /worth_betting|schema cache/i.test(insertWithWorthBetting.error.message)
+    ) {
+      console.warn(
+        "worth_betting column missing — saving analysis without it. Run Supabase migration 20260721190000_analyses_worth_betting.sql"
+      );
+
+      const insertWithoutWorthBetting = await supabaseAdmin
+        .from("analyses")
+        .insert(analysisInsertBase)
+        .select();
+
+      inserted = insertWithoutWorthBetting.data;
+      insertError = insertWithoutWorthBetting.error;
+    } else {
+      inserted = insertWithWorthBetting.data;
+      insertError = insertWithWorthBetting.error;
+    }
 
     if (insertError) {
       console.error(
