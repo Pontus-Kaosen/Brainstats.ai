@@ -5,6 +5,7 @@ import HomeCtaLink from "@/components/HomeCtaLink";
 import BrainStatsLogo from "@/components/BrainStatsLogo";
 import TrackRecordSnippet from "@/components/TrackRecordSnippet";
 import DailySlipsTeaser from "@/components/DailySlipsTeaser";
+import HomeHeroCtas from "@/components/HomeHeroCtas";
 import { getHomeContent } from "@/lib/homeContent";
 import { detectLanguage } from "@/lib/locale.server";
 
@@ -41,34 +42,22 @@ export default async function Home() {
             {t.trustStrip}
           </p>
 
-          <div className="mt-6 grid w-full max-w-3xl grid-cols-1 gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4">
-            <HomeCtaLink
-              href="/login?next=/analyze%3Fmode%3Dimage"
-              className="w-full sm:col-span-2"
-            >
-              📸 {t.uploadBetSlip}
-            </HomeCtaLink>
-
-            <HomeCtaLink href="/login?next=/analyze" className="w-full">
-              ✨ {t.signupFree}
-            </HomeCtaLink>
-
-            <HomeCtaLink href="/analyze" className="w-full">
-              📝 {t.pasteBet}
-            </HomeCtaLink>
-
-            <HomeCtaLink href="/analyze?sample=1" variant="secondary" className="w-full sm:col-span-2">
-              🧠 {t.sampleReportCta}
-            </HomeCtaLink>
-
-            <HomeCtaLink
-              href="/builder"
-              variant="secondary"
-              className="w-full sm:col-span-2"
-            >
-              ⚽ {t.buildBet}
-            </HomeCtaLink>
+          <div className="mt-6 grid w-full max-w-3xl grid-cols-3 gap-2 sm:hidden">
+            <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+              <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatAi}</p>
+              <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatOnline}</p>
+            </div>
+            <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+              <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatData}</p>
+              <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatLive}</p>
+            </div>
+            <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+              <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatRisk}</p>
+              <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatActive}</p>
+            </div>
           </div>
+
+          <HomeHeroCtas />
 
           <Link
             href="/premium"
@@ -152,7 +141,7 @@ export default async function Home() {
             className="block rounded-[2rem] border border-white/10 bg-black/30 p-6 text-center transition hover:border-[#18ff6d44] sm:p-8 sm:text-left"
           >
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#18ff6d]">
-              📊 Transparency
+              📊 {t.transparencyBadge}
             </p>
             <h2 className="mt-3 text-2xl font-black text-white">{t.trackRecordTitle}</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9]">

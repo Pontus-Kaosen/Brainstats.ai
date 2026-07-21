@@ -2,15 +2,21 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const CONSENT_KEY = "brainstats-cookie-consent";
 
 export default function CookieConsent() {
   const { t } = useLanguage();
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (pathname.startsWith("/builder")) {
+      setVisible(false);
+      return;
+    }
     const timeoutId = window.setTimeout(() => {
       const saved = window.localStorage.getItem(CONSENT_KEY);
       if (!saved) {
@@ -19,7 +25,7 @@ export default function CookieConsent() {
     }, 1200);
 
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [pathname]);
 
   function saveConsent(value: "accepted" | "essential") {
     window.localStorage.setItem(CONSENT_KEY, value);

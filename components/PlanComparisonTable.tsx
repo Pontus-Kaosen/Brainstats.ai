@@ -23,9 +23,9 @@ export default function PlanComparisonTable() {
           <thead>
             <tr className="border-b border-white/10 text-[#A9A9A9]">
               <th className="py-3 pr-4 font-semibold">{t.planComparison.featureCol}</th>
-              <th className="px-3 py-3 font-semibold">Free</th>
-              <th className="px-3 py-3 font-semibold">Pro</th>
-              <th className="px-3 py-3 font-semibold">Elite</th>
+              <th className="px-3 py-3 font-semibold">{t.planComparison.freeCol}</th>
+              <th className="px-3 py-3 font-semibold">{t.planComparison.proCol}</th>
+              <th className="px-3 py-3 font-semibold">{t.planComparison.eliteCol}</th>
             </tr>
           </thead>
           <tbody>

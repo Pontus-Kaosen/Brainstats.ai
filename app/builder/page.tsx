@@ -1483,7 +1483,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 <div
                   className={`mt-5 overflow-y-auto overscroll-contain pr-1 transition-all ${
                     selectedFixture
-                      ? "max-h-[28vh] sm:max-h-[32vh]"
+                      ? "max-h-[42vh] sm:max-h-[36vh]"
                       : "max-h-[52vh] sm:max-h-[60vh] md:max-h-[65vh]"
                   }`}
                 >

@@ -169,23 +169,10 @@ export default function Navbar() {
       authSubscription = data.subscription;
     }
 
-    if (typeof window.requestIdleCallback === "function") {
-      const idleId = window.requestIdleCallback(startAuth, {
-        timeout: 2500,
-      });
-
-      return () => {
-        cancelled = true;
-        window.cancelIdleCallback(idleId);
-        authSubscription?.unsubscribe();
-      };
-    }
-
-    const timeoutId = window.setTimeout(startAuth, 150);
+    startAuth();
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timeoutId);
       authSubscription?.unsubscribe();
     };
   }, []);

@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
 import Link from "next/link";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import BrainStatsLogo from "@/components/BrainStatsLogo";
 import LegalLinksSection from "@/components/LegalLinksSection";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -143,7 +144,11 @@ function LoginForm() {
     mode === "forgot"
       ? t.login.forgotDescription
       : mode === "login"
-        ? t.login.loginDescription
+        ? nextPath.startsWith("/analyze")
+          ? t.login.contextAnalyze
+          : nextPath.startsWith("/premium")
+            ? t.login.contextPremium
+            : t.login.contextDefault
         : t.login.signupDescription;
 
   const submitLabel =
@@ -154,8 +159,12 @@ function LoginForm() {
         : t.login.signup;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#0E0E0E] px-6">
+    <main className="flex min-h-screen items-center justify-center bg-[#0E0E0E] px-6 py-10">
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#1A1A1A] p-8">
+        <div className="mb-6 flex justify-center">
+          <BrainStatsLogo variant="nav" />
+        </div>
+
         <p className="text-[#E8DCC8]">{t.login.accountLabel}</p>
 
         <h1 className="mt-3 text-5xl font-bold text-white">{title}</h1>
@@ -291,8 +300,16 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
+  const { t } = useLanguage();
+
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#0E0E0E] px-6">
+          <p className="text-[#A9A9A9]">{t.login.loading}</p>
+        </main>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

@@ -28,6 +28,16 @@ export type HomeContent = {
   trackRecordText: string;
   trackRecordCta: string;
   sampleReportCta: string;
+  uploadBetSlipLoggedIn: string;
+  analyzeNow: string;
+  openDashboard: string;
+  transparencyBadge: string;
+  mobileStatAi: string;
+  mobileStatOnline: string;
+  mobileStatData: string;
+  mobileStatLive: string;
+  mobileStatRisk: string;
+  mobileStatActive: string;
   features: Array<{ title: string; text: string }>;
 };
 
@@ -84,6 +94,16 @@ const homeContent: Record<Language, HomeContent> = {
       "Vi visar exempel på AI-analyser före match och vad som hände efter — inga dolda vinster, inga garantier.",
     trackRecordCta: "Se analys vs resultat",
     sampleReportCta: "Se exempelrapport",
+    uploadBetSlipLoggedIn: "Analysera kupong",
+    analyzeNow: "Kör ny analys",
+    openDashboard: "Öppna dashboard",
+    transparencyBadge: "Transparens",
+    mobileStatAi: "AI Engine",
+    mobileStatOnline: "Online",
+    mobileStatData: "Data",
+    mobileStatLive: "Live",
+    mobileStatRisk: "Riskmodell",
+    mobileStatActive: "Aktiv",
     features: [
       {
         title: "📸 Ladda upp kupong",
@@ -151,6 +171,16 @@ const homeContent: Record<Language, HomeContent> = {
       "See examples of AI analyses before kick-off and what happened after — no hidden wins, no guarantees.",
     trackRecordCta: "View analysis vs outcome",
     sampleReportCta: "See sample report",
+    uploadBetSlipLoggedIn: "Analyze bet slip",
+    analyzeNow: "Run new analysis",
+    openDashboard: "Open dashboard",
+    transparencyBadge: "Transparency",
+    mobileStatAi: "AI Engine",
+    mobileStatOnline: "Online",
+    mobileStatData: "Data",
+    mobileStatLive: "Live",
+    mobileStatRisk: "Risk model",
+    mobileStatActive: "Active",
     features: [
       {
         title: "📸 Upload bet slip",

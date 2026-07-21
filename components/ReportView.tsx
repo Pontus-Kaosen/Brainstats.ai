@@ -2,13 +2,14 @@
 
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
-import AnalysisExecutiveSummary from "@/components/AnalysisExecutiveSummary";
-import CollapsibleReportSection from "@/components/CollapsibleReportSection";
+import AnalysisReportMatchData from "@/components/AnalysisReportMatchData";
+import WorthBettingBlock from "@/components/WorthBettingBlock";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   formatTranslation,
   translateRiskLevel,
 } from "@/lib/locale";
+import type { AnalysisUsedData, ScoreBreakdown } from "@/lib/analysisReportTypes";
 import type { WorthBetting } from "@/lib/worthBetting";
 
 type BrainPick = {
@@ -28,6 +29,9 @@ export type ReportAnalysis = {
   summary?: string | null;
   recommendation?: string | null;
   worth_betting?: WorthBetting | null;
+  used_data?: AnalysisUsedData | null;
+  score_breakdown?: ScoreBreakdown | null;
+  bet_text?: string | null;
   brain_picks?: BrainPick[] | null;
   strengths?: string[] | null;
   risks?: string[] | null;
@@ -102,6 +106,8 @@ export default function ReportView({
     : [];
 
   const risks: string[] = Array.isArray(analysis.risks) ? analysis.risks : [];
+  const usedData = analysis.used_data ?? null;
+  const scoreBreakdown = analysis.score_breakdown ?? {};
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
@@ -194,15 +200,26 @@ export default function ReportView({
               {t.report.summaryTitle}
             </h2>
 
-            <AnalysisExecutiveSummary
-              summary={analysis.summary || t.report.noSummary}
-              brainScore={Number(analysis.score || 0)}
-              riskLevel={analysis.risk}
-              confidence={analysis.confidence}
-              worthBetting={analysis.worth_betting ?? null}
-              showJumpLink={false}
-            />
+            <p className="mt-5 leading-8 text-[#D8D8D8]">
+              {analysis.summary || t.report.noSummary}
+            </p>
+
+            {analysis.worth_betting ? (
+              <div className="mt-6">
+                <WorthBettingBlock worthBetting={analysis.worth_betting} />
+              </div>
+            ) : null}
           </section>
+
+          {usedData ? (
+            <section className="mt-8">
+              <AnalysisReportMatchData
+                usedData={usedData}
+                breakdown={scoreBreakdown}
+                betText={analysis.bet_text}
+              />
+            </section>
+          ) : null}
 
           <section className="mt-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -289,11 +306,12 @@ export default function ReportView({
           </section>
 
           <section className="mt-8 grid gap-6 md:grid-cols-2">
-            <CollapsibleReportSection title={t.report.strengths} defaultOpen>
+            <div className={cardClass}>
+              <h2 className="text-2xl font-black">{t.report.strengths}</h2>
               {strengths.length === 0 ? (
-                <p className="text-[#A9A9A9]">{t.report.noStrengths}</p>
+                <p className="mt-5 text-[#A9A9A9]">{t.report.noStrengths}</p>
               ) : (
-                <ul className="space-y-4 text-[#D8D8D8]">
+                <ul className="mt-5 space-y-4 text-[#D8D8D8]">
                   {strengths.map((item, index) => (
                     <li key={`${item}-${index}`} className="flex gap-3">
                       <span className="text-[#18ff6d]">✓</span>
@@ -302,13 +320,14 @@ export default function ReportView({
                   ))}
                 </ul>
               )}
-            </CollapsibleReportSection>
+            </div>
 
-            <CollapsibleReportSection title={t.report.risksTitle} defaultOpen>
+            <div className={cardClass}>
+              <h2 className="text-2xl font-black">{t.report.risksTitle}</h2>
               {risks.length === 0 ? (
-                <p className="text-[#A9A9A9]">{t.report.noRisks}</p>
+                <p className="mt-5 text-[#A9A9A9]">{t.report.noRisks}</p>
               ) : (
-                <ul className="space-y-4 text-[#D8D8D8]">
+                <ul className="mt-5 space-y-4 text-[#D8D8D8]">
                   {risks.map((item, index) => (
                     <li key={`${item}-${index}`} className="flex gap-3">
                       <span className="text-yellow-300">•</span>
@@ -317,7 +336,7 @@ export default function ReportView({
                   ))}
                 </ul>
               )}
-            </CollapsibleReportSection>
+            </div>
           </section>
 
           <section className="mt-8 rounded-3xl border border-[#18ff6d33] bg-[#07140d]/80 p-7 sm:p-8">

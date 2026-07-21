@@ -28,6 +28,7 @@ import {
   calculateEnhancedBrainScore,
   summarizeRecentForm,
 } from "@/lib/analysisContext";
+import { insertAnalysisWithFallback } from "@/lib/analysisInsert";
 import {
   brainScoreToSafetyTier,
   getTrackRecordCalibrationNote,
@@ -999,37 +1000,6 @@ export async function POST(
       brain_picks: finalAnalysis.brainPicks,
     };
 
-    let inserted = null;
-    let insertError: { message: string } | null = null;
-
-    const insertWithWorthBetting = await supabaseAdmin
-      .from("analyses")
-      .insert({
-        ...analysisInsertBase,
-        worth_betting: finalAnalysis.worthBetting,
-      })
-      .select();
-
-    if (
-      insertWithWorthBetting.error &&
-      /worth_betting|schema cache/i.test(insertWithWorthBetting.error.message)
-    ) {
-      console.warn(
-        "worth_betting column missing — saving analysis without it. Run Supabase migration 20260721190000_analyses_worth_betting.sql"
-      );
-
-      const insertWithoutWorthBetting = await supabaseAdmin
-        .from("analyses")
-        .insert(analysisInsertBase)
-        .select();
-
-      inserted = insertWithoutWorthBetting.data;
-      insertError = insertWithoutWorthBetting.error;
-    } else {
-      inserted = insertWithWorthBetting.data;
-      insertError = insertWithWorthBetting.error;
-    }
-
     const usedData = {
       fixtureId,
       homeTeamId,
@@ -1076,6 +1046,17 @@ export async function POST(
       scheduleContext,
       scheduleTeamsChecked: betTeams.map((team) => team.name),
     };
+
+    const insertResult = await insertAnalysisWithFallback(supabaseAdmin, {
+      ...analysisInsertBase,
+      worth_betting: finalAnalysis.worthBetting,
+      used_data: usedData,
+      score_breakdown: finalAnalysis.scoreBreakdown,
+      bet_text: text,
+    });
+
+    const inserted = insertResult.data;
+    const insertError = insertResult.error;
 
     if (insertError) {
       console.error(

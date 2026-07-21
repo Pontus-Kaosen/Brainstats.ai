@@ -209,6 +209,7 @@ function AnalyzePageContent() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [plan, setPlan] = useState<"free" | "pro" | "elite">("free");
   const [remainingToday, setRemainingToday] = useState<number | null>(null);
+  const [totalAnalyses, setTotalAnalyses] = useState<number | null>(null);
   const [isSampleReport, setIsSampleReport] = useState(false);
 
   useEffect(() => {
@@ -293,12 +294,16 @@ function AnalyzePageContent() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const [todayResult, profileResult] = await Promise.all([
+      const [todayResult, totalResult, profileResult] = await Promise.all([
         supabase
           .from("analyses")
           .select("*", { count: "exact", head: true })
           .eq("user_id", user.id)
           .gte("created_at", today.toISOString()),
+        supabase
+          .from("analyses")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id),
         supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle(),
       ]);
 
@@ -309,6 +314,7 @@ function AnalyzePageContent() {
         userPlan === "pro" || userPlan === "elite" ? userPlan : "free";
 
       setPlan(resolvedPlan);
+      setTotalAnalyses(totalResult.count ?? 0);
       setRemainingToday(
         resolvedPlan === "free"
           ? Math.max(0, 3 - (todayResult.count ?? 0))
@@ -318,8 +324,13 @@ function AnalyzePageContent() {
 
     void loadUsage();
 
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      void loadUsage();
+    });
+
     return () => {
       cancelled = true;
+      authListener.subscription.unsubscribe();
     };
   }, []);
 
@@ -464,7 +475,7 @@ const brainPicks = useMemo(() => {
 
   <ResponsibleUseNotice className="mt-5 sm:mt-6" />
 
-  <div className="mt-6 hidden gap-4 md:grid md:grid-cols-3">
+  <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4">
     <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
       <p className="text-sm text-[#A9A9A9]">{t.analyze.aiEngine}</p>
       <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.online}</p>
@@ -483,7 +494,9 @@ const brainPicks = useMemo(() => {
 </section>
 
           <section className="mt-6 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-4 max-md:backdrop-blur-none backdrop-blur-xl sm:mt-10 sm:p-6">
-            {isLoggedIn !== true && <AnalyzeQuickStart />}
+            {(isLoggedIn !== true || totalAnalyses === 0) && !showReport ? (
+              <AnalyzeQuickStart />
+            ) : null}
 
             {isLoggedIn === false && (
               <div className="mb-5 rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 p-4">
@@ -629,18 +642,35 @@ const brainPicks = useMemo(() => {
               </div>
             ) : null}
 
-            <Button
-              onClick={handleAnalyze}
-              disabled={
-                !betText.trim() ||
-                loading ||
-                parsingImage ||
-                remainingToday === 0
-              }
-              className="mt-5 w-full py-4"
-            >
-              {loading ? t.analyze.analyzing : t.analyze.runEngine}
-            </Button>
+            {remainingToday === 0 && plan === "free" && isLoggedIn ? (
+              <div className="mt-5 rounded-2xl border border-[#E8DCC8]/30 bg-[#E8DCC8]/10 p-5 text-center">
+                <h3 className="text-lg font-bold text-[#F5EAD8]">
+                  {t.analyze.limitReachedTitle}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[#D8D8D8]">
+                  {t.analyze.limitReachedBody}
+                </p>
+                <Link
+                  href="/premium"
+                  className="mt-4 inline-flex rounded-full bg-[#18ff6d] px-5 py-2.5 text-sm font-bold text-black transition hover:opacity-90"
+                >
+                  {t.analyze.upgradeTrialCta} →
+                </Link>
+              </div>
+            ) : (
+              <Button
+                onClick={handleAnalyze}
+                disabled={
+                  !betText.trim() ||
+                  loading ||
+                  parsingImage ||
+                  remainingToday === 0
+                }
+                className="mt-5 w-full py-4"
+              >
+                {loading ? t.analyze.analyzing : t.analyze.runEngine}
+              </Button>
+            )}
           </section>
 
           {loading && (
@@ -678,7 +708,7 @@ const brainPicks = useMemo(() => {
                 </div>
               ) : null}
 
-              {isSampleReport ? (
+              {isSampleReport && isLoggedIn === false ? (
                 <div className="rounded-2xl border border-[#2fbfff33] bg-[#071018]/90 p-5">
                   <p className="text-sm leading-7 text-[#D8D8D8]">
                     {t.analyze.sampleBanner}

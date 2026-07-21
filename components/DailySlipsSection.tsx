@@ -67,6 +67,7 @@ export default function DailySlipsSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [slipLimit, setSlipLimit] = useState(1);
+  const [userPlan, setUserPlan] = useState<"free" | "pro" | "elite">("free");
   const [fixtureScope, setFixtureScope] =
     useState<DailySlipFixtureScope>("major_today");
   const [referenceDateKey, setReferenceDateKey] = useState("");
@@ -106,6 +107,7 @@ export default function DailySlipsSection() {
 
         setSlips(data.slips || []);
         setSlipLimit(data.slipLimit || 1);
+        setUserPlan(data.plan || "free");
         setFixtureScope(data.fixtureScope || "major_today");
         setReferenceDateKey(data.referenceDateKey || getStockholmDateKey());
         markOnboardingStepDone(ONBOARDING_AI_TIPS_KEY);
@@ -167,6 +169,19 @@ export default function DailySlipsSection() {
       <p className="mt-3 text-sm text-[#777] sm:mt-4">{t.dailySlips.disclaimer}</p>
 
       <ResponsibleUseNotice compact className="mt-4 flex" />
+
+      {userPlan === "free" && slipLimit < 3 ? (
+        <div className="mt-5 rounded-2xl border border-[#E8DCC8]/25 bg-[#E8DCC8]/10 p-4 sm:p-5">
+          <p className="font-bold text-[#F5EAD8]">{t.dailySlips.upgradeCta}</p>
+          <p className="mt-2 text-sm text-[#A9A9A9]">{t.dailySlips.upgradeHint}</p>
+          <a
+            href="/premium"
+            className="mt-4 inline-flex rounded-full bg-[#18ff6d] px-5 py-2.5 text-sm font-bold text-black transition hover:opacity-90"
+          >
+            {t.analyze.upgradeTrialCta} →
+          </a>
+        </div>
+      ) : null}
 
       {!loading && !error && slips.length > 0 && (
         <div className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-4 sm:p-5">

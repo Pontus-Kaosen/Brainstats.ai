@@ -95,6 +95,10 @@ export const translations = {
       loginTitle: "Logga in",
       signupTitle: "Skapa konto",
       loginDescription: "Logga in med e-post och lösenord.",
+      contextAnalyze: "Logga in för att analysera ditt spel med Brain Engine.",
+      contextPremium: "Logga in för att starta din Pro-provperiod.",
+      contextDefault: "Logga in för att spara analyser och AI-kuponger.",
+      loading: "Laddar...",
       signupDescription: "Skapa ett konto för att spara dina analyser.",
       email: "E-post",
       password: "Lösenord",
@@ -229,6 +233,8 @@ export const translations = {
       allTodayBadge: "Matcher idag",
       upcomingBadge: "Nästa matcher i större ligor",
       placeholderBadge: "BrainStats AI-tips",
+      upgradeCta: "Lås upp fler AI-kuponger med Pro",
+      upgradeHint: "Free: 1 kupong/dag · Pro: 3 · Elite: 5",
     },
 
     manageSubscription: {
@@ -451,6 +457,9 @@ export const translations = {
       analysisFailed: "Analysen kunde inte slutföras. Försök igen.",
       saveWarning:
         "Analysen är klar men kunde inte sparas i historiken just nu. Du ser resultatet här nedan.",
+      limitReachedTitle: "Inga analyser kvar idag",
+      limitReachedBody:
+        "Free-planen inkluderar 3 analyser per dag. Testa Pro gratis i 7 dagar för obegränsat.",
       scheduleContextTitle: "Matchschema & rotationsrisk",
       scheduleContextHint:
         "Viktiga matcher före eller efter kan påverka lagets intensitet och startelva.",
@@ -543,6 +552,9 @@ export const translations = {
       subtitle: "Planer",
       title: "Vad ingår i varje plan?",
       featureCol: "Funktion",
+      freeCol: "Free",
+      proCol: "Pro",
+      eliteCol: "Elite",
       rows: [
         {
           label: "Analyser per dag",
@@ -1006,6 +1018,10 @@ export const translations = {
       loginTitle: "Log in",
       signupTitle: "Create account",
       loginDescription: "Log in with email and password.",
+      contextAnalyze: "Log in to analyze your bet with Brain Engine.",
+      contextPremium: "Log in to start your Pro free trial.",
+      contextDefault: "Log in to save analyses and AI slips.",
+      loading: "Loading...",
       signupDescription: "Create an account to save your analyses.",
       email: "Email",
       password: "Password",
@@ -1140,6 +1156,8 @@ export const translations = {
       allTodayBadge: "Matches today",
       upcomingBadge: "Upcoming major-league matches",
       placeholderBadge: "BrainStats AI picks",
+      upgradeCta: "Unlock more AI slips with Pro",
+      upgradeHint: "Free: 1 slip/day · Pro: 3 · Elite: 5",
     },
 
     manageSubscription: {
@@ -1362,6 +1380,9 @@ export const translations = {
       analysisFailed: "The analysis could not be completed. Try again.",
       saveWarning:
         "The analysis is ready but could not be saved to your history right now. You can still read the full result below.",
+      limitReachedTitle: "No analyses left today",
+      limitReachedBody:
+        "The Free plan includes 3 analyses per day. Try Pro free for 7 days for unlimited access.",
       scheduleContextTitle: "Schedule & rotation risk",
       scheduleContextHint:
         "Important fixtures before or after may affect intensity and the starting lineup.",
@@ -1454,6 +1475,9 @@ export const translations = {
       subtitle: "Plans",
       title: "What's included in each plan?",
       featureCol: "Feature",
+      freeCol: "Free",
+      proCol: "Pro",
+      eliteCol: "Elite",
       rows: [
         {
           label: "Analyses per day",
