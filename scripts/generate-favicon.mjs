@@ -1,14 +1,14 @@
 import fs from "fs";
 import path from "path";
+import pngToIco from "png-to-ico";
 import sharp from "sharp";
-import toIco from "to-ico";
 
 const SOURCE = path.join(process.cwd(), "assets", "brainstats-icon-source.jpg");
 const CROP_SIZE = 720;
 const CROP_TOP = 36;
 const CROP_LEFT = Math.floor((1024 - CROP_SIZE) / 2);
 
-async function cropIcon(zoom = 1) {
+async function cropIcon(zoom = 1.12) {
   const size = Math.floor(CROP_SIZE / zoom);
   const left = CROP_LEFT + Math.floor((CROP_SIZE - size) / 2);
   const top = CROP_TOP + Math.floor((CROP_SIZE - size) / 2);
@@ -26,28 +26,25 @@ async function main() {
     throw new Error(`Missing source image: ${SOURCE}`);
   }
 
-  const cropped = await cropIcon(1);
-  const croppedTight = await cropIcon(1.15);
+  const cropped = await cropIcon();
 
-  await cropped.clone().resize(512, 512).png().toFile(path.join(process.cwd(), "app", "icon.png"));
+  await cropped.clone().resize(32, 32).png().toFile(path.join(process.cwd(), "app", "icon.png"));
   await cropped.clone().resize(180, 180).png().toFile(path.join(process.cwd(), "app", "apple-icon.png"));
 
-  const faviconSizes = [16, 32, 48];
-  const faviconBuffers = await Promise.all(
-    faviconSizes.map((size) =>
-      croppedTight.clone().resize(size, size, { fit: "cover" }).png().toBuffer()
-    )
-  );
+  const favicon16 = await cropped.clone().resize(16, 16).png().toBuffer();
+  const favicon32 = await cropped.clone().resize(32, 32).png().toBuffer();
+  const favicon48 = await cropped.clone().resize(48, 48).png().toBuffer();
 
-  const faviconIco = await toIco(faviconBuffers);
+  const publicDir = path.join(process.cwd(), "public");
+  fs.writeFileSync(path.join(publicDir, "favicon-16x16.png"), favicon16);
+  fs.writeFileSync(path.join(publicDir, "favicon-32x32.png"), favicon32);
 
-  const appFavicon = path.join(process.cwd(), "app", "favicon.ico");
-  const publicFavicon = path.join(process.cwd(), "public", "favicon.ico");
+  const faviconIco = await pngToIco([favicon16, favicon32, favicon48]);
 
-  fs.writeFileSync(appFavicon, faviconIco);
-  fs.writeFileSync(publicFavicon, faviconIco);
+  fs.writeFileSync(path.join(process.cwd(), "app", "favicon.ico"), faviconIco);
+  fs.writeFileSync(path.join(publicDir, "favicon.ico"), faviconIco);
 
-  console.log("Created app/icon.png");
+  console.log("Created app/icon.png (32x32)");
   console.log("Created app/apple-icon.png");
   console.log("Created app/favicon.ico");
   console.log("Created public/favicon.ico");
