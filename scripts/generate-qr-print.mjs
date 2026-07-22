@@ -6,7 +6,8 @@ const URL = "https://brainstats.eu";
 const DOMAIN = "brainstats.eu";
 const AI_TIPS_LINE = "Dagliga AI-tips på dina matcher";
 const OUT_DIR = path.join(process.cwd(), "public", "print");
-const LOGO_MARK_PATH = path.join(OUT_DIR, "brainstats-logo-mark.svg");
+const LOGO_MARK_PATH = path.join(process.cwd(), "assets", "brainstats-icon-drawn.svg");
+const LOGO_VIEWBOX = 512;
 const MODULE_PX = 18;
 const QUIET = 2;
 const BRAND_SIZE = 40;
@@ -49,7 +50,7 @@ function buildQrSvg(url, logoMarkInner) {
   const logoY = (px - logoSize) / 2;
   const logoOverlay = `
     <rect x="${logoX - 4}" y="${logoY - 4}" width="${logoSize + 8}" height="${logoSize + 8}" rx="${(logoSize + 8) * 0.12}" fill="#ffffff"/>
-    <g transform="translate(${logoX}, ${logoY}) scale(${logoSize / 120})">
+    <g transform="translate(${logoX}, ${logoY}) scale(${logoSize / LOGO_VIEWBOX})">
       ${logoMarkInner}
     </g>
   `;
