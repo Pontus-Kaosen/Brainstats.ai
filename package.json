@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:parse-image": "node scripts/test-parse-image.mjs"
+    "test:parse-image": "node scripts/test-parse-image.mjs",
+    "generate:favicon": "node scripts/generate-favicon.mjs",
+    "generate:qr-print": "node scripts/generate-qr-print.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
@@ -26,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

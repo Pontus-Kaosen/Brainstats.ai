@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="18" fill="#ffffff"/>
+  <text
+    x="60"
+    y="52"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="26"
+    font-weight="800"
+    fill="#000000"
+  >Brain</text>
+  <text
+    x="60"
+    y="84"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="26"
+    font-weight="800"
+    fill="#18ff6d"
+  >Stats</text>
+</svg>
