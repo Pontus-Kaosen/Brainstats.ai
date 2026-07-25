@@ -23,19 +23,19 @@ export default async function Home() {
       <div className="relative z-10">
         <Navbar />
 
-        <ValueBetsHistorySnippet
-          initialEntries={valueBetsHistory.entries.map((entry) => ({
-            id: entry.id,
-            match_label: entry.match_label,
-            market: entry.market,
-            outcome: entry.outcome,
-          }))}
-          initialStats={valueBetsHistory.stats}
-        />
+        <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-8 sm:pt-6">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8 xl:gap-10">
+            <ValueBetsHistorySnippet
+              initialEntries={valueBetsHistory.entries.map((entry) => ({
+                id: entry.id,
+                match_label: entry.match_label,
+                market: entry.market,
+                outcome: entry.outcome,
+              }))}
+              initialStats={valueBetsHistory.stats}
+            />
 
-        <div className="md:pl-48">
-        <section className="mx-auto max-w-7xl px-4 pt-2 sm:px-8 sm:pt-4">
-          <div className="flex flex-col items-center py-4 text-center sm:py-12 lg:py-16">
+            <div className="flex min-w-0 flex-1 flex-col items-center py-2 text-center sm:py-8 lg:py-12">
               <p className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-xs font-semibold text-[#18ff6d] sm:text-sm">
                 {t.badge}
               </p>
@@ -101,6 +101,7 @@ export default async function Home() {
               >
                 💎 {t.seePremium}
               </Link>
+            </div>
           </div>
         </section>
 
@@ -190,7 +191,6 @@ export default async function Home() {
             ))}
           </div>
         </section>
-        </div>
       </div>
     </main>
   );
