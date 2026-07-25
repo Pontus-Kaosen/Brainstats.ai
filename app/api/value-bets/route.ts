@@ -19,6 +19,7 @@ import {
   type MarketOddOption,
 } from "@/lib/marketOdds";
 import { getStockholmDateKey } from "@/lib/stockholmDate";
+import { rankValueBetPicks } from "@/lib/valueBetGrades";
 
 export const maxDuration = 60;
 
@@ -34,6 +35,9 @@ export type ValueBetPick = {
   impliedProbability: number;
   edgePercent: number;
   reason: string;
+  valueTier?: 1 | 2 | 3 | 4 | 5;
+  valueScore?: number;
+  valueRank?: number;
 };
 
 const openai = new OpenAI({
@@ -51,7 +55,8 @@ const supabaseAdmin = createClient(
   }
 );
 
-const MIN_EDGE_PERCENT = 2;
+const MIN_EDGE_PERCENT = 3;
+const MIN_FAIR_PROBABILITY = 42;
 const MAX_FIXTURES_WITH_ODDS = 10;
 const MAX_VALUE_PICKS = 5;
 const ODDS_FETCH_CONCURRENCY = 6;
@@ -230,7 +235,7 @@ function enrichValuePicks(
   const unknownMatch = language === "en" ? "Unknown match" : "Okänd match";
   const unknownMarket = language === "en" ? "Unknown market" : "Okänd marknad";
 
-  const enriched: ValueBetPick[] = [];
+  const enriched: Array<Omit<ValueBetPick, "valueTier" | "valueScore" | "valueRank">> = [];
 
   for (const pick of rawPicks) {
     const match = typeof pick.match === "string" ? pick.match : unknownMatch;
@@ -261,7 +266,7 @@ function enrichValuePicks(
       marketOdd.decimalOdd
     );
 
-    if (edgePercent < MIN_EDGE_PERCENT) {
+    if (edgePercent < MIN_EDGE_PERCENT || fairProbability < MIN_FAIR_PROBABILITY) {
       continue;
     }
 
@@ -285,9 +290,7 @@ function enrichValuePicks(
     });
   }
 
-  return enriched
-    .sort((a, b) => b.edgePercent - a.edgePercent)
-    .slice(0, MAX_VALUE_PICKS);
+  return rankValueBetPicks(enriched, MAX_VALUE_PICKS);
 }
 
 export async function GET(request: Request) {
@@ -353,10 +356,15 @@ export async function GET(request: Request) {
     }
 
     if (Array.isArray(cached?.picks) && cached.picks.length > 0) {
+      const picks = rankValueBetPicks(
+        cached.picks as ValueBetPick[],
+        MAX_VALUE_PICKS
+      );
+
       return NextResponse.json({
         success: true,
         plan: "elite",
-        picks: cached.picks,
+        picks,
         fixtureScope: cached.fixture_scope,
         referenceDateKey: cached.reference_date_key || today,
         cached: true,

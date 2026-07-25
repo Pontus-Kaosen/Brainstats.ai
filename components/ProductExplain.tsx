@@ -4,9 +4,9 @@ type ProductExplainProps = {
   variant: "aiTips" | "valueBets";
   title: string;
   text: string;
-  differentNote: string;
-  differentHref: string;
-  differentLink: string;
+  differentNote?: string;
+  differentHref?: string;
+  differentLink?: string;
 };
 
 const styles = {
@@ -38,12 +38,14 @@ export default function ProductExplain({
         {title}
       </p>
       <p className="mt-2 text-sm leading-7 text-[#CFCFCF]">{text}</p>
-      <p className="mt-3 text-sm leading-6 text-[#888]">
-        {differentNote}{" "}
-        <a href={differentHref} className={`font-semibold underline-offset-2 hover:underline ${style.link}`}>
-          {differentLink}
-        </a>
-      </p>
+      {differentNote && differentHref && differentLink ? (
+        <p className="mt-3 text-sm leading-6 text-[#888]">
+          {differentNote}{" "}
+          <a href={differentHref} className={`font-semibold underline-offset-2 hover:underline ${style.link}`}>
+            {differentLink}
+          </a>
+        </p>
+      ) : null}
     </div>
   );
 }

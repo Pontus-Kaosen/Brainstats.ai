@@ -62,7 +62,11 @@ function getScopeBadge(scope: DailySlipFixtureScope, t: ReturnType<typeof useLan
   }
 }
 
-export default function DailySlipsSection() {
+export default function DailySlipsSection({
+  showValueBetsLink = false,
+}: {
+  showValueBetsLink?: boolean;
+}) {
   const { t, language } = useLanguage();
   const [slips, setSlips] = useState<DailySlip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,9 +171,13 @@ export default function DailySlipsSection() {
         variant="aiTips"
         title={t.dailySlips.explainTitle}
         text={t.dailySlips.explainText}
-        differentNote={t.dailySlips.differentNote}
-        differentHref="#value-bets"
-        differentLink={t.dailySlips.differentLink}
+        differentNote={
+          showValueBetsLink ? t.dailySlips.differentNote : undefined
+        }
+        differentHref={showValueBetsLink ? "#value-bets" : undefined}
+        differentLink={
+          showValueBetsLink ? t.dailySlips.differentLink : undefined
+        }
       />
 
       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#72d5ff] sm:text-sm">

@@ -765,12 +765,14 @@ export function buildValueBetsSystemPrompt(language: Language) {
   if (language === "en") {
     return (
       "You identify football markets where AI fair probability appears higher than market-implied probability. " +
+      "Prioritise picks that combine meaningful edge with reasonably high probability — avoid extreme longshots. " +
       "Never call a bet safe, guaranteed or risk-free. Respond only with valid JSON. Write user-facing text in English."
     );
   }
 
   return (
     "Du hittar fotbollsmarknader där AI:s fair-sannolikhet verkar högre än marknadens implicita sannolikhet. " +
+    "Prioritera spel som kombinerar tydlig edge med rimligt hög sannolikhet — undvik extrema longshots. " +
     "Du får aldrig kalla ett spel säkert, garanterat eller riskfritt. Svara endast med giltig JSON. Skriv användartext på svenska."
   );
 }
@@ -787,6 +789,7 @@ Rules:
 - Use only matches from the list.
 - Each pick must include match, market, probability (10-95), and reason.
 - Prefer markets where your fair probability is meaningfully above the market implied probability shown.
+- Prioritise the safest picks with the strongest edge — probability should usually be at least 48%.
 - probability is your AI fair probability in percent (integer).
 - Do not describe any pick as safe or guaranteed.
 
@@ -824,6 +827,7 @@ Regler:
 - Använd endast matcher i listan.
 - Varje tips ska innehålla match, market, probability (10-95) och reason.
 - Prioritera marknader där din fair-sannolikhet tydligt överstiger marknadens implicita sannolikhet i listan.
+- Välj helst de säkraste spelen med starkast edge — sannolikheten bör oftast vara minst 48%.
 - probability är din AI fair-sannolikhet i procent (heltal).
 - Beskriv inget spel som säkert eller garanterat.
 

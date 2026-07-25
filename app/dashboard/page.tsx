@@ -28,12 +28,12 @@ type Analysis = {
 };
 
 const quickActions = [
-  { key: "aiTips" as const, icon: "🎯", href: "/dashboard#ai-tips" },
-  { key: "valueBets" as const, icon: "💎", href: "/dashboard#value-bets" },
-  { key: "home" as const, icon: "🏠", href: "/" },
-  { key: "builder" as const, icon: "⚽", href: "/builder" },
-  { key: "analyze" as const, icon: "🧠", href: "/analyze" },
-  { key: "premium" as const, icon: "💎", href: "/premium" },
+  { key: "aiTips" as const, icon: "🎯", href: "/dashboard#ai-tips", eliteOnly: false },
+  { key: "valueBets" as const, icon: "💎", href: "/dashboard#value-bets", eliteOnly: true },
+  { key: "home" as const, icon: "🏠", href: "/", eliteOnly: false },
+  { key: "builder" as const, icon: "⚽", href: "/builder", eliteOnly: false },
+  { key: "analyze" as const, icon: "🧠", href: "/analyze", eliteOnly: false },
+  { key: "premium" as const, icon: "💎", href: "/premium", eliteOnly: false },
 ];
 
 const titleGradient =
@@ -276,13 +276,15 @@ export default function DashboardPage() {
                 🎯 {t.dashboard.viewAiTips}
                 <span aria-hidden>↓</span>
               </a>
-              <a
-                href="#value-bets"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#72d5ff33] bg-[#2fbfff]/10 px-5 py-3 text-sm font-bold text-[#72d5ff] transition hover:bg-[#2fbfff]/15 sm:px-6 sm:text-base"
-              >
-                💎 {t.dashboard.viewValueBets}
-                <span aria-hidden>↓</span>
-              </a>
+              {plan === "elite" ? (
+                <a
+                  href="#value-bets"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#72d5ff33] bg-[#2fbfff]/10 px-5 py-3 text-sm font-bold text-[#72d5ff] transition hover:bg-[#2fbfff]/15 sm:px-6 sm:text-base"
+                >
+                  💎 {t.dashboard.viewValueBets}
+                  <span aria-hidden>↓</span>
+                </a>
+              ) : null}
             </div>
           </section>
 
@@ -354,9 +356,9 @@ export default function DashboardPage() {
             </section>
           ) : (
             <>
-              <IntelligenceCompare />
-              <DailySlipsSection />
-              <ValueBetsSection />
+              <IntelligenceCompare showValueBets={plan === "elite"} />
+              <DailySlipsSection showValueBetsLink={plan === "elite"} />
+              {plan === "elite" ? <ValueBetsSection /> : null}
 
               <section className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 xl:grid-cols-4">
                 {[
@@ -482,7 +484,11 @@ export default function DashboardPage() {
                     </h3>
 
                     <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:space-y-3 lg:grid-cols-1 lg:gap-0">
-                      {quickActions.map((action) => (
+                      {quickActions
+                        .filter(
+                          (action) => !action.eliteOnly || plan === "elite"
+                        )
+                        .map((action) => (
                         <a
                           key={action.key}
                           href={action.href}

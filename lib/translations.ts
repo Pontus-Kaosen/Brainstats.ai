@@ -277,7 +277,7 @@ export const translations = {
       subtitle: "Elite Intelligence",
       title: "💎 Value Bets",
       description:
-        "Marknader där AI:s fair-sannolikhet verkar ligga över bookmakerns odds — uppdateras dagligen.",
+        "Marknader där AI:s fair-sannolikhet verkar ligga över bookmakerns odds — rankade efter value och säkerhet.",
       disclaimer:
         "Jämför AI fair odds mot marknadsodds. Inte spelråd och inga resultat är garanterade.",
       loading: "Söker value bets...",
@@ -295,6 +295,11 @@ export const translations = {
       edge: "Value",
       fairProbability: "AI-sannolikhet",
       impliedProbability: "Marknad",
+      valueGrade: "Value-ranking",
+      rankLabel: "#{rank}",
+      rankingTitle: "Value-ranking",
+      rankingIntro:
+        "Vi prioriterar spel med både hög edge och stabil AI-sannolikhet. Flest stjärnor = bäst kombination.",
       explainTitle: "Vad är Value Bets?",
       explainText:
         "Enskilda spel där vår AI fair-sannolikhet verkar högre än bookmakerns odds. Du ser båda sidor — fair vs marknad — och hur stor skillnaden är.",
@@ -1272,7 +1277,7 @@ export const translations = {
       subtitle: "Elite Intelligence",
       title: "💎 Value Bets",
       description:
-        "Markets where AI fair probability appears above bookmaker odds — updated daily.",
+        "Markets where AI fair probability appears above bookmaker odds — ranked by value and safety.",
       disclaimer:
         "Compares AI fair odds to market odds. Not betting advice and no results are guaranteed.",
       loading: "Scanning for value bets...",
@@ -1290,6 +1295,11 @@ export const translations = {
       edge: "Value",
       fairProbability: "AI fair",
       impliedProbability: "Market",
+      valueGrade: "Value ranking",
+      rankLabel: "#{rank}",
+      rankingTitle: "Value ranking",
+      rankingIntro:
+        "We prioritise picks with both strong edge and stable AI probability. More stars = best balance.",
       explainTitle: "What are Value Bets?",
       explainText:
         "Single picks where our AI fair probability appears higher than bookmaker odds. You see both sides — fair vs market — and how big the gap is.",

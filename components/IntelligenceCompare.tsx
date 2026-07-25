@@ -2,7 +2,13 @@
 
 import { useLanguage } from "@/components/LanguageProvider";
 
-export default function IntelligenceCompare() {
+type IntelligenceCompareProps = {
+  showValueBets?: boolean;
+};
+
+export default function IntelligenceCompare({
+  showValueBets = false,
+}: IntelligenceCompareProps) {
   const { t } = useLanguage();
   const compare = t.intelligenceCompare;
 
@@ -18,7 +24,9 @@ export default function IntelligenceCompare() {
         {compare.intro}
       </p>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div
+        className={`mt-6 grid gap-4 ${showValueBets ? "lg:grid-cols-2" : "max-w-2xl"}`}
+      >
         <article className="rounded-3xl border border-[#18ff6d33] bg-[#18ff6d]/5 p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -56,6 +64,7 @@ export default function IntelligenceCompare() {
           </a>
         </article>
 
+        {showValueBets ? (
         <article className="rounded-3xl border border-[#72d5ff33] bg-[#2fbfff]/5 p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -92,6 +101,7 @@ export default function IntelligenceCompare() {
             {compare.valueBets.cta} →
           </a>
         </article>
+        ) : null}
       </div>
     </section>
   );

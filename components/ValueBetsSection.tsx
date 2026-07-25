@@ -6,8 +6,10 @@ import ValueBetCard from "@/components/ValueBetCard";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import ProductExplain from "@/components/ProductExplain";
 import { useLanguage } from "@/components/LanguageProvider";
-import { formatKickoffLabel } from "@/lib/locale";
+import { formatKickoffLabel, formatTranslation } from "@/lib/locale";
 import { localizeMarketLabel } from "@/lib/marketOdds";
+import { getValueBetGrade, VALUE_BET_GRADES } from "@/lib/valueBetGrades";
+import ValueStars from "@/components/ValueStars";
 
 type ValueBetPick = {
   match: string;
@@ -20,6 +22,8 @@ type ValueBetPick = {
   impliedProbability: number;
   edgePercent: number;
   reason: string;
+  valueTier?: number;
+  valueRank?: number;
 };
 
 type ValueBetsResponse = {
@@ -187,34 +191,71 @@ export default function ValueBetsSection() {
       ) : null}
 
       {!loading && !error && picks.length > 0 ? (
-        <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          {picks.map((pick) => (
-            <ValueBetCard
-              key={`${pick.match}-${pick.market}`}
-              pick={{
-                ...pick,
-                market: localizeMarketLabel(pick.market, language),
-              }}
-              labels={{
-                fairOdds: t.valueBets.fairOdds,
-                marketOdds: t.valueBets.marketOdds,
-                edge: t.valueBets.edge,
-                fairProbability: t.valueBets.fairProbability,
-                impliedProbability: t.valueBets.impliedProbability,
-              }}
-              kickoffLabel={
-                pick.kickoffAt && referenceDateKey
-                  ? formatKickoffLabel(
-                      pick.kickoffAt,
-                      referenceDateKey,
-                      language,
-                      t
-                    )
-                  : null
-              }
-            />
-          ))}
-        </div>
+        <>
+          <div className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-4 sm:p-5">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#18ff6d]">
+              {t.valueBets.rankingTitle}
+            </p>
+            <p className="mt-2 text-sm text-[#A9A9A9]">{t.valueBets.rankingIntro}</p>
+            <div className="mt-4 space-y-2">
+              {VALUE_BET_GRADES.map((grade) => {
+                const label =
+                  language === "en" ? grade.labelEn : grade.labelSv;
+
+                return (
+                  <div
+                    key={grade.tier}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#18ff6d11] bg-black/20 px-3 py-2"
+                  >
+                    <ValueStars tier={grade.tier} label={label} size="sm" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            {picks.map((pick) => (
+              <ValueBetCard
+                key={`${pick.match}-${pick.market}`}
+                pick={{
+                  ...pick,
+                  market: localizeMarketLabel(pick.market, language),
+                }}
+                gradeLabel={
+                  pick.valueTier
+                    ? getValueBetGrade(pick.valueTier, language).label
+                    : undefined
+                }
+                rankLabel={
+                  typeof pick.valueRank === "number"
+                    ? formatTranslation(t.valueBets.rankLabel, {
+                        rank: pick.valueRank,
+                      })
+                    : undefined
+                }
+                labels={{
+                  fairOdds: t.valueBets.fairOdds,
+                  marketOdds: t.valueBets.marketOdds,
+                  edge: t.valueBets.edge,
+                  fairProbability: t.valueBets.fairProbability,
+                  impliedProbability: t.valueBets.impliedProbability,
+                  valueGrade: t.valueBets.valueGrade,
+                }}
+                kickoffLabel={
+                  pick.kickoffAt && referenceDateKey
+                    ? formatKickoffLabel(
+                        pick.kickoffAt,
+                        referenceDateKey,
+                        language,
+                        t
+                      )
+                    : null
+                }
+              />
+            ))}
+          </div>
+        </>
       ) : null}
     </section>
   );

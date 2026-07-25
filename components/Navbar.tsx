@@ -259,11 +259,15 @@ export default function Navbar() {
       href: "/dashboard#ai-tips",
       highlight: "aiTips" as const,
     },
-    {
-      title: t.navbar.valueBets,
-      href: "/dashboard#value-bets",
-      highlight: "valueBets" as const,
-    },
+    ...(userPlan === "elite"
+      ? [
+          {
+            title: t.navbar.valueBets,
+            href: "/dashboard#value-bets",
+            highlight: "valueBets" as const,
+          },
+        ]
+      : []),
     { title: t.navbar.trackRecord, href: "/track-record" },
     { title: t.navbar.dashboard, href: "/dashboard" },
     { title: t.navbar.premium, href: "/premium" },
