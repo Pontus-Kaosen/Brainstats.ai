@@ -52,3 +52,39 @@ export function parseStoredValueBetPicks(raw: unknown): CachedValueBetPick[] {
       typeof (item as CachedValueBetPick).fixtureId === "number"
   );
 }
+
+export const VALUE_BET_REGEN_COOLDOWN_MS = 45 * 60 * 1000;
+
+export type ValueBetsCacheRow = {
+  picks: unknown;
+  fixture_scope?: string | null;
+  reference_date_key?: string | null;
+  created_at?: string | null;
+};
+
+export function canRegenerateValueBetsCache(
+  cached: ValueBetsCacheRow | null | undefined,
+  placeableCount: number,
+  nowMs: number = Date.now()
+) {
+  if (!cached) {
+    return true;
+  }
+
+  if (placeableCount > 0) {
+    return false;
+  }
+
+  const stored = parseStoredValueBetPicks(cached.picks);
+  const createdMs = cached.created_at
+    ? new Date(cached.created_at).getTime()
+    : 0;
+  const cooldownPassed =
+    !createdMs || nowMs - createdMs >= VALUE_BET_REGEN_COOLDOWN_MS;
+
+  if (!cooldownPassed) {
+    return false;
+  }
+
+  return stored.length === 0 || placeableCount === 0;
+}

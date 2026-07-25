@@ -7,7 +7,7 @@ import {
   getValueBetsApiMessages,
   parseRequestLanguage,
 } from "@/lib/aiPrompts";
-import { resolveDailySlipFixtures } from "@/lib/dailyFixturePool";
+import { resolveValueBetFixtures } from "@/lib/dailyFixturePool";
 import { findFixtureIdFromLabel } from "@/lib/pickOutcomeResolver";
 import {
   calculateEdgePercent,
@@ -24,6 +24,7 @@ import { publishValueBetPicks, getValueBetCalibrationNote } from "@/lib/trackRec
 import {
   filterPlaceableValueBets,
   parseStoredValueBetPicks,
+  canRegenerateValueBetsCache,
   type CachedValueBetPick,
 } from "@/lib/valueBetsCache";
 import {
@@ -118,8 +119,8 @@ const supabaseAdmin = createClient(
   }
 );
 
-const MIN_EDGE_PERCENT = 4;
-const MIN_FAIR_PROBABILITY = 58;
+const MIN_EDGE_PERCENT = 3;
+const MIN_FAIR_PROBABILITY = 55;
 const MAX_FIXTURES_WITH_ODDS = 6;
 const MAX_VALUE_PICKS = 2;
 const ODDS_FETCH_CONCURRENCY = 6;
@@ -187,7 +188,7 @@ function normalizeMarketLabel(market: string, language: ReturnType<typeof parseR
 }
 
 async function buildFixtureOddsPool(
-  fixtures: Awaited<ReturnType<typeof resolveDailySlipFixtures>>["fixtures"]
+  fixtures: Awaited<ReturnType<typeof resolveValueBetFixtures>>["fixtures"]
 ) {
   const entries = await mapWithConcurrency(
     fixtures.slice(0, MAX_FIXTURES_WITH_ODDS),
@@ -286,17 +287,24 @@ async function cacheValueBets(
   today: string,
   picks: ValueBetPick[],
   fixtureScope: string,
-  referenceDateKey: string
+  referenceDateKey: string,
+  overwrite = false
 ) {
-  const { error } = await supabaseAdmin.from("value_bets").upsert(
-    {
-      valid_date: today,
-      picks,
-      fixture_scope: fixtureScope,
-      reference_date_key: referenceDateKey,
-    },
-    { onConflict: "valid_date", ignoreDuplicates: true }
-  );
+  const row: Record<string, unknown> = {
+    valid_date: today,
+    picks,
+    fixture_scope: fixtureScope,
+    reference_date_key: referenceDateKey,
+  };
+
+  if (overwrite) {
+    row.created_at = new Date().toISOString();
+  }
+
+  const { error } = await supabaseAdmin.from("value_bets").upsert(row, {
+    onConflict: "valid_date",
+    ignoreDuplicates: !overwrite,
+  });
 
   if (error && !isMissingTableError(error)) {
     console.error("Value bets cache write failed:", error);
@@ -328,7 +336,7 @@ function buildValueBetsResponse(
 async function readDailyValueBetsCache(today: string) {
   const { data, error } = await supabaseAdmin
     .from("value_bets")
-    .select("picks, fixture_scope, reference_date_key")
+    .select("picks, fixture_scope, reference_date_key, created_at")
     .eq("valid_date", today)
     .maybeSingle();
 
@@ -346,7 +354,7 @@ function enrichValuePicks(
     probability?: number;
     reason?: string;
   }>,
-  fixtures: Awaited<ReturnType<typeof resolveDailySlipFixtures>>["fixtures"],
+  fixtures: Awaited<ReturnType<typeof resolveValueBetFixtures>>["fixtures"],
   fixtureOddsPool: Awaited<ReturnType<typeof buildFixtureOddsPool>>,
   language: ReturnType<typeof parseRequestLanguage>
 ): ValueBetPick[] {
@@ -493,23 +501,27 @@ export async function GET(request: Request) {
 
       if (placeablePicks.length > 0) {
         void publishValueBetPicks(today, toPublishableValueBetPicks(placeablePicks));
+
+        return buildValueBetsResponse(placeablePicks, {
+          fixtureScope: cached.fixture_scope,
+          referenceDateKey: cached.reference_date_key || today,
+          cached: true,
+          locked: true,
+        });
       }
 
-      return buildValueBetsResponse(placeablePicks, {
-        fixtureScope: cached.fixture_scope,
-        referenceDateKey: cached.reference_date_key || today,
-        cached: true,
-        locked: true,
-        message:
-          placeablePicks.length === 0
-            ? language === "en"
-              ? "Today's value bets have started or are no longer placeable."
-              : "Dagens value bets har redan startat eller går inte längre att spela."
-            : undefined,
-      });
+      if (!canRegenerateValueBetsCache(cached, placeablePicks.length)) {
+        return buildValueBetsResponse(placeablePicks, {
+          fixtureScope: cached.fixture_scope,
+          referenceDateKey: cached.reference_date_key || today,
+          cached: true,
+          locked: false,
+          message: messages.noValueFound,
+        });
+      }
     }
 
-    const fixturePool = await resolveDailySlipFixtures(today);
+    const fixturePool = await resolveValueBetFixtures(today);
     const { fixtures, scope: fixtureScope, referenceDateKey } = fixturePool;
 
     if (fixtures.length === 0) {
@@ -541,7 +553,13 @@ export async function GET(request: Request) {
     const rawPicks = Array.isArray(parsed?.picks) ? parsed.picks : [];
     const picks = enrichValuePicks(rawPicks, fixtures, fixtureOddsPool, language);
 
-    await cacheValueBets(today, picks, fixtureScope, referenceDateKey);
+    await cacheValueBets(
+      today,
+      picks,
+      fixtureScope,
+      referenceDateKey,
+      Boolean(cached)
+    );
 
     const lockedCache = await readDailyValueBetsCache(today);
     const finalPicks = lockedCache
@@ -556,7 +574,7 @@ export async function GET(request: Request) {
       fixtureScope: lockedCache?.fixture_scope ?? fixtureScope,
       referenceDateKey: lockedCache?.reference_date_key || referenceDateKey,
       cached: Boolean(lockedCache),
-      locked: Boolean(lockedCache),
+      locked: finalPicks.length > 0,
       message:
         finalPicks.length === 0 ? messages.noValueFound : undefined,
     });

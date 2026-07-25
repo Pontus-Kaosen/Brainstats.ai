@@ -782,14 +782,14 @@ export function buildValueBetsUserPrompt(
 
   if (language === "en") {
     return `
-Find up to 2 value bets from the list below.
+Find up to 2 value bets from the list below (matches kick off within the next 24 hours).
 ${calibrationBlock}
 Rules:
 - Use only matches from the list.
 - Each pick must include match, market, probability (10-95), and reason.
 - Prefer picks that combine meaningful edge with reasonably high probability — avoid extreme longshots.
 - Prefer markets where your fair probability is meaningfully above the market implied probability shown.
-- Probability must be at least 58% and edge should be at least 4% versus market odds.
+- Probability must be at least 55% and edge should be at least 3% versus market odds.
 - Prefer conservative markets only: Over 1.5 goals, Under 3.5 goals, home win with clear edge, both teams not to score.
 - Avoid draw, away win, Over 2.5 and both teams to score.
 - Return 0–2 picks — quality over quantity. Skip the day if nothing is strong enough.
@@ -810,7 +810,7 @@ Respond exactly:
     {
       "match": "Team A - Team B",
       "market": "Home win",
-      "probability": 58,
+      "probability": 55,
       "reason": "Short neutral explanation"
     }
   ]
@@ -819,14 +819,14 @@ Respond exactly:
   }
 
   return `
-Hitta upp till 2 value bets från listan nedan.
+Hitta upp till 2 value bets från listan nedan (matcher inom 24 timmar).
 ${calibrationBlock}
 Regler:
 - Använd endast matcher i listan.
 - Varje tips ska innehålla match, market, probability (10-95) och reason.
 - Prioritera spel som kombinerar tydlig edge med rimligt hög sannolikhet — undvik extrema longshots.
 - Prioritera marknader där din fair-sannolikhet tydligt överstiger marknadens implicita sannolikhet i listan.
-- Sannolikheten ska vara minst 58% och edge minst 4% mot marknadsodds.
+- Sannolikheten ska vara minst 55% och edge minst 3% mot marknadsodds.
 - Prioritera endast konservativa marknader: Över 1.5 mål, Under 3.5 mål, hemmaseger med tydlig edge, båda lagen gör inte mål.
 - Undvik oavgjort, bortaseger, Över 2.5 och båda lagen gör mål.
 - Returnera 0–2 tips — kvalitet före kvantitet. Skippa dagen om inget är tillräckligt starkt.
@@ -847,7 +847,7 @@ Svara exakt:
     {
       "match": "Lag A - Lag B",
       "market": "Hemmalag vinner",
-      "probability": 58,
+      "probability": 55,
       "reason": "Kort neutral förklaring"
     }
   ]
@@ -861,9 +861,10 @@ export function getValueBetsApiMessages(language: Language) {
       mustLogin: "You must be signed in.",
       authFailed: "Sign-in could not be verified.",
       eliteOnly: "Value Bets is an Elite feature.",
-      noFixtures: "No upcoming matches with odds were found today.",
+      noFixtures:
+        "No upcoming matches with odds were found in the next 24 hours.",
       noValueFound:
-        "No markets cleared the value threshold right now. Check back later today.",
+        "No markets cleared the value threshold in the next 24 hours. We scan again automatically — try again in about 45 minutes.",
       createFailed: "Value bets could not be generated.",
     };
   }
@@ -872,9 +873,9 @@ export function getValueBetsApiMessages(language: Language) {
     mustLogin: "Du måste vara inloggad.",
     authFailed: "Inloggningen kunde inte verifieras.",
     eliteOnly: "Value Bets är en Elite-funktion.",
-    noFixtures: "Inga kommande matcher med odds hittades idag.",
+    noFixtures: "Inga kommande matcher med odds hittades inom 24 timmar.",
     noValueFound:
-      "Inga marknader nådde value-tröskeln just nu. Prova igen senare idag.",
+      "Inga marknader nådde value-tröskeln inom 24 timmar. Vi söker igen automatiskt — prova igen om cirka 45 minuter.",
     createFailed: "Value bets kunde inte genereras.",
   };
 }
@@ -886,6 +887,7 @@ export type DailySlipFixtureScope =
   | "popular_today"
   | "all_today"
   | "upcoming"
+  | "value_24h"
   | "placeholder";
 
 export type SlipPickMeta = {

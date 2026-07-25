@@ -178,3 +178,98 @@ export async function resolveDailySlipFixtures(
     referenceDateKey: todayKey,
   };
 }
+
+const VALUE_BET_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function dedupeFixtures(fixtures: TodayFixture[]) {
+  const seen = new Set<number>();
+
+  return fixtures.filter((fixture) => {
+    if (seen.has(fixture.fixtureId)) {
+      return false;
+    }
+
+    seen.add(fixture.fixtureId);
+    return true;
+  });
+}
+
+function filterFixturesWithinNext24Hours(
+  fixtures: TodayFixture[],
+  nowMs: number = Date.now()
+) {
+  const cutoffMs = nowMs + VALUE_BET_WINDOW_MS;
+
+  return fixtures.filter((fixture) => {
+    const kickoffMs = new Date(fixture.date).getTime();
+
+    if (!Number.isFinite(kickoffMs)) {
+      return false;
+    }
+
+    return kickoffMs > nowMs && kickoffMs <= cutoffMs;
+  });
+}
+
+async function fetchValueBetFixturesForWindow(
+  todayKey: string,
+  allowLeague: (leagueId: number, leagueName: string) => boolean
+) {
+  const tomorrowKey = addDaysToDateKey(todayKey, 1);
+  const [todayFixtures, tomorrowFixtures] = await Promise.all([
+    fetchFixturesForDate(todayKey, allowLeague),
+    fetchFixturesForDate(tomorrowKey, allowLeague),
+  ]);
+
+  return filterFixturesWithinNext24Hours(
+    dedupeFixtures([...todayFixtures, ...tomorrowFixtures])
+  );
+}
+
+/** Value bets: scan matches kicking off within the next 24 hours. */
+export async function resolveValueBetFixtures(
+  todayKey: string = getStockholmDateKey()
+): Promise<FixturePool> {
+  const major = await fetchValueBetFixturesForWindow(todayKey, (leagueId) =>
+    isAiDailySlipLeague(leagueId)
+  );
+
+  if (major.length > 0) {
+    return {
+      fixtures: major,
+      scope: "value_24h",
+      referenceDateKey: todayKey,
+    };
+  }
+
+  const popular = await fetchValueBetFixturesForWindow(todayKey, (leagueId) =>
+    POPULAR_LEAGUE_ID_SET.has(leagueId)
+  );
+
+  if (popular.length > 0) {
+    return {
+      fixtures: popular,
+      scope: "value_24h",
+      referenceDateKey: todayKey,
+    };
+  }
+
+  const all = await fetchValueBetFixturesForWindow(
+    todayKey,
+    (_leagueId, leagueName) => isAllowedLeagueName(leagueName)
+  );
+
+  if (all.length > 0) {
+    return {
+      fixtures: all,
+      scope: "value_24h",
+      referenceDateKey: todayKey,
+    };
+  }
+
+  return {
+    fixtures: [],
+    scope: "placeholder",
+    referenceDateKey: todayKey,
+  };
+}
