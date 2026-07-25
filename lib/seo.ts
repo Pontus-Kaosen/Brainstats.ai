@@ -39,7 +39,7 @@ export function createPageMetadata({
   return {
     title,
     description: resolvedDescription,
-    keywords: resolvedKeywords,
+    keywords: [...resolvedKeywords],
     alternates: {
       canonical: url,
       languages: {
@@ -237,19 +237,17 @@ type LocalizedSeoEntry = {
   keywords?: readonly string[];
 };
 
-function isLocalizedEntry(
-  entry: (typeof pageSeo)[keyof typeof pageSeo]
-): entry is { sv: LocalizedSeoEntry; en: LocalizedSeoEntry } {
-  return "sv" in entry && "en" in entry;
-}
-
 export function getLocalizedPageSeo(
   key: "home" | "analyze" | "aiTips" | "valueBets",
   language: Language
 ): LocalizedSeoEntry {
-  const entry = pageSeo[key];
-  if (isLocalizedEntry(entry)) {
+  const entry = pageSeo[key] as
+    | LocalizedSeoEntry
+    | { sv: LocalizedSeoEntry; en: LocalizedSeoEntry };
+
+  if ("sv" in entry && "en" in entry) {
     return entry[language];
   }
-  return entry as LocalizedSeoEntry;
+
+  return entry;
 }

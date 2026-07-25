@@ -24,6 +24,7 @@ import { publishValueBetPicks, getValueBetCalibrationNote } from "@/lib/trackRec
 import {
   filterPlaceableValueBets,
   parseStoredValueBetPicks,
+  type CachedValueBetPick,
 } from "@/lib/valueBetsCache";
 import {
   isBettableOnMajorBookmakers,
@@ -53,6 +54,36 @@ export type ValueBetPick = {
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+function toPublishableValueBetPicks(
+  picks: Array<{
+    fixtureId: number;
+    match: string;
+    market: string;
+    fairProbability?: number;
+    edgePercent?: number;
+    valueTier?: number;
+    kickoffAt?: string | null;
+  }>
+) {
+  return picks.flatMap((pick) => {
+    if (pick.fairProbability == null || pick.edgePercent == null) {
+      return [];
+    }
+
+    return [
+      {
+        fixtureId: pick.fixtureId,
+        match: pick.match,
+        market: pick.market,
+        fairProbability: pick.fairProbability,
+        edgePercent: pick.edgePercent,
+        valueTier: pick.valueTier || 4,
+        kickoffAt: pick.kickoffAt,
+      },
+    ];
+  });
+}
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -234,7 +265,7 @@ async function cacheValueBets(
 }
 
 function buildValueBetsResponse(
-  picks: ValueBetPick[],
+  picks: CachedValueBetPick[],
   options: {
     fixtureScope?: string | null;
     referenceDateKey: string;
@@ -422,18 +453,7 @@ export async function GET(request: Request) {
       const placeablePicks = filterPlaceableValueBets(storedPicks);
 
       if (placeablePicks.length > 0) {
-        void publishValueBetPicks(
-          today,
-          placeablePicks.map((pick) => ({
-            fixtureId: pick.fixtureId,
-            match: pick.match,
-            market: pick.market,
-            fairProbability: pick.fairProbability,
-            edgePercent: pick.edgePercent,
-            valueTier: pick.valueTier || 4,
-            kickoffAt: pick.kickoffAt,
-          }))
-        );
+        void publishValueBetPicks(today, toPublishableValueBetPicks(placeablePicks));
       }
 
       return buildValueBetsResponse(placeablePicks, {
@@ -490,18 +510,7 @@ export async function GET(request: Request) {
       : filterPlaceableValueBets(picks);
 
     if (finalPicks.length > 0) {
-      void publishValueBetPicks(
-        today,
-        finalPicks.map((pick) => ({
-          fixtureId: pick.fixtureId,
-          match: pick.match,
-          market: pick.market,
-          fairProbability: pick.fairProbability,
-          edgePercent: pick.edgePercent,
-          valueTier: pick.valueTier || 4,
-          kickoffAt: pick.kickoffAt,
-        }))
-      );
+      void publishValueBetPicks(today, toPublishableValueBetPicks(finalPicks));
     }
 
     return buildValueBetsResponse(finalPicks, {
