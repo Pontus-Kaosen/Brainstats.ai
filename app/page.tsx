@@ -23,84 +23,85 @@ export default async function Home() {
       <div className="relative z-10">
         <Navbar />
 
-        <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-8 sm:pt-6">
-          <ValueBetsHistorySnippet
-            initialEntries={valueBetsHistory.entries.map((entry) => ({
-              id: entry.id,
-              match_label: entry.match_label,
-              market: entry.market,
-              outcome: entry.outcome,
-            }))}
-            initialStats={valueBetsHistory.stats}
-          />
-        </section>
+        <ValueBetsHistorySnippet
+          initialEntries={valueBetsHistory.entries.map((entry) => ({
+            id: entry.id,
+            match_label: entry.match_label,
+            market: entry.market,
+            outcome: entry.outcome,
+          }))}
+          initialStats={valueBetsHistory.stats}
+        />
 
-        <section className="mx-auto flex max-w-7xl flex-col items-center px-4 py-10 text-center sm:px-8 sm:py-32">
-          <p className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-xs font-semibold text-[#18ff6d] sm:text-sm">
-            {t.badge}
-          </p>
+        <div className="md:pl-48">
+        <section className="mx-auto max-w-7xl px-4 pt-2 sm:px-8 sm:pt-4">
+          <div className="flex flex-col items-center py-4 text-center sm:py-12 lg:py-16">
+              <p className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-xs font-semibold text-[#18ff6d] sm:text-sm">
+                {t.badge}
+              </p>
 
-          <BrainStatsLogo
-            variant="hero"
-            className="mt-4 drop-shadow-[0_0_40px_rgba(24,255,109,0.25)] sm:mt-8"
-          />
+              <BrainStatsLogo
+                variant="hero"
+                className="mt-4 drop-shadow-[0_0_40px_rgba(24,255,109,0.25)] sm:mt-8"
+              />
 
-          <h1 className="mt-4 max-w-5xl text-3xl font-bold leading-tight max-md:leading-snug sm:mt-10 sm:text-6xl">
-            {t.title}
-          </h1>
+              <h1 className="mt-4 max-w-5xl text-3xl font-bold leading-tight max-md:leading-snug sm:mt-10 sm:text-6xl">
+                {t.title}
+              </h1>
 
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#A9A9A9] max-md:line-clamp-4 sm:mt-8 sm:text-lg sm:leading-8">
-            {t.description}
-          </p>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-[#A9A9A9] max-md:line-clamp-4 sm:mt-8 sm:text-lg sm:leading-8">
+                {t.description}
+              </p>
 
-          <p className="mt-4 max-w-2xl rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-xs leading-6 text-[#A9A9A9] sm:text-sm">
-            {t.trustStrip}
-          </p>
+              <p className="mt-4 max-w-2xl rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-xs leading-6 text-[#A9A9A9] sm:text-sm">
+                {t.trustStrip}
+              </p>
 
-          <div className="mt-6 grid w-full max-w-3xl grid-cols-3 gap-2 sm:hidden">
-            <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
-              <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatAi}</p>
-              <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatOnline}</p>
-            </div>
-            <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
-              <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatData}</p>
-              <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatLive}</p>
-            </div>
-            <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
-              <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatRisk}</p>
-              <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatActive}</p>
-            </div>
+              <div className="mt-6 grid w-full max-w-3xl grid-cols-3 gap-2 sm:hidden">
+                <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+                  <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatAi}</p>
+                  <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatOnline}</p>
+                </div>
+                <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+                  <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatData}</p>
+                  <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatLive}</p>
+                </div>
+                <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+                  <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatRisk}</p>
+                  <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatActive}</p>
+                </div>
+              </div>
+
+              <HomeHeroCtas />
+
+              <Link
+                href="/premium"
+                className="mt-6 block w-full max-w-3xl rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-br from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 text-center transition hover:border-[#E8DCC8]/40 hover:shadow-[0_0_50px_rgba(232,220,200,.14)] sm:mt-8 sm:p-8 sm:text-left"
+              >
+                <p className="inline-flex rounded-full border border-[#E8DCC8]/30 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
+                  {t.trialBadge}
+                </p>
+
+                <h2 className="mt-4 text-2xl font-black text-white sm:text-3xl">
+                  {t.trialTitle}
+                </h2>
+
+                <p className="mt-3 text-sm leading-7 text-[#A9A9A9] sm:text-base">
+                  {t.trialText}
+                </p>
+
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#E8DCC8] sm:text-base">
+                  {t.trialCta} →
+                </span>
+              </Link>
+
+              <Link
+                href="/premium"
+                className="mt-4 text-sm font-semibold text-[#18ff6d] transition hover:underline sm:mt-5"
+              >
+                💎 {t.seePremium}
+              </Link>
           </div>
-
-          <HomeHeroCtas />
-
-          <Link
-            href="/premium"
-            className="mt-6 block w-full max-w-3xl rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-br from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 text-center transition hover:border-[#E8DCC8]/40 hover:shadow-[0_0_50px_rgba(232,220,200,.14)] sm:mt-8 sm:p-8 sm:text-left"
-          >
-            <p className="inline-flex rounded-full border border-[#E8DCC8]/30 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
-              {t.trialBadge}
-            </p>
-
-            <h2 className="mt-4 text-2xl font-black text-white sm:text-3xl">
-              {t.trialTitle}
-            </h2>
-
-            <p className="mt-3 text-sm leading-7 text-[#A9A9A9] sm:text-base">
-              {t.trialText}
-            </p>
-
-            <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#E8DCC8] sm:text-base">
-              {t.trialCta} →
-            </span>
-          </Link>
-
-          <Link
-            href="/premium"
-            className="mt-4 text-sm font-semibold text-[#18ff6d] transition hover:underline sm:mt-5"
-          >
-            💎 {t.seePremium}
-          </Link>
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8 sm:pb-16">
@@ -189,6 +190,7 @@ export default async function Home() {
             ))}
           </div>
         </section>
+        </div>
       </div>
     </main>
   );

@@ -6,6 +6,8 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
 import { localizeMarketLabel } from "@/lib/marketOdds";
 
+const LOG_SLOTS = 8;
+
 type ValueBetHistoryEntry = {
   id: string;
   match_label: string;
@@ -29,10 +31,10 @@ function outcomeLabel(
   outcome: ValueBetHistoryEntry["outcome"],
   t: ReturnType<typeof useLanguage>["t"]
 ) {
-  if (outcome === "won") return t.valueBetsHistory.won;
-  if (outcome === "lost") return t.valueBetsHistory.lost;
-  if (outcome === "void") return t.valueBetsHistory.void;
-  return t.valueBetsHistory.pending;
+  if (outcome === "won") return t.valueBetsHistory.wonShort;
+  if (outcome === "lost") return t.valueBetsHistory.lostShort;
+  if (outcome === "void") return t.valueBetsHistory.voidShort;
+  return t.valueBetsHistory.pendingShort;
 }
 
 function outcomeClass(outcome: ValueBetHistoryEntry["outcome"]) {
@@ -82,7 +84,7 @@ export default function ValueBetsHistorySnippet({
 
   const loadHistory = useCallback(async () => {
     try {
-      const response = await fetch("/api/value-bets/history?limit=8", {
+      const response = await fetch(`/api/value-bets/history?limit=${LOG_SLOTS}`, {
         cache: "no-store",
       });
       const data = await response.json();
@@ -91,7 +93,7 @@ export default function ValueBetsHistorySnippet({
         return;
       }
 
-      setEntries(mapEntries(data.entries).slice(0, 8));
+      setEntries(mapEntries(data.entries).slice(0, LOG_SLOTS));
       setStats(data.stats || null);
       setLastUpdated(new Date());
     } catch {
@@ -125,86 +127,105 @@ export default function ValueBetsHistorySnippet({
     };
   }, [loadHistory, stats?.pending]);
 
+  const slots = Array.from({ length: LOG_SLOTS }, (_, index) => entries[index] ?? null);
+
   return (
-    <section
-      className="rounded-2xl border border-[#18ff6d22] bg-black/50 px-4 py-4 backdrop-blur-sm sm:rounded-[1.5rem] sm:px-5 sm:py-5"
-      aria-live="polite"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 pb-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span aria-hidden className="text-lg">
+    <>
+      <aside
+        className="fixed left-0 top-[4.5rem] z-30 hidden h-[calc(100dvh-4.5rem)] w-48 flex-col border-r border-[#18ff6d55] bg-[#080808]/96 px-3 py-3 shadow-[4px_0_24px_rgba(0,0,0,0.45)] backdrop-blur-md sm:top-20 sm:h-[calc(100dvh-5rem)] md:flex"
+        aria-live="polite"
+      >
+        <div className="shrink-0 border-b border-white/8 pb-2">
+          <div className="flex items-center gap-1">
+            <span aria-hidden className="text-xs">
               💎
             </span>
-            <h2 className="text-sm font-black uppercase tracking-[0.16em] text-[#18ff6d] sm:text-base">
+            <h2 className="text-[10px] font-black uppercase leading-tight tracking-[0.12em] text-[#18ff6d]">
               {t.valueBetsHistory.title}
             </h2>
           </div>
-          <p className="mt-1 text-xs text-[#777]">{t.valueBetsHistory.publicNote}</p>
-        </div>
 
-        <div className="text-right">
           {stats && stats.hitRate !== null && stats.resolved > 0 ? (
-            <p className="text-xs text-[#A9A9A9] sm:text-sm">
-              {t.valueBetsHistory.hitRateLabel}:{" "}
-              <span className="font-bold text-[#18ff6d]">
-                {Math.round(stats.hitRate)}%
-              </span>
-              <span className="ml-2 text-[#777]">· {t.valueBetsHistory.hitRateTarget}</span>
-              <span className="hidden sm:inline">
-                {" "}
-                (
-                {formatTranslation(t.valueBetsHistory.hitRateDetail, {
-                  hits: stats.hits,
-                  resolved: stats.resolved,
-                })}
-                )
-              </span>
-            </p>
-          ) : (
-            <p className="text-xs text-[#777] sm:text-sm">
-              {t.valueBetsHistory.hitRateTarget}
-            </p>
-          )}
-          {lastUpdated ? (
-            <p className="mt-1 text-[10px] text-[#555]">
-              {t.valueBetsHistory.updated}
+            <p className="mt-1 text-[9px] leading-snug text-[#A9A9A9]">
+              {Math.round(stats.hitRate)}% ·{" "}
+              {formatTranslation(t.valueBetsHistory.hitRateDetail, {
+                hits: stats.hits,
+                resolved: stats.resolved,
+              })}
             </p>
           ) : null}
-        </div>
-      </div>
 
-      {entries.length === 0 ? (
-        <p className="mt-4 text-sm leading-7 text-[#A9A9A9]">
-          {t.valueBetsHistory.empty}
-        </p>
-      ) : (
-        <ul className="mt-3 space-y-2">
-          {entries.map((entry) => (
+          <p className="mt-0.5 text-[9px] leading-snug text-[#666]">
+            {t.valueBetsHistory.hitRateTarget}
+            {lastUpdated ? ` · ${t.valueBetsHistory.updated}` : null}
+          </p>
+        </div>
+
+        <ol className="mt-2 flex min-h-0 flex-1 flex-col">
+          {slots.map((entry, index) => (
             <li
-              key={entry.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-black/30 px-3 py-2.5 sm:px-4"
+              key={entry?.id || `slot-${index}`}
+              className="flex min-h-0 flex-1 flex-col justify-center border-b border-white/6 py-1 last:border-b-0"
             >
-              <p className="min-w-0 truncate text-sm text-[#E8E8E8]">
-                {entry.match_label} ·{" "}
-                {localizeMarketLabel(entry.market, language)}
-              </p>
-              <span
-                className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${outcomeClass(entry.outcome)}`}
-              >
-                {outcomeLabel(entry.outcome, t)}
-              </span>
+              {entry ? (
+                <>
+                  <p className="line-clamp-2 text-[10px] font-medium leading-[1.25] text-[#E8E8E8]">
+                    {entry.match_label}
+                  </p>
+                  <div className="mt-0.5 flex items-center justify-between gap-1">
+                    <p className="min-w-0 truncate text-[9px] leading-4 text-[#777]">
+                      {localizeMarketLabel(entry.market, language)}
+                    </p>
+                    <span
+                      className={`shrink-0 rounded-full border px-1.5 py-px text-[8px] font-bold uppercase tracking-[0.06em] ${outcomeClass(entry.outcome)}`}
+                    >
+                      {outcomeLabel(entry.outcome, t)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <p className="text-[9px] leading-4 text-[#444]">—</p>
+              )}
             </li>
           ))}
-        </ul>
-      )}
+        </ol>
 
-      <Link
-        href="/premium"
-        className="mt-3 inline-flex text-xs font-bold text-[#72d5ff] transition hover:text-[#9de5ff] sm:text-sm"
+        <Link
+          href="/premium"
+          className="mt-2 shrink-0 text-[9px] font-bold leading-4 text-[#72d5ff] transition hover:text-[#9de5ff]"
+        >
+          {t.valueBetsHistory.ctaShort} →
+        </Link>
+      </aside>
+
+      <section
+        className="mx-4 mt-3 rounded-xl border border-[#18ff6d22] bg-black/55 px-3 py-3 md:hidden"
+        aria-live="polite"
       >
-        {t.valueBetsHistory.cta} →
-      </Link>
-    </section>
+        <div className="flex items-center justify-between gap-2 border-b border-white/8 pb-2">
+          <h2 className="text-[11px] font-black uppercase tracking-[0.12em] text-[#18ff6d]">
+            💎 {t.valueBetsHistory.title}
+          </h2>
+          <p className="text-[10px] text-[#666]">{t.valueBetsHistory.hitRateTarget}</p>
+        </div>
+
+        {entries.length === 0 ? (
+          <p className="mt-2 text-[11px] text-[#888]">{t.valueBetsHistory.emptySidebar}</p>
+        ) : (
+          <ul className="mt-2 space-y-1.5">
+            {entries.slice(0, 4).map((entry) => (
+              <li key={entry.id} className="flex items-center justify-between gap-2 text-[11px]">
+                <span className="min-w-0 truncate text-[#E8E8E8]">{entry.match_label}</span>
+                <span
+                  className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[8px] font-bold uppercase ${outcomeClass(entry.outcome)}`}
+                >
+                  {outcomeLabel(entry.outcome, t)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </>
   );
 }
