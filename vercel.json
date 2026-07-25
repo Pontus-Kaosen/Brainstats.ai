@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/track-record",
-      "schedule": "*/15 * * * *"
-    }
-  ]
-}
