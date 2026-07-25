@@ -138,9 +138,9 @@ export default function ValueBetsHistorySnippet({
           <p className="mt-2 text-xs leading-5 text-[#777]">{t.valueBetsHistory.publicNote}</p>
         </div>
 
-        <div className="text-right text-xs text-[#666]">
-          {stats && stats.hitRate !== null && stats.resolved > 0 ? (
-            <p className="text-[#A9A9A9]">
+        {stats && stats.hitRate !== null && stats.resolved > 0 ? (
+          <div className="text-right text-xs text-[#A9A9A9]">
+            <p>
               <span className="font-bold text-[#18ff6d]">{Math.round(stats.hitRate)}%</span>
               {" · "}
               {formatTranslation(t.valueBetsHistory.hitRateDetail, {
@@ -148,9 +148,8 @@ export default function ValueBetsHistorySnippet({
                 resolved: stats.resolved,
               })}
             </p>
-          ) : null}
-          <p className="mt-1">{t.valueBetsHistory.hitRateTarget}</p>
-        </div>
+          </div>
+        ) : null}
       </div>
 
       {entries.length === 0 ? (
