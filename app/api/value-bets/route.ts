@@ -20,7 +20,7 @@ import {
 } from "@/lib/marketOdds";
 import { getStockholmDateKey } from "@/lib/stockholmDate";
 import { rankValueBetPicks, passesValueBetSafetyGate } from "@/lib/valueBetGrades";
-import { publishValueBetPicks } from "@/lib/trackRecordStore";
+import { publishValueBetPicks, getValueBetCalibrationNote } from "@/lib/trackRecordStore";
 
 export const maxDuration = 60;
 
@@ -56,10 +56,10 @@ const supabaseAdmin = createClient(
   }
 );
 
-const MIN_EDGE_PERCENT = 3;
-const MIN_FAIR_PROBABILITY = 55;
+const MIN_EDGE_PERCENT = 4;
+const MIN_FAIR_PROBABILITY = 58;
 const MAX_FIXTURES_WITH_ODDS = 10;
-const MAX_VALUE_PICKS = 4;
+const MAX_VALUE_PICKS = 2;
 const ODDS_FETCH_CONCURRENCY = 6;
 const OPENAI_ATTEMPTS = 2;
 
@@ -161,7 +161,8 @@ async function buildFixtureOddsPool(
 
 async function requestValueBetPicks(
   language: ReturnType<typeof parseRequestLanguage>,
-  fixtureOddsPool: Awaited<ReturnType<typeof buildFixtureOddsPool>>
+  fixtureOddsPool: Awaited<ReturnType<typeof buildFixtureOddsPool>>,
+  calibrationNote: string
 ) {
   let lastError: unknown = null;
 
@@ -178,7 +179,7 @@ async function requestValueBetPicks(
           },
           {
             role: "user",
-            content: buildValueBetsUserPrompt(language, fixtureOddsPool),
+            content: buildValueBetsUserPrompt(language, fixtureOddsPool, calibrationNote),
           },
         ],
       });
@@ -368,27 +369,29 @@ export async function GET(request: Request) {
         MAX_VALUE_PICKS
       );
 
-      void publishValueBetPicks(
-        today,
-        picks.map((pick) => ({
-          fixtureId: pick.fixtureId,
-          match: pick.match,
-          market: pick.market,
-          fairProbability: pick.fairProbability,
-          edgePercent: pick.edgePercent,
-          valueTier: pick.valueTier || 3,
-          kickoffAt: pick.kickoffAt,
-        }))
-      );
+      if (picks.length > 0) {
+        void publishValueBetPicks(
+          today,
+          picks.map((pick) => ({
+            fixtureId: pick.fixtureId,
+            match: pick.match,
+            market: pick.market,
+            fairProbability: pick.fairProbability,
+            edgePercent: pick.edgePercent,
+            valueTier: pick.valueTier || 4,
+            kickoffAt: pick.kickoffAt,
+          }))
+        );
 
-      return NextResponse.json({
-        success: true,
-        plan: "elite",
-        picks,
-        fixtureScope: cached.fixture_scope,
-        referenceDateKey: cached.reference_date_key || today,
-        cached: true,
-      });
+        return NextResponse.json({
+          success: true,
+          plan: "elite",
+          picks,
+          fixtureScope: cached.fixture_scope,
+          referenceDateKey: cached.reference_date_key || today,
+          cached: true,
+        });
+      }
     }
 
     const fixturePool = await resolveDailySlipFixtures(today);
@@ -418,7 +421,8 @@ export async function GET(request: Request) {
       });
     }
 
-    const parsed = await requestValueBetPicks(language, fixtureOddsPool);
+    const calibrationNote = await getValueBetCalibrationNote(language);
+    const parsed = await requestValueBetPicks(language, fixtureOddsPool, calibrationNote);
     const rawPicks = Array.isArray(parsed?.picks) ? parsed.picks : [];
     const picks = enrichValuePicks(rawPicks, fixtures, fixtureOddsPool, language);
 
@@ -433,7 +437,7 @@ export async function GET(request: Request) {
           market: pick.market,
           fairProbability: pick.fairProbability,
           edgePercent: pick.edgePercent,
-          valueTier: pick.valueTier || 3,
+          valueTier: pick.valueTier || 4,
           kickoffAt: pick.kickoffAt,
         }))
       );

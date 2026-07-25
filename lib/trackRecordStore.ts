@@ -386,4 +386,44 @@ export async function getTrackRecordCalibrationNote(language: "sv" | "en") {
   return buildCalibrationPromptNote(stats, language);
 }
 
+export function buildValueBetCalibrationPromptNote(
+  stats: ReturnType<typeof computeValueBetStats>,
+  language: "sv" | "en"
+) {
+  if (!stats.hitRate || stats.resolved < 5) {
+    return language === "en"
+      ? "Public value bet history is still small — stay very conservative: only 58%+ probability, 4%+ edge, and the safest markets. Return 0–2 picks rather than weak ones."
+      : "Public value bet-historik är ännu liten — var extra konservativ: endast 58%+ sannolikhet, 4%+ edge och säkraste marknaderna. Returnera 0–2 tips hellre än svaga.";
+  }
+
+  const caution =
+    stats.hitRate < 70
+      ? language === "en"
+        ? " Recent hit rate is below 70% — tighten selection and skip marginal picks."
+        : " Senaste träffen är under 70% — skärp urvalet och skippa marginella tips."
+      : "";
+
+  if (language === "en") {
+    return (
+      `Public value bet track record: ${stats.hitRate}% hit on ${stats.hits}/${stats.resolved} resolved` +
+      `${stats.pending > 0 ? ` (${stats.pending} pending)` : ""}.` +
+      `${caution} Prefer high-probability conservative markets with clear edge.`
+    );
+  }
+
+  return (
+    `Publik value bet-logg: ${stats.hitRate}% träff på ${stats.hits}/${stats.resolved} avgjorda` +
+    `${stats.pending > 0 ? ` (${stats.pending} väntar)` : ""}.` +
+    `${caution} Prioritera konservativa marknader med hög sannolikhet och tydlig edge.`
+  );
+}
+
+export async function getValueBetCalibrationNote(language: "sv" | "en") {
+  await resolvePendingTrackPicks(30);
+  const rows = await fetchPublicValueBetPicks(80);
+  const stats = computeValueBetStats(rows);
+
+  return buildValueBetCalibrationPromptNote(stats, language);
+}
+
 export { brainScoreToSafetyTier };

@@ -5,8 +5,39 @@ import {
   resolvePendingTrackPicks,
 } from "@/lib/trackRecordStore";
 
-export async function GET() {
-  await resolvePendingTrackPicks(20);
+function readCronToken(request: Request) {
+  const authHeader = request.headers.get("authorization");
+
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.slice(7);
+  }
+
+  return request.headers.get("x-cron-secret");
+}
+
+function isAuthorizedCron(request: Request) {
+  const secret = process.env.CRON_SECRET;
+
+  if (!secret) {
+    return false;
+  }
+
+  return readCronToken(request) === secret;
+}
+
+export async function GET(request: Request) {
+  const cron = isAuthorizedCron(request);
+  const resolveLimit = cron ? 50 : 20;
+  const result = await resolvePendingTrackPicks(resolveLimit);
+
+  if (cron) {
+    return NextResponse.json({
+      success: true,
+      cron: true,
+      ...result,
+    });
+  }
+
   const rows = await fetchPublicTrackPicks(40);
   const stats = computeTrackRecordStats(rows);
 
@@ -27,10 +58,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const authHeader = req.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : req.headers.get("x-cron-secret");
+  const token = readCronToken(req);
 
   if (token !== secret) {
     return NextResponse.json(
@@ -39,7 +67,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = await resolvePendingTrackPicks(40);
+  const result = await resolvePendingTrackPicks(50);
   const rows = await fetchPublicTrackPicks(40);
   const stats = computeTrackRecordStats(rows);
 

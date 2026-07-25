@@ -108,14 +108,14 @@ export function passesValueBetSafetyGate(
     return false;
   }
 
-  if (fairProbability < 55 || edgePercent < 3) {
+  if (fairProbability < 58 || edgePercent < 4) {
     return false;
   }
 
   if (
     (/home win|hemmalag vinner/i.test(market) ||
       /both teams not to score|båda lagen gör inte mål/i.test(market)) &&
-    fairProbability < 58
+    fairProbability < 60
   ) {
     return false;
   }
@@ -146,7 +146,7 @@ export type RankedValueBetPick = {
 
 export function rankValueBetPicks<T extends RankedValueBetPick>(
   picks: T[],
-  maxPicks = 4
+  maxPicks = 2
 ): Array<T & { valueTier: ValueBetTier; valueScore: number; valueRank: number }> {
   const graded = picks
     .filter(
@@ -175,13 +175,7 @@ export function rankValueBetPicks<T extends RankedValueBetPick>(
       };
     });
 
-  let filtered = graded.filter((pick) => pick.valueTier >= 4);
-
-  if (filtered.length === 0) {
-    filtered = graded.filter(
-      (pick) => pick.valueTier >= 3 && pick.fairProbability >= 56
-    );
-  }
+  const filtered = graded.filter((pick) => pick.valueTier >= 4);
 
   return filtered
     .sort((a, b) => {

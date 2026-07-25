@@ -779,21 +779,29 @@ export function buildValueBetsSystemPrompt(language: Language) {
 
 export function buildValueBetsUserPrompt(
   language: Language,
-  fixturesWithOdds: unknown
+  fixturesWithOdds: unknown,
+  calibrationNote?: string
 ) {
+  const calibrationBlock =
+    calibrationNote && calibrationNote.trim()
+      ? language === "en"
+        ? `\nHistorical calibration:\n${calibrationNote.trim()}\n`
+        : `\nHistorisk kalibrering:\n${calibrationNote.trim()}\n`
+      : "";
+
   if (language === "en") {
     return `
-Find up to 4 value bets from the list below.
-
+Find up to 2 value bets from the list below.
+${calibrationBlock}
 Rules:
 - Use only matches from the list.
 - Each pick must include match, market, probability (10-95), and reason.
-- Target a conservative profile aimed at roughly 70–90% historical hit rate — never call this guaranteed.
+- Prefer picks that combine meaningful edge with reasonably high probability — avoid extreme longshots.
 - Prefer markets where your fair probability is meaningfully above the market implied probability shown.
-- Probability should usually be at least 55% and preferably 58%+.
+- Probability must be at least 58% and edge should be at least 4% versus market odds.
 - Prefer conservative markets only: Over 1.5 goals, Under 3.5 goals, home win with clear edge, both teams not to score.
-- Avoid draw, away win, Over 2.5 and both teams to score unless probability is exceptionally high (not recommended).
-- Return fewer picks rather than weak picks — quality over quantity.
+- Avoid draw, away win, Over 2.5 and both teams to score.
+- Return 0–2 picks — quality over quantity. Skip the day if nothing is strong enough.
 - probability is your AI fair probability in percent (integer).
 - Do not describe any pick as safe or guaranteed.
 
@@ -821,17 +829,17 @@ Respond exactly:
   }
 
   return `
-Hitta upp till 4 value bets från listan nedan.
-
+Hitta upp till 2 value bets från listan nedan.
+${calibrationBlock}
 Regler:
 - Använd endast matcher i listan.
 - Varje tips ska innehålla match, market, probability (10-95) och reason.
-- Sikta på en konservativ profil med mål runt 70–90% träffsäkerhet historiskt — kalla aldrig detta garanterat.
+- Prioritera spel som kombinerar tydlig edge med rimligt hög sannolikhet — undvik extrema longshots.
 - Prioritera marknader där din fair-sannolikhet tydligt överstiger marknadens implicita sannolikhet i listan.
-- Sannolikheten bör oftast vara minst 55% och hellre 58%+.
+- Sannolikheten ska vara minst 58% och edge minst 4% mot marknadsodds.
 - Prioritera endast konservativa marknader: Över 1.5 mål, Under 3.5 mål, hemmaseger med tydlig edge, båda lagen gör inte mål.
-- Undvik oavgjort, bortaseger, Över 2.5 och båda lagen gör mål om det inte är exceptionellt (rekommenderas inte).
-- Returnera färre tips hellre än svaga tips — kvalitet före kvantitet.
+- Undvik oavgjort, bortaseger, Över 2.5 och båda lagen gör mål.
+- Returnera 0–2 tips — kvalitet före kvantitet. Skippa dagen om inget är tillräckligt starkt.
 - probability är din AI fair-sannolikhet i procent (heltal).
 - Beskriv inget spel som säkert eller garanterat.
 
