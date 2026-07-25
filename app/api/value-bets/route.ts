@@ -22,6 +22,10 @@ import { getStockholmDateKey } from "@/lib/stockholmDate";
 import { rankValueBetPicks, passesValueBetSafetyGate } from "@/lib/valueBetGrades";
 import { publishValueBetPicks, getValueBetCalibrationNote } from "@/lib/trackRecordStore";
 import {
+  filterPlaceableValueBets,
+  parseStoredValueBetPicks,
+} from "@/lib/valueBetsCache";
+import {
   isBettableOnMajorBookmakers,
   normalizeToBettableMarket,
   toDisplayMarketLabel,
@@ -221,12 +225,48 @@ async function cacheValueBets(
       fixture_scope: fixtureScope,
       reference_date_key: referenceDateKey,
     },
-    { onConflict: "valid_date" }
+    { onConflict: "valid_date", ignoreDuplicates: true }
   );
 
   if (error && !isMissingTableError(error)) {
     console.error("Value bets cache write failed:", error);
   }
+}
+
+function buildValueBetsResponse(
+  picks: ValueBetPick[],
+  options: {
+    fixtureScope?: string | null;
+    referenceDateKey: string;
+    cached: boolean;
+    locked: boolean;
+    message?: string;
+  }
+) {
+  return NextResponse.json({
+    success: true,
+    plan: "elite" as const,
+    picks,
+    fixtureScope: options.fixtureScope,
+    referenceDateKey: options.referenceDateKey,
+    cached: options.cached,
+    locked: options.locked,
+    message: options.message,
+  });
+}
+
+async function readDailyValueBetsCache(today: string) {
+  const { data, error } = await supabaseAdmin
+    .from("value_bets")
+    .select("picks, fixture_scope, reference_date_key")
+    .eq("valid_date", today)
+    .maybeSingle();
+
+  if (error && !isMissingTableError(error)) {
+    throw error;
+  }
+
+  return data;
 }
 
 function enrichValuePicks(
@@ -375,26 +415,16 @@ export async function GET(request: Request) {
     }
 
     const today = getStockholmDateKey();
-    const { data: cached, error: cachedError } = await supabaseAdmin
-      .from("value_bets")
-      .select("picks, fixture_scope, reference_date_key")
-      .eq("valid_date", today)
-      .maybeSingle();
+    const cached = await readDailyValueBetsCache(today);
 
-    if (cachedError && !isMissingTableError(cachedError)) {
-      throw cachedError;
-    }
+    if (cached) {
+      const storedPicks = parseStoredValueBetPicks(cached.picks);
+      const placeablePicks = filterPlaceableValueBets(storedPicks);
 
-    if (Array.isArray(cached?.picks) && cached.picks.length > 0) {
-      const picks = rankValueBetPicks(
-        cached.picks as ValueBetPick[],
-        MAX_VALUE_PICKS
-      );
-
-      if (picks.length > 0) {
+      if (placeablePicks.length > 0) {
         void publishValueBetPicks(
           today,
-          picks.map((pick) => ({
+          placeablePicks.map((pick) => ({
             fixtureId: pick.fixtureId,
             match: pick.match,
             market: pick.market,
@@ -404,16 +434,20 @@ export async function GET(request: Request) {
             kickoffAt: pick.kickoffAt,
           }))
         );
-
-        return NextResponse.json({
-          success: true,
-          plan: "elite",
-          picks,
-          fixtureScope: cached.fixture_scope,
-          referenceDateKey: cached.reference_date_key || today,
-          cached: true,
-        });
       }
+
+      return buildValueBetsResponse(placeablePicks, {
+        fixtureScope: cached.fixture_scope,
+        referenceDateKey: cached.reference_date_key || today,
+        cached: true,
+        locked: true,
+        message:
+          placeablePicks.length === 0
+            ? language === "en"
+              ? "Today's value bets have started or are no longer placeable."
+              : "Dagens value bets har redan startat eller går inte längre att spela."
+            : undefined,
+      });
     }
 
     const fixturePool = await resolveDailySlipFixtures(today);
@@ -450,10 +484,15 @@ export async function GET(request: Request) {
 
     await cacheValueBets(today, picks, fixtureScope, referenceDateKey);
 
-    if (picks.length > 0) {
+    const lockedCache = await readDailyValueBetsCache(today);
+    const finalPicks = lockedCache
+      ? filterPlaceableValueBets(parseStoredValueBetPicks(lockedCache.picks))
+      : filterPlaceableValueBets(picks);
+
+    if (finalPicks.length > 0) {
       void publishValueBetPicks(
         today,
-        picks.map((pick) => ({
+        finalPicks.map((pick) => ({
           fixtureId: pick.fixtureId,
           match: pick.match,
           market: pick.market,
@@ -465,14 +504,13 @@ export async function GET(request: Request) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      plan: "elite",
-      picks,
-      fixtureScope,
-      referenceDateKey,
-      cached: false,
-      message: picks.length === 0 ? messages.noValueFound : undefined,
+    return buildValueBetsResponse(finalPicks, {
+      fixtureScope: lockedCache?.fixture_scope ?? fixtureScope,
+      referenceDateKey: lockedCache?.reference_date_key || referenceDateKey,
+      cached: Boolean(lockedCache),
+      locked: Boolean(lockedCache),
+      message:
+        finalPicks.length === 0 ? messages.noValueFound : undefined,
     });
   } catch (error) {
     console.error("Value bets error:", error);

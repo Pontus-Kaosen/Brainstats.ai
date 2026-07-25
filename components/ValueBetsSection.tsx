@@ -34,6 +34,7 @@ type ValueBetsResponse = {
   referenceDateKey?: string;
   requiresElite?: boolean;
   message?: string;
+  locked?: boolean;
   error?: string;
 };
 
@@ -49,6 +50,7 @@ export default function ValueBetsSection({
   const [requiresElite, setRequiresElite] = useState(false);
   const [emptyMessage, setEmptyMessage] = useState("");
   const [referenceDateKey, setReferenceDateKey] = useState("");
+  const [locked, setLocked] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,6 +60,7 @@ export default function ValueBetsSection({
       setError("");
       setRequiresElite(false);
       setEmptyMessage("");
+      setLocked(false);
 
       try {
         const {
@@ -93,6 +96,7 @@ export default function ValueBetsSection({
         setPicks(data.picks || []);
         setEmptyMessage(data.message || "");
         setReferenceDateKey(data.referenceDateKey || "");
+        setLocked(Boolean(data.locked));
       } catch (loadError) {
         console.error("Value bets error:", loadError);
 
@@ -112,8 +116,13 @@ export default function ValueBetsSection({
 
     loadValueBets();
 
+    const intervalId = window.setInterval(() => {
+      void loadValueBets();
+    }, 60_000);
+
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
     };
   }, [language, t.valueBets.errorDefault, t.valueBets.mustLogin]);
 
@@ -188,6 +197,10 @@ export default function ValueBetsSection({
             {t.valueBets.retry}
           </button>
         </div>
+      ) : null}
+
+      {!loading && !error && !requiresElite && locked && picks.length > 0 ? (
+        <p className="mt-4 text-xs text-[#777]">{t.valueBets.lockedHint}</p>
       ) : null}
 
       {!loading && !error && !requiresElite && picks.length === 0 ? (
