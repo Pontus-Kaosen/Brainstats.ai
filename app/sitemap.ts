@@ -7,35 +7,43 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl();
   const now = new Date();
 
-  const staticRoutes: MetadataRoute.Sitemap = [
+  const highPriorityRoutes = [
     "",
-    "/builder",
     "/analyze",
+    "/value-bets",
+    "/ai-tips",
+    "/ai-analys",
+    "/football-analysis",
+    "/upload-bet-slip",
+  ];
+
+  const mediumPriorityRoutes = [
+    "/builder",
     "/premium",
     "/track-record",
     "/standings",
-    "/football-analysis",
-    "/upload-bet-slip",
     "/legal",
-  ].map((path) => ({
-    url: `${siteUrl}${path}`,
-    lastModified: now,
-    changeFrequency: path === "" ? "weekly" : "monthly",
-    priority:
-      path === ""
-        ? 1
-        : path === "/builder" ||
-            path === "/analyze" ||
-            path === "/football-analysis" ||
-            path === "/upload-bet-slip"
-          ? 0.9
-          : 0.7,
-  }));
+  ];
+
+  const staticRoutes: MetadataRoute.Sitemap = [
+    ...highPriorityRoutes.map((path) => ({
+      url: `${siteUrl}${path}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: path === "" ? 1 : 0.9,
+    })),
+    ...mediumPriorityRoutes.map((path) => ({
+      url: `${siteUrl}${path}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+  ];
 
   const legalRoutes: MetadataRoute.Sitemap = legalSlugs.map((slug) => ({
     url: `${siteUrl}/legal/${slug}`,
     lastModified: now,
-    changeFrequency: "yearly",
+    changeFrequency: "yearly" as const,
     priority: 0.4,
   }));
 

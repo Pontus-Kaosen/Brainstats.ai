@@ -10,6 +10,19 @@ import HomeHeroCtas from "@/components/HomeHeroCtas";
 import { getHomeContent } from "@/lib/homeContent";
 import { getValueBetsHistoryData } from "@/lib/valueBetsHistoryData";
 import { detectLanguage } from "@/lib/locale.server";
+import { createPageMetadata, getLocalizedPageSeo } from "@/lib/seo";
+
+export async function generateMetadata() {
+  const language = await detectLanguage();
+  const seo = getLocalizedPageSeo("home", language);
+
+  return createPageMetadata({
+    title: seo.title,
+    description: seo.description,
+    path: seo.path,
+    language,
+  });
+}
 
 export default async function Home() {
   const language = await detectLanguage();

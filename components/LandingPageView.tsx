@@ -4,11 +4,31 @@ import FootballBackground from "@/components/FootballBackground";
 import HomeCtaLink from "@/components/HomeCtaLink";
 import type { LandingPageContent } from "@/lib/landingPages";
 
+const accentStyles = {
+  green: {
+    badge: "border-[#18ff6d33] bg-[#18ff6d]/10 text-[#18ff6d]",
+    check: "text-[#18ff6d]",
+    link: "text-[#18ff6d]",
+  },
+  blue: {
+    badge: "border-[#72d5ff33] bg-[#2fbfff]/10 text-[#72d5ff]",
+    check: "text-[#72d5ff]",
+    link: "text-[#72d5ff]",
+  },
+  gold: {
+    badge: "border-[#E8DCC833] bg-[#E8DCC8]/10 text-[#E8DCC8]",
+    check: "text-[#E8DCC8]",
+    link: "text-[#E8DCC8]",
+  },
+} as const;
+
 export default function LandingPageView({
   content,
 }: {
   content: LandingPageContent;
 }) {
+  const accent = accentStyles[content.accent ?? "green"];
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
       <FootballBackground />
@@ -17,7 +37,9 @@ export default function LandingPageView({
         <Navbar />
 
         <section className="mx-auto max-w-4xl px-4 py-12 text-center sm:px-8 sm:py-24">
-          <p className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
+          <p
+            className={`inline-flex rounded-full border px-4 py-2 text-sm font-semibold ${accent.badge}`}
+          >
             {content.badge}
           </p>
 
@@ -32,7 +54,7 @@ export default function LandingPageView({
           <ul className="mx-auto mt-8 max-w-xl space-y-3 text-left text-sm text-[#D8D8D8]">
             {content.bullets.map((bullet) => (
               <li key={bullet} className="flex gap-3">
-                <span className="text-[#18ff6d]">✓</span>
+                <span className={accent.check}>✓</span>
                 {bullet}
               </li>
             ))}
@@ -49,7 +71,7 @@ export default function LandingPageView({
 
           <Link
             href="/track-record"
-            className="mt-8 inline-block text-sm font-semibold text-[#18ff6d] hover:underline"
+            className={`mt-8 inline-block text-sm font-semibold hover:underline ${accent.link}`}
           >
             Analysis vs outcome →
           </Link>

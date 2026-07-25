@@ -1,5 +1,10 @@
 import { companyInfo } from "@/lib/companyInfo";
-import { getSiteUrl, siteDescriptionSv, siteName } from "@/lib/site";
+import {
+  getSiteUrl,
+  siteDescriptionEn,
+  siteDescriptionSv,
+  siteName,
+} from "@/lib/site";
 
 export default function StructuredData() {
   const siteUrl = getSiteUrl();
@@ -23,7 +28,7 @@ export default function StructuredData() {
     "@type": "WebSite",
     name: siteName,
     url: siteUrl,
-    description: siteDescriptionSv,
+    description: siteDescriptionEn,
     inLanguage: ["sv-SE", "en"],
     publisher: {
       "@type": "Organization",
@@ -50,6 +55,30 @@ export default function StructuredData() {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
+      {
+        "@type": "Question",
+        name: "Vad är value bets inom fotboll?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Value bets är spel där oddsen hos spelbolaget kan vara högre än den sannolikhet BrainStats AI bedömer. BrainStats Elite visar dagliga value bets för fotboll med transparent logg.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Kan jag få AI-analys av mina fotbollsbets?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Ja. Klistra in din spelidé, ladda upp en kupong eller bygg i Brain Builder. BrainStats ger AI-analys med BrainScore, form, skador och risk — 3 gratis analyser per dag.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Erbjuder BrainStats AI-speltips för fotboll?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Ja. Pro och Elite inkluderar dagliga AI-kuponger och speltips baserat på statistik och odds. Elite inkluderar även value bets.",
+        },
+      },
       {
         "@type": "Question",
         name: "Is BrainStats a bookmaker?",

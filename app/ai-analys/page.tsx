@@ -1,28 +1,24 @@
 import LandingPageView from "@/components/LandingPageView";
 import { getLandingPage } from "@/lib/landingPages";
 import { detectLanguage } from "@/lib/locale.server";
-import { createPageMetadata } from "@/lib/seo";
+import { createPageMetadata, pageSeo } from "@/lib/seo";
 
 export async function generateMetadata() {
   const language = await detectLanguage();
-  const content = getLandingPage("football-analysis", language);
+  const content = getLandingPage("ai-analys", language);
 
   return createPageMetadata({
     title: content.seoTitle,
     description: content.seoDescription,
-    path: "/football-analysis",
-    keywords: [
-      "ai fotbollsanalys",
-      "fotbollsanalys ai",
-      "ai analys fotboll",
-    ],
+    path: pageSeo.aiAnalys.path,
+    keywords: pageSeo.aiAnalys.keywords,
     language,
   });
 }
 
-export default async function FootballAnalysisPage() {
+export default async function AiAnalysPage() {
   const language = await detectLanguage();
-  const content = getLandingPage("football-analysis", language);
+  const content = getLandingPage("ai-analys", language);
 
   return <LandingPageView content={content} />;
 }

@@ -1,8 +1,20 @@
 import type { Metadata } from "next";
 
-import { createPageMetadata, pageSeo } from "@/lib/seo";
+import { createPageMetadata, getLocalizedPageSeo } from "@/lib/seo";
+import { detectLanguage } from "@/lib/locale.server";
 
-export const metadata: Metadata = createPageMetadata(pageSeo.analyze);
+export async function generateMetadata(): Promise<Metadata> {
+  const language = await detectLanguage();
+  const seo = getLocalizedPageSeo("analyze", language);
+
+  return createPageMetadata({
+    title: seo.title,
+    description: seo.description,
+    path: seo.path,
+    keywords: seo.keywords,
+    language,
+  });
+}
 
 export default function AnalyzeLayout({
   children,
