@@ -392,8 +392,8 @@ export function buildValueBetCalibrationPromptNote(
 ) {
   if (!stats.hitRate || stats.resolved < 5) {
     return language === "en"
-      ? "Public value bet history is still small — stay very conservative: only 58%+ probability, 4%+ edge, and the safest markets. Return 0–2 picks rather than weak ones."
-      : "Public value bet-historik är ännu liten — var extra konservativ: endast 58%+ sannolikhet, 4%+ edge och säkraste marknaderna. Returnera 0–2 tips hellre än svaga.";
+      ? "Public value bet history is still small — stay conservative: 55%+ probability, 3%+ edge, standard markets only. Return 0–2 picks rather than weak ones."
+      : "Public value bet-historik är ännu liten — var konservativ: 55%+ sannolikhet, 3%+ edge, standardmarknader. Returnera 0–2 tips hellre än svaga.";
   }
 
   const caution =
