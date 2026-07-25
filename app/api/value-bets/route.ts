@@ -55,6 +55,28 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+function sanitizeValueBetsError(
+  error: unknown,
+  language: ReturnType<typeof parseRequestLanguage>,
+  fallback: string
+) {
+  const message = error instanceof Error ? error.message : "";
+
+  if (/429|rate.?limit|tokens per min|too large/i.test(message)) {
+    return language === "en"
+      ? "Value bets are temporarily unavailable due to high demand. Please try again in a minute."
+      : "Value bets är tillfälligt otillgängliga på grund av hög belastning. Försök igen om en minut.";
+  }
+
+  if (/timeout|timed out|ETIMEDOUT/i.test(message)) {
+    return language === "en"
+      ? "Value bets took too long to generate. Please try again."
+      : "Value bets tog för lång tid att generera. Försök igen.";
+  }
+
+  return message || fallback;
+}
+
 function toPublishableValueBetPicks(
   picks: Array<{
     fixtureId: number;
@@ -98,7 +120,7 @@ const supabaseAdmin = createClient(
 
 const MIN_EDGE_PERCENT = 4;
 const MIN_FAIR_PROBABILITY = 58;
-const MAX_FIXTURES_WITH_ODDS = 10;
+const MAX_FIXTURES_WITH_ODDS = 6;
 const MAX_VALUE_PICKS = 2;
 const ODDS_FETCH_CONCURRENCY = 6;
 const OPENAI_ATTEMPTS = 2;
@@ -200,6 +222,19 @@ async function buildFixtureOddsPool(
   );
 }
 
+/** Compact payload for OpenAI — never include raw oddsResponse (millions of tokens). */
+function slimFixtureOddsPoolForPrompt(
+  pool: Awaited<ReturnType<typeof buildFixtureOddsPool>>
+) {
+  return pool.map(({ fixtureId, match, league, kickoffAt, markets }) => ({
+    fixtureId,
+    match,
+    league,
+    kickoffAt,
+    markets,
+  }));
+}
+
 async function requestValueBetPicks(
   language: ReturnType<typeof parseRequestLanguage>,
   fixtureOddsPool: Awaited<ReturnType<typeof buildFixtureOddsPool>>,
@@ -220,7 +255,11 @@ async function requestValueBetPicks(
           },
           {
             role: "user",
-            content: buildValueBetsUserPrompt(language, fixtureOddsPool, calibrationNote),
+            content: buildValueBetsUserPrompt(
+              language,
+              slimFixtureOddsPoolForPrompt(fixtureOddsPool),
+              calibrationNote
+            ),
           },
         ],
       });
@@ -527,8 +566,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error ? error.message : messages.createFailed,
+        error: sanitizeValueBetsError(error, language, messages.createFailed),
       },
       { status: 500 }
     );
