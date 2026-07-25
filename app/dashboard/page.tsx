@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/components/LanguageProvider";
 import ManageSubscriptionButton from "@/components/ManageSubscriptionButton";
 import DailySlipsSection from "@/components/DailySlipsSection";
+import IntelligenceCompare from "@/components/IntelligenceCompare";
+import ValueBetsSection from "@/components/ValueBetsSection";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
 import PlanComparisonTable from "@/components/PlanComparisonTable";
 import { useIsMobile } from "@/lib/useMediaQuery";
@@ -27,6 +29,7 @@ type Analysis = {
 
 const quickActions = [
   { key: "aiTips" as const, icon: "🎯", href: "/dashboard#ai-tips" },
+  { key: "valueBets" as const, icon: "💎", href: "/dashboard#value-bets" },
   { key: "home" as const, icon: "🏠", href: "/" },
   { key: "builder" as const, icon: "⚽", href: "/builder" },
   { key: "analyze" as const, icon: "🧠", href: "/analyze" },
@@ -174,13 +177,19 @@ export default function DashboardPage() {
   }, [t.dashboard.loadErrorDefault]);
 
   useEffect(() => {
-    if (loading || window.location.hash !== "#ai-tips") {
+    if (loading) {
+      return;
+    }
+
+    const hash = window.location.hash;
+
+    if (hash !== "#ai-tips" && hash !== "#value-bets") {
       return;
     }
 
     const frameId = window.requestAnimationFrame(() => {
       document
-        .getElementById("ai-tips")
+        .querySelector(hash)
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
@@ -194,6 +203,7 @@ export default function DashboardPage() {
     string
   > = {
     aiTips: t.navbar.aiTips,
+    valueBets: t.dashboard.viewValueBets,
     home: t.dashboard.quickHome,
     builder: t.navbar.builder,
     analyze: t.dashboard.newAnalysis,
@@ -258,13 +268,22 @@ export default function DashboardPage() {
               {t.dashboard.description}
             </p>
 
-            <a
-              href="#ai-tips"
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-[#E8DCC8]/30 bg-gradient-to-r from-[#18ff6d]/10 via-[#E8DCC8]/10 to-[#2fbfff]/10 px-5 py-3 text-sm font-bold text-[#E8DCC8] transition hover:border-[#E8DCC8]/50 hover:bg-[#18ff6d]/15 sm:mt-8 sm:px-6 sm:text-base"
-            >
-              🎯 {t.dashboard.viewAiTips}
-              <span aria-hidden>↓</span>
-            </a>
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
+              <a
+                href="#ai-tips"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15 sm:px-6 sm:text-base"
+              >
+                🎯 {t.dashboard.viewAiTips}
+                <span aria-hidden>↓</span>
+              </a>
+              <a
+                href="#value-bets"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#72d5ff33] bg-[#2fbfff]/10 px-5 py-3 text-sm font-bold text-[#72d5ff] transition hover:bg-[#2fbfff]/15 sm:px-6 sm:text-base"
+              >
+                💎 {t.dashboard.viewValueBets}
+                <span aria-hidden>↓</span>
+              </a>
+            </div>
           </section>
 
           <OnboardingChecklist analysisCount={total} />
@@ -335,7 +354,9 @@ export default function DashboardPage() {
             </section>
           ) : (
             <>
+              <IntelligenceCompare />
               <DailySlipsSection />
+              <ValueBetsSection />
 
               <section className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 xl:grid-cols-4">
                 {[

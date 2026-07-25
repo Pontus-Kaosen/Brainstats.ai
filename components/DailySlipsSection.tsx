@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AIBetSlip from "@/components/AIBetSlip";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
+import ProductExplain from "@/components/ProductExplain";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation, formatKickoffLabel } from "@/lib/locale";
 import { getStockholmDateKey } from "@/lib/stockholmDate";
@@ -149,7 +150,7 @@ export default function DailySlipsSection() {
 
           <h2 className="mt-2 text-2xl font-black sm:mt-3 sm:text-4xl">{t.dailySlips.title}</h2>
 
-          <p className="mt-2 max-w-2xl text-sm text-[#A9A9A9] md:hidden sm:mt-3">
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-[#A9A9A9] sm:mt-3">
             {t.dailySlips.description}
           </p>
         </div>
@@ -161,6 +162,15 @@ export default function DailySlipsSection() {
           })}
         </div>
       </div>
+
+      <ProductExplain
+        variant="aiTips"
+        title={t.dailySlips.explainTitle}
+        text={t.dailySlips.explainText}
+        differentNote={t.dailySlips.differentNote}
+        differentHref="#value-bets"
+        differentLink={t.dailySlips.differentLink}
+      />
 
       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#72d5ff] sm:text-sm">
         {getScopeBadge(fixtureScope, t)}

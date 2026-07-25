@@ -761,6 +761,119 @@ export function getDailySlipsApiMessages(language: Language) {
   };
 }
 
+export function buildValueBetsSystemPrompt(language: Language) {
+  if (language === "en") {
+    return (
+      "You identify football markets where AI fair probability appears higher than market-implied probability. " +
+      "Never call a bet safe, guaranteed or risk-free. Respond only with valid JSON. Write user-facing text in English."
+    );
+  }
+
+  return (
+    "Du hittar fotbollsmarknader där AI:s fair-sannolikhet verkar högre än marknadens implicita sannolikhet. " +
+    "Du får aldrig kalla ett spel säkert, garanterat eller riskfritt. Svara endast med giltig JSON. Skriv användartext på svenska."
+  );
+}
+
+export function buildValueBetsUserPrompt(
+  language: Language,
+  fixturesWithOdds: unknown
+) {
+  if (language === "en") {
+    return `
+Find up to 5 value bets from the list below.
+
+Rules:
+- Use only matches from the list.
+- Each pick must include match, market, probability (10-95), and reason.
+- Prefer markets where your fair probability is meaningfully above the market implied probability shown.
+- probability is your AI fair probability in percent (integer).
+- Do not describe any pick as safe or guaranteed.
+
+Allowed markets:
+- Home win
+- Away win
+- Draw
+- Over 1.5 goals
+- Over 2.5 goals
+- Under 3.5 goals
+- Both teams to score
+- Both teams not to score
+
+Fixtures with market odds reference:
+${JSON.stringify(fixturesWithOdds, null, 2)}
+
+Respond exactly:
+{
+  "picks": [
+    {
+      "match": "Team A - Team B",
+      "market": "Home win",
+      "probability": 58,
+      "reason": "Short neutral explanation"
+    }
+  ]
+}
+`;
+  }
+
+  return `
+Hitta upp till 5 value bets från listan nedan.
+
+Regler:
+- Använd endast matcher i listan.
+- Varje tips ska innehålla match, market, probability (10-95) och reason.
+- Prioritera marknader där din fair-sannolikhet tydligt överstiger marknadens implicita sannolikhet i listan.
+- probability är din AI fair-sannolikhet i procent (heltal).
+- Beskriv inget spel som säkert eller garanterat.
+
+Tillåtna marknader:
+- Hemmalag vinner
+- Bortalag vinner
+- Oavgjort
+- Över 1.5 mål
+- Över 2.5 mål
+- Under 3.5 mål
+- Båda lagen gör mål
+- Båda lagen gör inte mål
+
+Matcher med referensodds:
+${JSON.stringify(fixturesWithOdds, null, 2)}
+
+Svara exakt:
+{
+  "picks": [
+    {
+      "match": "Lag A - Lag B",
+      "market": "Hemmalag vinner",
+      "probability": 58,
+      "reason": "Kort neutral förklaring"
+    }
+  ]
+}
+`;
+}
+
+export function getValueBetsApiMessages(language: Language) {
+  if (language === "en") {
+    return {
+      mustLogin: "You must be signed in.",
+      authFailed: "Sign-in could not be verified.",
+      eliteOnly: "Value Bets is an Elite feature.",
+      noFixtures: "No upcoming matches with odds were found today.",
+      createFailed: "Value bets could not be generated.",
+    };
+  }
+
+  return {
+    mustLogin: "Du måste vara inloggad.",
+    authFailed: "Inloggningen kunde inte verifieras.",
+    eliteOnly: "Value Bets är en Elite-funktion.",
+    noFixtures: "Inga kommande matcher med odds hittades idag.",
+    createFailed: "Value bets kunde inte genereras.",
+  };
+}
+
 export const DAILY_SLIPS_VERSION = 5;
 
 export type DailySlipFixtureScope =

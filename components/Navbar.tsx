@@ -254,11 +254,38 @@ export default function Navbar() {
     { title: t.navbar.analyze, href: "/analyze?mode=image" },
     { title: t.navbar.builder, href: "/builder" },
     { title: t.navbar.standings, href: "/standings" },
-    { title: t.navbar.aiTips, href: "/dashboard#ai-tips", highlight: true },
+    {
+      title: t.navbar.aiTips,
+      href: "/dashboard#ai-tips",
+      highlight: "aiTips" as const,
+    },
+    {
+      title: t.navbar.valueBets,
+      href: "/dashboard#value-bets",
+      highlight: "valueBets" as const,
+    },
     { title: t.navbar.trackRecord, href: "/track-record" },
     { title: t.navbar.dashboard, href: "/dashboard" },
     { title: t.navbar.premium, href: "/premium" },
   ];
+
+  function navLinkClass(highlight?: "aiTips" | "valueBets") {
+    if (highlight === "aiTips") {
+      return "border-[#E8DCC8]/30 bg-gradient-to-r from-[#18ff6d]/10 via-[#E8DCC8]/10 to-[#2fbfff]/10 text-[#E8DCC8] hover:border-[#E8DCC8]/50 hover:bg-[#18ff6d]/15";
+    }
+
+    if (highlight === "valueBets") {
+      return "border-[#72d5ff33] bg-gradient-to-r from-[#2fbfff]/10 via-[#18ff6d]/5 to-[#72d5ff]/10 text-[#72d5ff] hover:border-[#72d5ff55] hover:bg-[#2fbfff]/15";
+    }
+
+    return "border-transparent text-[#D8D8D8] hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 hover:text-[#18ff6d]";
+  }
+
+  function navLinkIcon(highlight?: "aiTips" | "valueBets") {
+    if (highlight === "aiTips") return "🎯 ";
+    if (highlight === "valueBets") return "💎 ";
+    return "";
+  }
 
   const memberBadgeLabel =
     userPlan === "elite"
@@ -286,13 +313,9 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${
-                link.highlight
-                  ? "border-[#E8DCC8]/30 bg-gradient-to-r from-[#18ff6d]/10 via-[#E8DCC8]/10 to-[#2fbfff]/10 text-[#E8DCC8] hover:border-[#E8DCC8]/50 hover:bg-[#18ff6d]/15"
-                  : "border-transparent text-[#D8D8D8] hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 hover:text-[#18ff6d]"
-              }`}
+              className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${navLinkClass(link.highlight)}`}
             >
-              {link.highlight ? "🎯 " : ""}
+              {navLinkIcon(link.highlight)}
               {link.title}
             </Link>
           ))}
@@ -449,12 +472,14 @@ export default function Navbar() {
                   (link.href.includes("#") &&
                     pathname === link.href.split("#")[0])
                     ? "bg-[#18ff6d]/10 text-[#18ff6d]"
-                    : link.highlight
+                    : link.highlight === "aiTips"
                       ? "text-[#E8DCC8]"
-                      : "text-[#D8D8D8]"
+                      : link.highlight === "valueBets"
+                        ? "text-[#72d5ff]"
+                        : "text-[#D8D8D8]"
                 }`}
               >
-                {link.highlight ? "🎯 " : ""}
+                {navLinkIcon(link.highlight)}
                 {link.title}
               </Link>
             ))}

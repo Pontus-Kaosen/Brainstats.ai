@@ -42,6 +42,7 @@ export const translations = {
       builder: "Builder",
       dashboard: "Dashboard",
       aiTips: "AI-tips",
+      valueBets: "Value Bets",
       trackRecord: "Resultat",
       standings: "Tabeller",
       premium: "Premium",
@@ -157,7 +158,7 @@ export const translations = {
       subtitle: "Analysis Center",
       title: "Din analyscentral.",
       description:
-        "Följ dina analyser, se dagens AI-kuponger och bygg nya spelidéer från ett premium AI-kontrollrum.",
+        "Följ dina analyser, dagens AI-kuponger, Value Bets och bygg nya spelidéer från ett premium AI-kontrollrum.",
       loadErrorTitle: "Dashboarden kunde inte laddas",
       loadErrorDefault: "Dashboarden kunde inte laddas.",
       loading: "Hämtar din Dashboard...",
@@ -169,9 +170,10 @@ export const translations = {
       upgradeBannerText:
         "Pro ger obegränsade analyser, Brain Builder, dagliga AI-kuponger och sparad historik. Testa gratis i 7 dagar.",
       upgradeBannerCta: "Starta 7 dagar Pro gratis",
-      viewAiTips: "Se dagens AI-tips",
+      viewAiTips: "Se AI-tips",
+      viewValueBets: "Se Value Bets",
       aiTipsHero:
-        "Färdiga AI-kuponger med olika riskprofil — uppdateras varje dag.",
+        "Två verktyg: färdiga AI-kuponger och Elite Value Bets mot marknadsodds.",
       history: "Historik",
       recentAnalyses: "Senaste analyser",
       noAnalyses: "Du har inga analyser ännu.",
@@ -207,6 +209,35 @@ export const translations = {
       stepBuilder: "Prova Brain Builder",
     },
 
+    intelligenceCompare: {
+      subtitle: "Så skiljer sig verktygen",
+      title: "AI-tips ≠ Value Bets",
+      intro:
+        "Båda bygger på BrainStats AI, men de svarar på olika frågor. AI-tips ger färdiga kuponger. Value Bets jämför AI fair odds mot bookmakerns odds.",
+      aiTips: {
+        label: "AI-tips",
+        tagline: "Färdiga kuponger med flera spel och tydlig riskprofil.",
+        plan: "Free · Pro · Elite",
+        bullets: [
+          "1–3 spel per kupong, rankade från lätt till svår",
+          "Bara AI fair odds — ingen bookmaker-jämförelse",
+          "Bra när du vill ha färdiga spelförslag snabbt",
+        ],
+        cta: "Gå till AI-tips",
+      },
+      valueBets: {
+        label: "Value Bets",
+        tagline: "Enskilda marknader där AI tror oddsen kan vara felprissatta.",
+        plan: "Elite",
+        bullets: [
+          "Ett spel i taget med marknadsodds vs AI fair odds",
+          "Visar value i % när AI ligger över marknaden",
+          "Bra när du vill jämföra pris mot din egen analys",
+        ],
+        cta: "Gå till Value Bets",
+      },
+    },
+
     dailySlips: {
       subtitle: "Daily Intelligence",
       title: "🧠 Dagens AI-kuponger",
@@ -235,6 +266,38 @@ export const translations = {
       placeholderBadge: "BrainStats AI-tips",
       upgradeCta: "Lås upp fler AI-kuponger med Pro",
       upgradeHint: "Free: 1 kupong/dag · Pro: 3 · Elite: 5",
+      explainTitle: "Vad är AI-tips?",
+      explainText:
+        "Färdiga AI-kuponger för dagens matcher. Varje kupong har en riskprofil och flera spel — tänk färdigt byggda spelförslag, inte odds-jämförelse.",
+      differentNote: "Letar du efter marknadsodds vs AI?",
+      differentLink: "Se Value Bets ↓",
+    },
+
+    valueBets: {
+      subtitle: "Elite Intelligence",
+      title: "💎 Value Bets",
+      description:
+        "Marknader där AI:s fair-sannolikhet verkar ligga över bookmakerns odds — uppdateras dagligen.",
+      disclaimer:
+        "Jämför AI fair odds mot marknadsodds. Inte spelråd och inga resultat är garanterade.",
+      loading: "Söker value bets...",
+      errorTitle: "Value bets kunde inte laddas",
+      errorDefault: "Value bets kunde inte hämtas.",
+      mustLogin: "Du måste vara inloggad.",
+      empty: "Inga value bets hittades just nu.",
+      eliteCta: "Value Bets ingår i Elite",
+      eliteHint: "Uppgradera till Elite för att se dagliga value bets med marknadsodds.",
+      upgradeCta: "Uppgradera till Elite",
+      fairOdds: "Fair odds",
+      marketOdds: "Marknadsodds",
+      edge: "Value",
+      fairProbability: "AI fair",
+      impliedProbability: "Marknad",
+      explainTitle: "Vad är Value Bets?",
+      explainText:
+        "Enskilda spel där vår AI fair-sannolikhet verkar högre än bookmakerns odds. Du ser båda sidor — fair vs marknad — och hur stor skillnaden är.",
+      differentNote: "Vill du ha färdiga kuponger istället?",
+      differentLink: "Se AI-tips ↑",
     },
 
     manageSubscription: {
@@ -373,6 +436,7 @@ export const translations = {
             "Allt i Pro",
             "5 Brain Picks per analys",
             "5 AI-kuponger per dag",
+            "Value Bets",
             "Prioriterad AI",
             "Tidiga nya funktioner",
           ],
@@ -584,6 +648,12 @@ export const translations = {
           label: "Brain Builder",
           free: "Ja",
           pro: "Ja",
+          elite: "Ja",
+        },
+        {
+          label: "Value Bets",
+          free: "—",
+          pro: "—",
           elite: "Ja",
         },
       ],
@@ -965,6 +1035,7 @@ export const translations = {
       builder: "Builder",
       dashboard: "Dashboard",
       aiTips: "AI Tips",
+      valueBets: "Value Bets",
       trackRecord: "Track record",
       standings: "Standings",
       premium: "Premium",
@@ -1080,7 +1151,7 @@ export const translations = {
       subtitle: "Analysis Center",
       title: "Your analysis hub.",
       description:
-        "Track your analyses, view today's AI slips and build new bet ideas from a premium AI control room.",
+        "Track your analyses, daily AI slips, Value Bets and build new bet ideas from a premium AI control room.",
       loadErrorTitle: "Dashboard could not be loaded",
       loadErrorDefault: "Dashboard could not be loaded.",
       loading: "Loading your Dashboard...",
@@ -1092,9 +1163,10 @@ export const translations = {
       upgradeBannerText:
         "Pro gives unlimited analyses, Brain Builder, daily AI slips and saved history. Try free for 7 days.",
       upgradeBannerCta: "Start 7-day Pro free trial",
-      viewAiTips: "See today's AI tips",
+      viewAiTips: "See AI tips",
+      viewValueBets: "See Value Bets",
       aiTipsHero:
-        "Ready-made AI slips with different risk profiles — updated daily.",
+        "Two tools: ready-made AI slips and Elite Value Bets vs market odds.",
       history: "History",
       recentAnalyses: "Recent analyses",
       noAnalyses: "You have no analyses yet.",
@@ -1130,6 +1202,35 @@ export const translations = {
       stepBuilder: "Try Brain Builder",
     },
 
+    intelligenceCompare: {
+      subtitle: "How the tools differ",
+      title: "AI tips ≠ Value Bets",
+      intro:
+        "Both use BrainStats AI, but they answer different questions. AI tips give ready-made slips. Value Bets compare AI fair odds to bookmaker prices.",
+      aiTips: {
+        label: "AI tips",
+        tagline: "Ready-made slips with multiple picks and clear risk tiers.",
+        plan: "Free · Pro · Elite",
+        bullets: [
+          "1–3 picks per slip, ranked from easy to hard",
+          "AI fair odds only — no bookmaker comparison",
+          "Best when you want quick slip ideas",
+        ],
+        cta: "Go to AI tips",
+      },
+      valueBets: {
+        label: "Value Bets",
+        tagline: "Single markets where AI thinks the price may be off.",
+        plan: "Elite",
+        bullets: [
+          "One pick at a time with market odds vs AI fair odds",
+          "Shows value % when AI is above the market",
+          "Best when you want to compare price vs your analysis",
+        ],
+        cta: "Go to Value Bets",
+      },
+    },
+
     dailySlips: {
       subtitle: "Daily Intelligence",
       title: "🧠 Today's AI slips",
@@ -1158,6 +1259,38 @@ export const translations = {
       placeholderBadge: "BrainStats AI picks",
       upgradeCta: "Unlock more AI slips with Pro",
       upgradeHint: "Free: 1 slip/day · Pro: 3 · Elite: 5",
+      explainTitle: "What are AI tips?",
+      explainText:
+        "Ready-made AI slips for today's matches. Each slip has a risk tier and several picks — think pre-built ideas, not odds comparison.",
+      differentNote: "Looking for market odds vs AI?",
+      differentLink: "See Value Bets ↓",
+    },
+
+    valueBets: {
+      subtitle: "Elite Intelligence",
+      title: "💎 Value Bets",
+      description:
+        "Markets where AI fair probability appears above bookmaker odds — updated daily.",
+      disclaimer:
+        "Compares AI fair odds to market odds. Not betting advice and no results are guaranteed.",
+      loading: "Scanning for value bets...",
+      errorTitle: "Value bets could not be loaded",
+      errorDefault: "Value bets could not be fetched.",
+      mustLogin: "You must be logged in.",
+      empty: "No value bets found right now.",
+      eliteCta: "Value Bets is included in Elite",
+      eliteHint: "Upgrade to Elite to see daily value bets with market odds.",
+      upgradeCta: "Upgrade to Elite",
+      fairOdds: "Fair odds",
+      marketOdds: "Market odds",
+      edge: "Value",
+      fairProbability: "AI fair",
+      impliedProbability: "Market",
+      explainTitle: "What are Value Bets?",
+      explainText:
+        "Single picks where our AI fair probability appears higher than bookmaker odds. You see both sides — fair vs market — and how big the gap is.",
+      differentNote: "Want ready-made slips instead?",
+      differentLink: "See AI tips ↑",
     },
 
     manageSubscription: {
@@ -1296,6 +1429,7 @@ export const translations = {
             "Everything in Pro",
             "5 Brain Picks per analysis",
             "5 AI slips per day",
+            "Value Bets",
             "Priority AI",
             "Early access to new features",
           ],
@@ -1507,6 +1641,12 @@ export const translations = {
           label: "Brain Builder",
           free: "Yes",
           pro: "Yes",
+          elite: "Yes",
+        },
+        {
+          label: "Value Bets",
+          free: "—",
+          pro: "—",
           elite: "Yes",
         },
       ],
