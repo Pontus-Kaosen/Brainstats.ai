@@ -1,4 +1,5 @@
 import type { Language } from "@/lib/translations";
+import { getBettableMarketsPromptList } from "@/lib/bettableMarkets";
 import {
   describePlayerLineupStatus,
   hasPartialLineups,
@@ -633,16 +634,11 @@ Each pick must include:
 - market
 - probability
 
-Use only these markets:
+Use only these markets (standard at major Swedish and international bookmakers — exact wording):
 
-- Home win
-- Away win
-- Double chance
-- Draw No Bet
-- Over 1.5 goals
-- Over 2.5 goals
-- Under 3.5 goals
-- Both teams to score
+${getBettableMarketsPromptList("en")}
+
+Do not use double chance, draw no bet, player props, corners or handicaps.
 
 Use only matches played today (Stockholm time) from major leagues in this list:
 
@@ -659,7 +655,7 @@ Respond exactly in this JSON structure:
       "picks": [
         {
           "match": "Team A - Team B",
-          "market": "Double chance Team A or draw",
+          "market": "Over 1.5 goals",
           "probability": 72
         }
       ]
@@ -701,16 +697,11 @@ Varje val måste innehålla:
 - market
 - probability
 
-Använd bara dessa marknader:
+Använd bara dessa marknader (standard hos stora svenska och internationella spelbolag — exakt formulering):
 
-- Hemmalag vinner
-- Bortalag vinner
-- Dubbelchans
-- Draw No Bet
-- Över 1.5 mål
-- Över 2.5 mål
-- Under 3.5 mål
-- Båda lagen gör mål
+${getBettableMarketsPromptList("sv")}
+
+Använd inte dubbelchans, draw no bet, spelarprops, hörnor eller handicap.
 
 Använd endast matcher som spelas idag (Stockholm-tid) i större ligor från denna lista:
 
@@ -727,7 +718,7 @@ Svara exakt enligt denna JSON-struktur:
       "picks": [
         {
           "match": "Lag A - Lag B",
-          "market": "Dubbelchans Lag A eller oavgjort",
+          "market": "Över 1.5 mål",
           "probability": 72
         }
       ]
@@ -802,14 +793,13 @@ Rules:
 - Prefer conservative markets only: Over 1.5 goals, Under 3.5 goals, home win with clear edge, both teams not to score.
 - Avoid draw, away win, Over 2.5 and both teams to score.
 - Return 0–2 picks — quality over quantity. Skip the day if nothing is strong enough.
+- Use only standard markets listed below — they must exist at major Swedish (Unibet, Betsson, LeoVegas, ATG) and international bookmakers.
 - probability is your AI fair probability in percent (integer).
 - Do not describe any pick as safe or guaranteed.
 
-Allowed markets:
-- Home win
-- Over 1.5 goals
-- Under 3.5 goals
-- Both teams not to score
+Allowed markets (exact labels):
+
+${getBettableMarketsPromptList("en")}
 
 Fixtures with market odds reference:
 ${JSON.stringify(fixturesWithOdds, null, 2)}
@@ -840,14 +830,13 @@ Regler:
 - Prioritera endast konservativa marknader: Över 1.5 mål, Under 3.5 mål, hemmaseger med tydlig edge, båda lagen gör inte mål.
 - Undvik oavgjort, bortaseger, Över 2.5 och båda lagen gör mål.
 - Returnera 0–2 tips — kvalitet före kvantitet. Skippa dagen om inget är tillräckligt starkt.
+- Använd endast standardmarknader nedan — de ska finnas hos stora svenska (Unibet, Betsson, LeoVegas, ATG) och internationella spelbolag.
 - probability är din AI fair-sannolikhet i procent (heltal).
 - Beskriv inget spel som säkert eller garanterat.
 
-Tillåtna marknader:
-- Hemmalag vinner
-- Över 1.5 mål
-- Under 3.5 mål
-- Båda lagen gör inte mål
+Tillåtna marknader (exakt formulering):
+
+${getBettableMarketsPromptList("sv")}
 
 Matcher med referensodds:
 ${JSON.stringify(fixturesWithOdds, null, 2)}

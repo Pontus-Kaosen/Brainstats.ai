@@ -1,4 +1,5 @@
 import type { Language } from "@/lib/translations";
+import { normalizeToBettableMarket } from "@/lib/bettableMarkets";
 
 export type ValueBetTier = 1 | 2 | 3 | 4 | 5;
 
@@ -104,6 +105,10 @@ export function passesValueBetSafetyGate(
   fairProbability: number,
   edgePercent: number
 ) {
+  if (!normalizeToBettableMarket(market)) {
+    return false;
+  }
+
   if (!isHighConfidenceValueMarket(market)) {
     return false;
   }

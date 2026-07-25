@@ -27,6 +27,8 @@ import {
   type TodayFixture,
 } from "@/lib/dailyFixturePool";
 import type { Language } from "@/lib/translations";
+import { filterSlipsToBettableMarkets } from "@/lib/bettableMarkets";
+import { fetchFixtureOdds } from "@/lib/marketOdds";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -286,8 +288,8 @@ function buildFallbackSlips(
 
   const markets =
     language === "en"
-      ? ["Double chance", "Over 1.5 goals", "Home win"]
-      : ["Dubbelchans", "Över 1.5 mål", "Hemmalag vinner"];
+      ? ["Over 1.5 goals", "Home win", "Under 3.5 goals"]
+      : ["Över 1.5 mål", "Hemmalag vinner", "Under 3.5 mål"];
 
   const slips: GeneratedSlip[] = [];
   const targetCount = Math.min(limit, fixtures.length);
@@ -583,6 +585,12 @@ export async function GET(request: Request) {
           language
         );
       }
+
+      generatedSlips = await filterSlipsToBettableMarkets(
+        generatedSlips,
+        language,
+        fetchFixtureOdds
+      );
     }
 
     if (generatedSlips.length === 0) {

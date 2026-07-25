@@ -28,8 +28,12 @@ export function extractMarketOdds(oddsResponse: unknown[]): MarketOddOption[] {
   const bookmakers = first?.bookmakers || [];
   const preferred =
     bookmakers.find((item: { name?: string }) =>
-      /bet365|pinnacle|william hill|unibet|betfair/i.test(item?.name || "")
-    ) || bookmakers[0];
+      /unibet|betsson|leovegas|atg|svenska spel|nordicbet|coolbet/i.test(item?.name || "")
+    ) ||
+    bookmakers.find((item: { name?: string }) =>
+      /bet365|pinnacle|william hill|betfair/i.test(item?.name || "")
+    ) ||
+    bookmakers[0];
 
   if (!preferred?.bets?.length) {
     return [];
@@ -102,6 +106,7 @@ const MARKET_LABELS_SV: Record<string, string> = {
   Draw: "Oavgjort",
   "Over 1.5 goals": "Över 1.5 mål",
   "Over 2.5 goals": "Över 2.5 mål",
+  "Under 2.5 goals": "Under 2.5 mål",
   "Under 3.5 goals": "Under 3.5 mål",
   "Both teams to score": "Båda lagen gör mål",
   "Both teams not to score": "Båda lagen gör inte mål",
@@ -181,6 +186,16 @@ export function matchMarketOdd(
         (option) =>
           option.market === "Goals Over/Under" &&
           /under 3\.5/i.test(option.selection)
+      ) || null
+    );
+  }
+
+  if (normalized.includes("under 2.5")) {
+    return (
+      options.find(
+        (option) =>
+          option.market === "Goals Over/Under" &&
+          /under 2\.5/i.test(option.selection)
       ) || null
     );
   }

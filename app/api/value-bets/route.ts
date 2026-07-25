@@ -21,6 +21,11 @@ import {
 import { getStockholmDateKey } from "@/lib/stockholmDate";
 import { rankValueBetPicks, passesValueBetSafetyGate } from "@/lib/valueBetGrades";
 import { publishValueBetPicks, getValueBetCalibrationNote } from "@/lib/trackRecordStore";
+import {
+  isBettableOnMajorBookmakers,
+  normalizeToBettableMarket,
+  toDisplayMarketLabel,
+} from "@/lib/bettableMarkets";
 
 export const maxDuration = 60;
 
@@ -143,6 +148,7 @@ async function buildFixtureOddsPool(
         match: `${fixture.homeTeam} - ${fixture.awayTeam}`,
         league: fixture.league,
         kickoffAt: fixture.date,
+        oddsResponse,
         rawOptions: options,
         markets: options.map((option) => ({
           market: formatMarketLabel(option.market, option.selection),
@@ -241,10 +247,18 @@ function enrichValuePicks(
 
   for (const pick of rawPicks) {
     const match = typeof pick.match === "string" ? pick.match : unknownMatch;
-    const market = normalizeMarketLabel(
-      typeof pick.market === "string" ? pick.market : unknownMarket,
+    const rawMarket =
+      typeof pick.market === "string" ? pick.market : unknownMarket;
+    const canonical = normalizeToBettableMarket(
+      normalizeMarketLabel(rawMarket, language),
       language
     );
+
+    if (!canonical) {
+      continue;
+    }
+
+    const market = toDisplayMarketLabel(canonical, language);
     const fairProbability = Math.min(
       95,
       Math.max(10, Number(pick.probability || 0))
@@ -257,9 +271,17 @@ function enrichValuePicks(
       continue;
     }
 
-    const marketOdd = matchMarketOdd(oddsEntry.rawOptions, market);
+    const marketOdd = matchMarketOdd(oddsEntry.rawOptions, canonical);
 
     if (!marketOdd) {
+      continue;
+    }
+
+    if (
+      !isBettableOnMajorBookmakers(oddsEntry.oddsResponse, canonical, {
+        minBookmakers: 2,
+      })
+    ) {
       continue;
     }
 
@@ -273,7 +295,7 @@ function enrichValuePicks(
     }
 
     if (
-      !passesValueBetSafetyGate(market, fairProbability, edgePercent)
+      !passesValueBetSafetyGate(canonical, fairProbability, edgePercent)
     ) {
       continue;
     }
