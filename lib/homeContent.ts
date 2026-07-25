@@ -38,7 +38,7 @@ export type HomeContent = {
   mobileStatLive: string;
   mobileStatRisk: string;
   mobileStatActive: string;
-  features: Array<{ title: string; text: string }>;
+  features: Array<{ title: string; text: string; href: string }>;
 };
 
 const homeContent: Record<Language, HomeContent> = {
@@ -108,14 +108,17 @@ const homeContent: Record<Language, HomeContent> = {
       {
         title: "📸 Ladda upp kupong",
         text: "AI läser skärmdump och tolkar match och marknader automatiskt.",
+        href: "/analyze?mode=image",
       },
       {
         title: "🧠 Brain Engine",
         text: "Få BrainScore™, risknivå och identifierade marknader.",
+        href: "/analyze?sample=1",
       },
       {
-        title: "🎯 AI-tips",
-        text: "Färdiga dagliga AI-kuponger med riskprofil och estimerade fair odds.",
+        title: "🎯 AI-tips & Value Bets",
+        text: "Dagliga AI-kuponger och Elite value bets med öppen logg.",
+        href: "/ai-tips",
       },
     ],
   },
@@ -185,14 +188,17 @@ const homeContent: Record<Language, HomeContent> = {
       {
         title: "📸 Upload bet slip",
         text: "AI reads your screenshot and parses match and markets automatically.",
+        href: "/analyze?mode=image",
       },
       {
         title: "🧠 Brain Engine",
         text: "Get BrainScore™, risk level and identified markets.",
+        href: "/analyze?sample=1",
       },
       {
-        title: "🎯 AI tips",
-        text: "Ready-made daily AI slips with risk profile and estimated fair odds.",
+        title: "🎯 AI tips & Value Bets",
+        text: "Daily AI slips and Elite value bets with a public log.",
+        href: "/ai-tips",
       },
     ],
   },

@@ -7,6 +7,7 @@ import FootballBackground from "@/components/FootballBackground";
 import Button from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
+import { trackEvent } from "@/lib/analytics";
 
 type Status = "loading" | "success" | "error";
 
@@ -17,6 +18,7 @@ function PremiumSuccessPageContent() {
 
   const [status, setStatus] = useState<Status>("loading");
   const [message, setMessage] = useState("");
+  const [activatedPlan, setActivatedPlan] = useState<string | null>(null);
 
   const isStripeTestMode =
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.includes("_test_") ?? true;
@@ -62,6 +64,8 @@ function PremiumSuccessPageContent() {
         }
 
         setStatus("success");
+        setActivatedPlan(data.plan || null);
+        trackEvent("subscription_success", { plan: data.plan || "unknown" });
         setMessage(
           data.plan
             ? formatTranslation(t.premiumSuccess.planActivated, {
@@ -132,14 +136,25 @@ function PremiumSuccessPageContent() {
                 ) : null}
 
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                  <Button
-                    onClick={() => {
-                      window.location.href = "/builder";
-                    }}
-                    className="w-full"
-                  >
-                    {t.premiumSuccess.openBuilder}
-                  </Button>
+                  {activatedPlan === "elite" ? (
+                    <Button
+                      onClick={() => {
+                        window.location.href = "/value-bets";
+                      }}
+                      className="w-full"
+                    >
+                      {t.premiumSuccess.openValueBets}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        window.location.href = "/ai-tips";
+                      }}
+                      className="w-full"
+                    >
+                      {t.premiumSuccess.openAiTips}
+                    </Button>
+                  )}
 
                   <Button
                     variant="secondary"
@@ -150,6 +165,40 @@ function PremiumSuccessPageContent() {
                   >
                     {t.premiumSuccess.goDashboard}
                   </Button>
+                </div>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      window.location.href = "/builder";
+                    }}
+                    className="w-full"
+                  >
+                    {t.premiumSuccess.openBuilder}
+                  </Button>
+
+                  {activatedPlan === "elite" ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        window.location.href = "/ai-tips";
+                      }}
+                      className="w-full"
+                    >
+                      {t.premiumSuccess.openAiTips}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        window.location.href = "/premium";
+                      }}
+                      className="w-full"
+                    >
+                      {t.premiumSuccess.upgradeElite}
+                    </Button>
+                  )}
                 </div>
               </>
             )}

@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 import HomeCtaLink from "@/components/HomeCtaLink";
+import { useLanguage } from "@/components/LanguageProvider";
 import type { LandingPageContent } from "@/lib/landingPages";
 
 const accentStyles = {
@@ -27,6 +30,7 @@ export default function LandingPageView({
 }: {
   content: LandingPageContent;
 }) {
+  const { t } = useLanguage();
   const accent = accentStyles[content.accent ?? "green"];
 
   return (
@@ -73,7 +77,7 @@ export default function LandingPageView({
             href="/track-record"
             className={`mt-8 inline-block text-sm font-semibold hover:underline ${accent.link}`}
           >
-            Analysis vs outcome →
+            {t.landing.trackRecordLink} →
           </Link>
         </section>
       </div>

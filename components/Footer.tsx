@@ -17,6 +17,10 @@ export default function Footer() {
   const productLinks = [
     { label: t.footer.linkAnalyze, href: "/analyze" },
     { label: t.footer.linkUpload, href: "/analyze?mode=image" },
+    { label: t.footer.linkAiTips, href: "/ai-tips" },
+    { label: t.footer.linkValueBets, href: "/value-bets" },
+    { label: t.footer.linkAiAnalys, href: "/ai-analys" },
+    { label: t.footer.linkBuilder, href: "/builder" },
     { label: t.footer.linkTrackRecord, href: "/track-record" },
     { label: t.footer.linkStandings, href: "/standings" },
     { label: t.footer.linkFootballAnalysis, href: "/football-analysis" },

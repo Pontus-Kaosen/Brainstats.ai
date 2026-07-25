@@ -175,11 +175,20 @@ export const pageSeo = {
     },
   },
   premium: {
-    title: "Premium",
-    description:
-      "BrainStats Pro och Elite — fler AI-analyser, value bets, dagliga AI-kuponger och djupare rapporter för fotboll.",
-    path: "/premium",
-    keywords: ["BrainStats premium", "value bets", "ai speltips", "pro elite"],
+    sv: {
+      title: "Premium — Pro & Elite",
+      description:
+        "BrainStats Pro och Elite — fler AI-analyser, dagliga AI-kuponger, value bets och djupare rapporter. 7 dagar Pro gratis.",
+      path: "/premium",
+      keywords: ["BrainStats premium", "value bets", "ai speltips", "pro elite"],
+    },
+    en: {
+      title: "Premium — Pro & Elite",
+      description:
+        "BrainStats Pro and Elite — more AI analyses, daily AI slips, value bets and deeper reports. 7-day Pro free trial.",
+      path: "/premium",
+      keywords: ["BrainStats premium", "value bets", "AI football tips", "pro elite"],
+    },
   },
   trackRecord: {
     title: "Analys vs resultat",
@@ -238,7 +247,7 @@ type LocalizedSeoEntry = {
 };
 
 export function getLocalizedPageSeo(
-  key: "home" | "analyze" | "aiTips" | "valueBets",
+  key: "home" | "analyze" | "aiTips" | "valueBets" | "premium",
   language: Language
 ): LocalizedSeoEntry {
   const entry = pageSeo[key] as

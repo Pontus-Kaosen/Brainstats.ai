@@ -25,6 +25,9 @@ type ValueBetHistoryStats = {
 type ValueBetsHistorySnippetProps = {
   initialEntries?: ValueBetHistoryEntry[];
   initialStats?: ValueBetHistoryStats | null;
+  ctaHref?: string;
+  showUpgradeLink?: boolean;
+  pollLive?: boolean;
 };
 
 function outcomeLabel(
@@ -76,6 +79,9 @@ function mapEntries(raw: unknown[]): ValueBetHistoryEntry[] {
 export default function ValueBetsHistorySnippet({
   initialEntries = [],
   initialStats = null,
+  ctaHref = "/value-bets",
+  showUpgradeLink = false,
+  pollLive = true,
 }: ValueBetsHistorySnippetProps) {
   const { t, language } = useLanguage();
   const [entries, setEntries] = useState<ValueBetHistoryEntry[]>(initialEntries);
@@ -100,10 +106,18 @@ export default function ValueBetsHistorySnippet({
   }, []);
 
   useEffect(() => {
+    if (!pollLive) {
+      return;
+    }
+
     void loadHistory();
-  }, [loadHistory]);
+  }, [loadHistory, pollLive]);
 
   useEffect(() => {
+    if (!pollLive) {
+      return;
+    }
+
     const pendingCount = stats?.pending || 0;
     const intervalMs = pendingCount > 0 ? 45_000 : 180_000;
 
@@ -123,7 +137,7 @@ export default function ValueBetsHistorySnippet({
       window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [loadHistory, stats?.pending]);
+  }, [loadHistory, pollLive, stats?.pending]);
 
   return (
     <section
@@ -160,7 +174,7 @@ export default function ValueBetsHistorySnippet({
             href="/analyze?sample=1"
             className="inline-flex text-xs font-bold text-[#72d5ff] transition hover:text-[#9de5ff] hover:underline"
           >
-            {language === "en" ? "See sample BrainScore report" : "Se exempelrapport"} →
+            {t.valueBetsHistory.sampleReportLink} →
           </Link>
         </div>
       ) : (
@@ -188,12 +202,22 @@ export default function ValueBetsHistorySnippet({
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/8 pt-3">
         <p className="text-[11px] text-[#555]">{t.valueBetsHistory.updated}</p>
-        <Link
-          href="/premium"
-          className="text-xs font-bold text-[#18ff6d] transition hover:underline"
-        >
-          {t.valueBetsHistory.cta} →
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={ctaHref}
+            className="text-xs font-bold text-[#18ff6d] transition hover:underline"
+          >
+            {t.valueBetsHistory.ctaView} →
+          </Link>
+          {showUpgradeLink ? (
+            <Link
+              href="/premium"
+              className="text-xs font-bold text-[#72d5ff] transition hover:underline"
+            >
+              {t.valueBetsHistory.cta} →
+            </Link>
+          ) : null}
+        </div>
       </div>
     </section>
   );

@@ -377,7 +377,9 @@ export const translations = {
       publicNote: "Öppen logg — alla kan se historiken.",
       updated: "Auto",
       cta: "Lås upp Value Bets med Elite",
+      ctaView: "Se Value Bets-loggen",
       ctaShort: "Elite",
+      sampleReportLink: "Se exempelrapport",
     },
 
     manageSubscription: {
@@ -447,6 +449,18 @@ export const translations = {
       proTrialNote:
         "Pro inkluderar 7 dagars gratis provperiod. Du kan avsluta innan första debiteringen.",
       proTrialCta: "Starta 7 dagar gratis",
+      trust: {
+        badge: "Verifierbar historik",
+        title: "Se resultat innan du betalar",
+        description:
+          "BrainStats visar öppen track record för AI-analyser och value bets — inga dolda vinster, inga garantier.",
+        analysisLabel: "AI-analyser träffade",
+        analysisDetail: "Baserat på {resolved} avgjorda analyser i vår logg.",
+        valueBetsLabel: "Value bets träffade",
+        valueBetsLink: "Se dagens value bets",
+        trackRecordLink: "Analys vs resultat",
+        sampleReportCta: "Se exempelrapport",
+      },
       footerTitle: "Every match deserves a BrainScore™",
       footerText:
         "Du kan börja gratis och uppgradera när du behöver fler analyser. Prenumerationerna förnyas månadsvis.",
@@ -532,6 +546,9 @@ export const translations = {
       testModeNote:
         "Detta är fortfarande Stripes testläge. Inga riktiga pengar har dragits.",
       openBuilder: "Öppna Brain Builder",
+      openAiTips: "Se dagens AI-tips",
+      openValueBets: "Öppna Value Bets",
+      upgradeElite: "Uppgradera till Elite",
       goDashboard: "Gå till Dashboard",
       errorTitle: "Betalningen kunde inte verifieras",
       backPremium: "Tillbaka till Premium",
@@ -1054,6 +1071,10 @@ export const translations = {
       productHeading: "Produkt",
       linkAnalyze: "Analysera",
       linkUpload: "Ladda upp kupong",
+      linkAiTips: "AI-tips",
+      linkValueBets: "Value Bets",
+      linkAiAnalys: "AI analys",
+      linkBuilder: "Brain Builder",
       linkTrackRecord: "Analys vs resultat",
       linkStandings: "Ligatabeller",
       linkFootballAnalysis: "AI fotbollsanalys",
@@ -1062,6 +1083,10 @@ export const translations = {
       copyright: "© 2026 BrainStats. Alla rättigheter förbehållna.",
       sellerLine: "Pontus Kaosén · Stockholm, Sverige · support@brainstats.eu",
       responsibleGambling: "Spelar du för mycket? Sök hjälp på stodlinjen.se",
+    },
+
+    landing: {
+      trackRecordLink: "Analys vs resultat",
     },
 
     cookieConsent: {
@@ -1450,7 +1475,9 @@ export const translations = {
       publicNote: "Open log — everyone can see the history.",
       updated: "Auto",
       cta: "Unlock Value Bets with Elite",
+      ctaView: "See Value Bets log",
       ctaShort: "Elite",
+      sampleReportLink: "See sample report",
     },
 
     manageSubscription: {
@@ -1520,6 +1547,18 @@ export const translations = {
       proTrialNote:
         "Pro includes a 7-day free trial. Cancel before the first charge if you want.",
       proTrialCta: "Start 7-day free trial",
+      trust: {
+        badge: "Verifiable track record",
+        title: "See results before you pay",
+        description:
+          "BrainStats shows an open track record for AI analyses and value bets — no hidden wins, no guarantees.",
+        analysisLabel: "AI analyses hit",
+        analysisDetail: "Based on {resolved} resolved entries in our log.",
+        valueBetsLabel: "Value bets hit",
+        valueBetsLink: "See today's value bets",
+        trackRecordLink: "Analysis vs outcome",
+        sampleReportCta: "See sample report",
+      },
       footerTitle: "Every match deserves a BrainScore™",
       footerText:
         "You can start free and upgrade when you need more analyses. Subscriptions renew monthly.",
@@ -1605,6 +1644,9 @@ export const translations = {
       testModeNote:
         "This is still Stripe test mode. No real money has been charged.",
       openBuilder: "Open Brain Builder",
+      openAiTips: "See today's AI tips",
+      openValueBets: "Open Value Bets",
+      upgradeElite: "Upgrade to Elite",
       goDashboard: "Go to Dashboard",
       errorTitle: "Payment could not be verified",
       backPremium: "Back to Premium",
@@ -2127,6 +2169,10 @@ export const translations = {
       productHeading: "Product",
       linkAnalyze: "Analyze",
       linkUpload: "Upload bet slip",
+      linkAiTips: "AI tips",
+      linkValueBets: "Value bets",
+      linkAiAnalys: "AI analysis",
+      linkBuilder: "Brain Builder",
       linkTrackRecord: "Analysis vs outcome",
       linkStandings: "League tables",
       linkFootballAnalysis: "AI football analysis",
@@ -2136,6 +2182,10 @@ export const translations = {
       sellerLine: "Pontus Kaosén · Stockholm, Sweden · support@brainstats.eu",
       responsibleGambling:
         "Gambling too much? Get help at BeGambleAware.org",
+    },
+
+    landing: {
+      trackRecordLink: "Analysis vs outcome",
     },
 
     cookieConsent: {

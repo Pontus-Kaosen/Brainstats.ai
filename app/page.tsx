@@ -66,6 +66,7 @@ export default async function Home() {
               outcome: entry.outcome,
             }))}
             initialStats={valueBetsHistory.stats}
+            showUpgradeLink
           />
 
               <div className="mt-6 grid w-full max-w-3xl grid-cols-3 gap-2 sm:hidden">
@@ -187,16 +188,17 @@ export default async function Home() {
         <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-8 sm:pb-24">
           <div className="grid gap-4 md:grid-cols-3 md:gap-5">
             {t.features.map((card) => (
-              <article
+              <Link
                 key={card.title}
-                className="rounded-3xl border border-white/5 bg-[#1A1A1A] p-4 text-center sm:p-8 md:text-left"
+                href={card.href}
+                className="rounded-3xl border border-white/5 bg-[#1A1A1A] p-4 text-center transition hover:border-[#18ff6d44] sm:p-8 md:text-left"
               >
                 <h2 className="text-xl font-bold text-[#E8DCC8]">{card.title}</h2>
 
                 <p className="mt-3 text-sm leading-6 text-[#A9A9A9] sm:mt-4 sm:leading-7">
                   {card.text}
                 </p>
-              </article>
+              </Link>
             ))}
           </div>
         </section>
