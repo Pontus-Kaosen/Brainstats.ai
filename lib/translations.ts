@@ -366,6 +366,9 @@ export const translations = {
       lost: "Gick inte",
       void: "Void",
       pending: "Väntar",
+      empty: "Inga value bets loggade ännu. Nya tips publiceras dagligen för Elite-medlemmar.",
+      publicNote: "Öppen logg — alla kan se historiken.",
+      updated: "Uppdateras automatiskt",
       cta: "Lås upp Value Bets med Elite",
     },
 
@@ -1428,6 +1431,9 @@ export const translations = {
       lost: "Lost",
       void: "Void",
       pending: "Pending",
+      empty: "No value bets logged yet. New picks are published daily for Elite members.",
+      publicNote: "Open log — everyone can see the history.",
+      updated: "Updates automatically",
       cta: "Unlock Value Bets with Elite",
     },
 

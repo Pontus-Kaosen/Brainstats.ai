@@ -8,11 +8,13 @@ import DailySlipsTeaser from "@/components/DailySlipsTeaser";
 import ValueBetsHistorySnippet from "@/components/ValueBetsHistorySnippet";
 import HomeHeroCtas from "@/components/HomeHeroCtas";
 import { getHomeContent } from "@/lib/homeContent";
+import { getValueBetsHistoryData } from "@/lib/valueBetsHistoryData";
 import { detectLanguage } from "@/lib/locale.server";
 
 export default async function Home() {
   const language = await detectLanguage();
   const t = getHomeContent(language);
+  const valueBetsHistory = await getValueBetsHistoryData(8);
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
@@ -22,7 +24,15 @@ export default async function Home() {
         <Navbar />
 
         <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-8 sm:pt-6">
-          <ValueBetsHistorySnippet />
+          <ValueBetsHistorySnippet
+            initialEntries={valueBetsHistory.entries.map((entry) => ({
+              id: entry.id,
+              match_label: entry.match_label,
+              market: entry.market,
+              outcome: entry.outcome,
+            }))}
+            initialStats={valueBetsHistory.stats}
+          />
         </section>
 
         <section className="mx-auto flex max-w-7xl flex-col items-center px-4 py-10 text-center sm:px-8 sm:py-32">

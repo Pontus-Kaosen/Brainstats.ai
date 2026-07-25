@@ -12,13 +12,20 @@ export async function GET(request: Request) {
     Math.max(1, Number(searchParams.get("limit") || 8))
   );
 
-  await resolvePendingTrackPicks(30);
+  await resolvePendingTrackPicks(50);
   const entries = await fetchPublicValueBetPicks(limit);
-  const stats = computeValueBetStats(await fetchPublicValueBetPicks(40));
+  const stats = computeValueBetStats(await fetchPublicValueBetPicks(60));
 
-  return NextResponse.json({
-    success: true,
-    entries,
-    stats,
-  });
+  return NextResponse.json(
+    {
+      success: true,
+      entries,
+      stats,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+      },
+    }
+  );
 }
