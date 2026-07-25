@@ -126,66 +126,67 @@ export default function ValueBetsHistorySnippet({
   }, [loadHistory, stats?.pending]);
 
   return (
-    <aside
-      className="w-full shrink-0 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-4 sm:p-5 lg:w-60 xl:w-64"
+    <section
+      className="mt-6 w-full max-w-3xl rounded-[2rem] border border-white/10 bg-black/30 p-5 text-left sm:p-6"
       aria-live="polite"
     >
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#18ff6d]">
-        💎 {t.valueBetsHistory.title}
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#18ff6d]">
+            💎 {t.valueBetsHistory.title}
+          </p>
+          <p className="mt-2 text-xs leading-5 text-[#777]">{t.valueBetsHistory.publicNote}</p>
+        </div>
 
-      <p className="mt-2 text-xs leading-5 text-[#777]">{t.valueBetsHistory.publicNote}</p>
-
-      {stats && stats.hitRate !== null && stats.resolved > 0 ? (
-        <p className="mt-2 text-xs text-[#A9A9A9]">
-          {t.valueBetsHistory.hitRateLabel}:{" "}
-          <span className="font-bold text-[#18ff6d]">{Math.round(stats.hitRate)}%</span>
-          <span className="text-[#666]">
-            {" "}
-            · {t.valueBetsHistory.hitRateTarget} ·{" "}
-            {formatTranslation(t.valueBetsHistory.hitRateDetail, {
-              hits: stats.hits,
-              resolved: stats.resolved,
-            })}
-          </span>
-        </p>
-      ) : (
-        <p className="mt-2 text-xs text-[#666]">{t.valueBetsHistory.hitRateTarget}</p>
-      )}
+        <div className="text-right text-xs text-[#666]">
+          {stats && stats.hitRate !== null && stats.resolved > 0 ? (
+            <p className="text-[#A9A9A9]">
+              <span className="font-bold text-[#18ff6d]">{Math.round(stats.hitRate)}%</span>
+              {" · "}
+              {formatTranslation(t.valueBetsHistory.hitRateDetail, {
+                hits: stats.hits,
+                resolved: stats.resolved,
+              })}
+            </p>
+          ) : null}
+          <p className="mt-1">{t.valueBetsHistory.hitRateTarget}</p>
+        </div>
+      </div>
 
       {entries.length === 0 ? (
         <p className="mt-4 text-sm leading-6 text-[#A9A9A9]">{t.valueBetsHistory.emptySidebar}</p>
       ) : (
-        <ul className="mt-4 space-y-2">
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {entries.map((entry) => (
             <li
               key={entry.id}
-              className="rounded-2xl border border-white/8 bg-black/30 px-3 py-2.5"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-[#18ff6d22] bg-[#121212]/60 px-3 py-2.5"
             >
-              <p className="text-xs font-medium leading-5 text-[#E8E8E8]">{entry.match_label}</p>
-              <div className="mt-1 flex items-center justify-between gap-2">
-                <p className="min-w-0 truncate text-[11px] text-[#777]">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-[#E8E8E8]">{entry.match_label}</p>
+                <p className="truncate text-xs text-[#777]">
                   {localizeMarketLabel(entry.market, language)}
                 </p>
-                <span
-                  className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] ${outcomeClass(entry.outcome)}`}
-                >
-                  {outcomeLabel(entry.outcome, t)}
-                </span>
               </div>
+              <span
+                className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] ${outcomeClass(entry.outcome)}`}
+              >
+                {outcomeLabel(entry.outcome, t)}
+              </span>
             </li>
           ))}
         </ul>
       )}
 
-      <p className="mt-3 text-[11px] text-[#555]">{t.valueBetsHistory.updated}</p>
-
-      <Link
-        href="/premium"
-        className="mt-2 inline-flex text-xs font-bold text-[#18ff6d] transition hover:underline"
-      >
-        {t.valueBetsHistory.cta} →
-      </Link>
-    </aside>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/8 pt-3">
+        <p className="text-[11px] text-[#555]">{t.valueBetsHistory.updated}</p>
+        <Link
+          href="/premium"
+          className="text-xs font-bold text-[#18ff6d] transition hover:underline"
+        >
+          {t.valueBetsHistory.cta} →
+        </Link>
+      </div>
+    </section>
   );
 }
