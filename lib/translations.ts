@@ -290,10 +290,10 @@ export const translations = {
       eliteCta: "Value Bets ingår i Elite",
       eliteHint: "Uppgradera till Elite för att se dagliga value bets med marknadsodds.",
       upgradeCta: "Uppgradera till Elite",
-      fairOdds: "Fair odds",
+      fairOdds: "Estimerat fair odds",
       marketOdds: "Marknadsodds",
       edge: "Value",
-      fairProbability: "AI fair",
+      fairProbability: "AI-sannolikhet",
       impliedProbability: "Marknad",
       explainTitle: "Vad är Value Bets?",
       explainText:

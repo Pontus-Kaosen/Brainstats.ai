@@ -96,6 +96,28 @@ export function formatMarketLabel(market: string, selection: string) {
   return `${market} · ${selection}`;
 }
 
+const MARKET_LABELS_SV: Record<string, string> = {
+  "Home win": "Hemmalag vinner",
+  "Away win": "Bortalag vinner",
+  Draw: "Oavgjort",
+  "Over 1.5 goals": "Över 1.5 mål",
+  "Over 2.5 goals": "Över 2.5 mål",
+  "Under 3.5 goals": "Under 3.5 mål",
+  "Both teams to score": "Båda lagen gör mål",
+  "Both teams not to score": "Båda lagen gör inte mål",
+};
+
+export function localizeMarketLabel(
+  market: string,
+  language: "sv" | "en"
+) {
+  if (language === "en") {
+    return market;
+  }
+
+  return MARKET_LABELS_SV[market.trim()] || market;
+}
+
 export function matchMarketOdd(
   options: MarketOddOption[],
   marketLabel: string

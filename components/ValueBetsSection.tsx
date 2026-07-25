@@ -7,6 +7,7 @@ import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import ProductExplain from "@/components/ProductExplain";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatKickoffLabel } from "@/lib/locale";
+import { localizeMarketLabel } from "@/lib/marketOdds";
 
 type ValueBetPick = {
   match: string;
@@ -190,7 +191,10 @@ export default function ValueBetsSection() {
           {picks.map((pick) => (
             <ValueBetCard
               key={`${pick.match}-${pick.market}`}
-              pick={pick}
+              pick={{
+                ...pick,
+                market: localizeMarketLabel(pick.market, language),
+              }}
               labels={{
                 fairOdds: t.valueBets.fairOdds,
                 marketOdds: t.valueBets.marketOdds,
