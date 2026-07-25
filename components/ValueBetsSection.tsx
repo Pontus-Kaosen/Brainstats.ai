@@ -37,7 +37,11 @@ type ValueBetsResponse = {
   error?: string;
 };
 
-export default function ValueBetsSection() {
+export default function ValueBetsSection({
+  hideHeader = false,
+}: {
+  hideHeader?: boolean;
+}) {
   const { t, language } = useLanguage();
   const [picks, setPicks] = useState<ValueBetPick[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,8 +120,10 @@ export default function ValueBetsSection() {
   return (
     <section
       id="value-bets"
-      className="mt-6 scroll-mt-28 rounded-[2rem] border border-[#72d5ff33] bg-gradient-to-br from-[#2fbfff]/8 via-black/20 to-[#18ff6d]/8 p-4 shadow-[0_0_60px_rgba(47,191,255,.08)] sm:mt-8 sm:p-8"
+      className={`${hideHeader ? "mt-0" : "mt-6 sm:mt-8"} scroll-mt-28 rounded-[2rem] border border-[#72d5ff33] bg-gradient-to-br from-[#2fbfff]/8 via-black/20 to-[#18ff6d]/8 p-4 shadow-[0_0_60px_rgba(47,191,255,.08)] sm:p-8`}
     >
+      {!hideHeader ? (
+      <>
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between sm:gap-4">
         <div>
           <p className="brain-title text-xs font-bold uppercase tracking-[0.3em] sm:text-sm">
@@ -141,14 +147,16 @@ export default function ValueBetsSection() {
         title={t.valueBets.explainTitle}
         text={t.valueBets.explainText}
         differentNote={t.valueBets.differentNote}
-        differentHref="#ai-tips"
+        differentHref="/ai-tips"
         differentLink={t.valueBets.differentLink}
       />
 
       <p className="mt-3 text-sm text-[#777] sm:mt-4">{t.valueBets.disclaimer}</p>
       <ResponsibleUseNotice compact className="mt-4 flex" />
+      </>
+      ) : null}
 
-      {requiresElite ? (
+      {!hideHeader && requiresElite ? (
         <div className="mt-5 rounded-2xl border border-[#72d5ff33] bg-[#2fbfff]/10 p-4 sm:p-5">
           <p className="font-bold text-[#72d5ff]">{t.valueBets.eliteCta}</p>
           <p className="mt-2 text-sm text-[#A9A9A9]">{t.valueBets.eliteHint}</p>

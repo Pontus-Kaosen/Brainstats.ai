@@ -64,8 +64,10 @@ function getScopeBadge(scope: DailySlipFixtureScope, t: ReturnType<typeof useLan
 
 export default function DailySlipsSection({
   showValueBetsLink = false,
+  hideHeader = false,
 }: {
   showValueBetsLink?: boolean;
+  hideHeader?: boolean;
 }) {
   const { t, language } = useLanguage();
   const [slips, setSlips] = useState<DailySlip[]>([]);
@@ -144,8 +146,9 @@ export default function DailySlipsSection({
   return (
     <section
       id="ai-tips"
-      className="mt-6 scroll-mt-28 rounded-[2rem] border border-[#18ff6d33] bg-gradient-to-br from-[#18ff6d]/8 via-black/20 to-[#2fbfff]/8 p-4 shadow-[0_0_60px_rgba(24,255,109,.08)] sm:mt-8 sm:p-8"
+      className={`${hideHeader ? "mt-0" : "mt-6 sm:mt-8"} scroll-mt-28 rounded-[2rem] border border-[#18ff6d33] bg-gradient-to-br from-[#18ff6d]/8 via-black/20 to-[#2fbfff]/8 p-4 shadow-[0_0_60px_rgba(24,255,109,.08)] sm:p-8`}
     >
+      {!hideHeader ? (
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between sm:gap-4">
         <div>
           <p className="brain-title text-xs font-bold uppercase tracking-[0.3em] sm:text-sm">
@@ -166,7 +169,9 @@ export default function DailySlipsSection({
           })}
         </div>
       </div>
+      ) : null}
 
+      {!hideHeader ? (
       <ProductExplain
         variant="aiTips"
         title={t.dailySlips.explainTitle}
@@ -174,12 +179,15 @@ export default function DailySlipsSection({
         differentNote={
           showValueBetsLink ? t.dailySlips.differentNote : undefined
         }
-        differentHref={showValueBetsLink ? "#value-bets" : undefined}
+        differentHref={showValueBetsLink ? "/value-bets" : undefined}
         differentLink={
           showValueBetsLink ? t.dailySlips.differentLink : undefined
         }
       />
+      ) : null}
 
+      {!hideHeader ? (
+      <>
       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#72d5ff] sm:text-sm">
         {getScopeBadge(fixtureScope, t)}
       </p>
@@ -187,6 +195,12 @@ export default function DailySlipsSection({
       <p className="mt-3 text-sm text-[#777] sm:mt-4">{t.dailySlips.disclaimer}</p>
 
       <ResponsibleUseNotice compact className="mt-4 flex" />
+      </>
+      ) : (
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#72d5ff]">
+        {getScopeBadge(fixtureScope, t)}
+      </p>
+      )}
 
       {userPlan === "free" && slipLimit < 3 ? (
         <div className="mt-5 rounded-2xl border border-[#E8DCC8]/25 bg-[#E8DCC8]/10 p-4 sm:p-5">

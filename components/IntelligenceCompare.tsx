@@ -57,7 +57,7 @@ export default function IntelligenceCompare({
           </ul>
 
           <a
-            href="#ai-tips"
+            href="/ai-tips"
             className="mt-5 inline-flex text-sm font-bold text-[#18ff6d] transition hover:text-[#7dffb0]"
           >
             {compare.aiTips.cta} →
@@ -95,7 +95,7 @@ export default function IntelligenceCompare({
           </ul>
 
           <a
-            href="#value-bets"
+            href="/value-bets"
             className="mt-5 inline-flex text-sm font-bold text-[#72d5ff] transition hover:text-[#9de5ff]"
           >
             {compare.valueBets.cta} →

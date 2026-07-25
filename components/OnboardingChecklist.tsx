@@ -54,7 +54,7 @@ export default function OnboardingChecklist({
     {
       done: aiTipsDone,
       label: t.onboarding.stepAiTips,
-      href: "/dashboard#ai-tips",
+      href: "/ai-tips",
     },
     {
       done: builderDone,

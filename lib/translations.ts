@@ -307,6 +307,67 @@ export const translations = {
       differentLink: "Se AI-tips ↑",
     },
 
+    aiTipsPage: {
+      badge: "Daily Intelligence",
+      title: "🧠 Dagens AI-kuponger",
+      description:
+        "Färdiga AI-kuponger med dagens matcher, olika riskprofil och estimerade fair odds — uppdateras varje dag.",
+      valueBetsLink: "Elite? Se Value Bets",
+      steps: [
+        {
+          title: "1. Välj kupong",
+          text: "Olika risknivåer från säkrast till mer offensiv profil.",
+        },
+        {
+          title: "2. Se fair odds",
+          text: "AI beräknar sannolikhet och estimerat fair odds per val.",
+        },
+        {
+          title: "3. Analysera vidare",
+          text: "Använd kupongen som grund och kör egen analys vid behov.",
+        },
+      ],
+    },
+
+    valueBetsPage: {
+      badge: "Elite Intelligence",
+      title: "💎 Value Bets",
+      description:
+        "Vi väljer bara spel med stark edge och hög AI-sannolikhet. Varje tips loggas offentligt så du kan följa träffsäkerheten.",
+      aiTipsLink: "Vill du ha kuponger istället? Se AI-tips",
+      eliteGateTitle: "Value Bets ingår i Elite",
+      eliteGateText:
+        "Uppgradera till Elite för dagliga value bets med marknadsodds, stjärn-ranking och sparad track record.",
+      steps: [
+        {
+          title: "1. AI vs marknad",
+          text: "Vi jämför AI fair odds mot bookmakerns pris.",
+        },
+        {
+          title: "2. Säkerhetsfilter",
+          text: "Bara spel med hög sannolikhet och tydlig edge publiceras.",
+        },
+        {
+          title: "3. Offentlig logg",
+          text: "Alla tips sparas och resultat visas på startsidan.",
+        },
+      ],
+    },
+
+    valueBetsHistory: {
+      badge: "Elite track record",
+      title: "Senaste Value Bets",
+      description:
+        "Offentlig logg över våra senaste Elite value bets — vunnit, förlorat eller väntande.",
+      hitRateLabel: "Träffsäkerhet",
+      hitRateDetail: "{hits} träffar av {resolved} avgjorda",
+      won: "Träff",
+      lost: "Miss",
+      void: "Void",
+      pending: "Väntar",
+      cta: "Lås upp Value Bets med Elite",
+    },
+
     manageSubscription: {
       opening: "Öppnar kundportalen...",
       button: "⚙️ Hantera abonnemang",
@@ -671,7 +732,7 @@ export const translations = {
       title: "Färdiga AI-kuponger varje dag",
       description:
         "BrainStats skapar dagliga kuponger med olika riskprofil och estimerade fair odds.",
-      lockText: "Logga in gratis för att se dagens AI-kuponger i dashboarden.",
+      lockText: "Logga in gratis för att se dagens AI-kuponger.",
       cta: "Logga in och lås upp",
     },
 
@@ -1307,6 +1368,67 @@ export const translations = {
       differentLink: "See AI tips ↑",
     },
 
+    aiTipsPage: {
+      badge: "Daily Intelligence",
+      title: "🧠 Today's AI slips",
+      description:
+        "Ready-made AI slips for today's matches, with different risk profiles and estimated fair odds — updated daily.",
+      valueBetsLink: "Elite? See Value Bets",
+      steps: [
+        {
+          title: "1. Pick a slip",
+          text: "Different risk levels from safest to more aggressive.",
+        },
+        {
+          title: "2. See fair odds",
+          text: "AI calculates probability and estimated fair odds per pick.",
+        },
+        {
+          title: "3. Analyze further",
+          text: "Use the slip as a base and run your own analysis if needed.",
+        },
+      ],
+    },
+
+    valueBetsPage: {
+      badge: "Elite Intelligence",
+      title: "💎 Value Bets",
+      description:
+        "We only publish picks with strong edge and high AI probability. Every tip is logged publicly so you can follow the hit rate.",
+      aiTipsLink: "Want slips instead? See AI tips",
+      eliteGateTitle: "Value Bets is included in Elite",
+      eliteGateText:
+        "Upgrade to Elite for daily value bets with market odds, star ranking and a saved track record.",
+      steps: [
+        {
+          title: "1. AI vs market",
+          text: "We compare AI fair odds to bookmaker prices.",
+        },
+        {
+          title: "2. Safety filter",
+          text: "Only picks with high probability and clear edge are published.",
+        },
+        {
+          title: "3. Public log",
+          text: "All tips are saved and results appear on the homepage.",
+        },
+      ],
+    },
+
+    valueBetsHistory: {
+      badge: "Elite track record",
+      title: "Latest Value Bets",
+      description:
+        "Public log of our latest Elite value bets — won, lost or pending.",
+      hitRateLabel: "Hit rate",
+      hitRateDetail: "{hits} hits of {resolved} resolved",
+      won: "Hit",
+      lost: "Miss",
+      void: "Void",
+      pending: "Pending",
+      cta: "Unlock Value Bets with Elite",
+    },
+
     manageSubscription: {
       opening: "Opening customer portal...",
       button: "⚙️ Manage subscription",
@@ -1671,7 +1793,7 @@ export const translations = {
       title: "Ready-made AI slips every day",
       description:
         "BrainStats creates daily slips with different risk profiles and estimated fair odds.",
-      lockText: "Sign in free to see today's AI slips in your dashboard.",
+      lockText: "Sign in free to see today's AI slips.",
       cta: "Sign in and unlock",
     },
 

@@ -20,6 +20,7 @@ import {
 } from "@/lib/marketOdds";
 import { getStockholmDateKey } from "@/lib/stockholmDate";
 import { rankValueBetPicks } from "@/lib/valueBetGrades";
+import { publishValueBetPicks } from "@/lib/trackRecordStore";
 
 export const maxDuration = 60;
 
@@ -55,8 +56,8 @@ const supabaseAdmin = createClient(
   }
 );
 
-const MIN_EDGE_PERCENT = 3;
-const MIN_FAIR_PROBABILITY = 42;
+const MIN_EDGE_PERCENT = 5;
+const MIN_FAIR_PROBABILITY = 52;
 const MAX_FIXTURES_WITH_ODDS = 10;
 const MAX_VALUE_PICKS = 5;
 const ODDS_FETCH_CONCURRENCY = 6;
@@ -361,6 +362,19 @@ export async function GET(request: Request) {
         MAX_VALUE_PICKS
       );
 
+      void publishValueBetPicks(
+        today,
+        picks.map((pick) => ({
+          fixtureId: pick.fixtureId,
+          match: pick.match,
+          market: pick.market,
+          fairProbability: pick.fairProbability,
+          edgePercent: pick.edgePercent,
+          valueTier: pick.valueTier || 3,
+          kickoffAt: pick.kickoffAt,
+        }))
+      );
+
       return NextResponse.json({
         success: true,
         plan: "elite",
@@ -403,6 +417,21 @@ export async function GET(request: Request) {
     const picks = enrichValuePicks(rawPicks, fixtures, fixtureOddsPool, language);
 
     await cacheValueBets(today, picks, fixtureScope, referenceDateKey);
+
+    if (picks.length > 0) {
+      void publishValueBetPicks(
+        today,
+        picks.map((pick) => ({
+          fixtureId: pick.fixtureId,
+          match: pick.match,
+          market: pick.market,
+          fairProbability: pick.fairProbability,
+          edgePercent: pick.edgePercent,
+          valueTier: pick.valueTier || 3,
+          kickoffAt: pick.kickoffAt,
+        }))
+      );
+    }
 
     return NextResponse.json({
       success: true,

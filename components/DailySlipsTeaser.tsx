@@ -43,7 +43,7 @@ export default function DailySlipsTeaser() {
           </p>
 
           <Link
-            href="/login?next=%2Fdashboard%23ai-tips"
+            href="/login?next=%2Fai-tips"
             className="inline-flex rounded-full bg-[#18ff6d] px-6 py-3 text-sm font-bold text-black transition hover:opacity-90"
           >
             {t.dailySlipsTeaser.cta}

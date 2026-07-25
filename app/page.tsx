@@ -5,6 +5,7 @@ import HomeCtaLink from "@/components/HomeCtaLink";
 import BrainStatsLogo from "@/components/BrainStatsLogo";
 import TrackRecordSnippet from "@/components/TrackRecordSnippet";
 import DailySlipsTeaser from "@/components/DailySlipsTeaser";
+import ValueBetsHistorySnippet from "@/components/ValueBetsHistorySnippet";
 import HomeHeroCtas from "@/components/HomeHeroCtas";
 import { getHomeContent } from "@/lib/homeContent";
 import { detectLanguage } from "@/lib/locale.server";
@@ -156,6 +157,10 @@ export default async function Home() {
 
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8">
           <DailySlipsTeaser />
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8">
+          <ValueBetsHistorySnippet />
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-8 sm:pb-24">

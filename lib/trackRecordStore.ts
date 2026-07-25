@@ -10,7 +10,7 @@ import {
 
 export type PublicTrackPickRow = {
   id: string;
-  source_type: "daily_slip" | "analysis";
+  source_type: "daily_slip" | "analysis" | "value_bet";
   source_ref: string | null;
   fixture_id: number;
   match_label: string;
@@ -79,7 +79,7 @@ export function isMissingTrackRecordTable(error: unknown) {
 }
 
 export async function insertPublicTrackPick(input: {
-  sourceType: "daily_slip" | "analysis";
+  sourceType: "daily_slip" | "analysis" | "value_bet";
   sourceRef?: string;
   fixtureId: number;
   matchLabel: string;
@@ -94,6 +94,18 @@ export async function insertPublicTrackPick(input: {
 
   if (!supabase) {
     return null;
+  }
+
+  if (input.sourceRef) {
+    const { data: existing } = await supabase
+      .from("public_track_picks")
+      .select("id")
+      .eq("source_ref", input.sourceRef)
+      .maybeSingle();
+
+    if (existing?.id) {
+      return existing.id;
+    }
   }
 
   const { data, error } = await supabase
@@ -146,6 +158,77 @@ export async function fetchPublicTrackPicks(limit = 40) {
   }
 
   return (data || []) as PublicTrackPickRow[];
+}
+
+export async function fetchPublicValueBetPicks(limit = 10) {
+  const supabase = getTrackRecordAdmin();
+
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("public_track_picks")
+    .select("*")
+    .eq("source_type", "value_bet")
+    .order("published_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    if (!isMissingTrackRecordTable(error)) {
+      console.error("Could not fetch public value bet picks:", error);
+    }
+
+    return [];
+  }
+
+  return (data || []) as PublicTrackPickRow[];
+}
+
+export function computeValueBetStats(rows: PublicTrackPickRow[]) {
+  const resolvedRows = rows.filter((row) =>
+    ["won", "lost", "void"].includes(row.outcome)
+  );
+  const hits = resolvedRows.filter((row) => row.outcome === "won").length;
+  const misses = resolvedRows.filter((row) => row.outcome === "lost").length;
+  const pending = rows.filter((row) => row.outcome === "pending").length;
+  const scored = hits + misses;
+  const hitRate = scored > 0 ? Number(((hits / scored) * 100).toFixed(1)) : null;
+
+  return {
+    resolved: resolvedRows.length,
+    hits,
+    misses,
+    pending,
+    hitRate,
+  };
+}
+
+export async function publishValueBetPicks(
+  validDate: string,
+  picks: Array<{
+    fixtureId: number;
+    match: string;
+    market: string;
+    fairProbability: number;
+    edgePercent: number;
+    valueTier: number;
+    kickoffAt?: string | null;
+  }>
+) {
+  for (const pick of picks) {
+    void insertPublicTrackPick({
+      sourceType: "value_bet",
+      sourceRef: `value_bet:${validDate}:${pick.fixtureId}:${pick.market}`,
+      fixtureId: pick.fixtureId,
+      matchLabel: pick.match,
+      market: pick.market,
+      safetyTier: pick.valueTier,
+      probability: pick.fairProbability,
+      kickoffAt: pick.kickoffAt ?? null,
+      note: `edge:${pick.edgePercent}%`,
+    });
+  }
 }
 
 export function computeTrackRecordStats(

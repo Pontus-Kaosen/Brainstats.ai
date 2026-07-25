@@ -112,10 +112,10 @@ export function rankValueBetPicks<T extends RankedValueBetPick>(
     };
   });
 
-  let filtered = graded.filter((pick) => pick.valueTier >= 3);
+  let filtered = graded.filter((pick) => pick.valueTier >= 4);
 
   if (filtered.length === 0) {
-    filtered = graded.filter((pick) => pick.valueTier >= 2);
+    filtered = graded.filter((pick) => pick.valueTier >= 3);
   }
 
   return filtered

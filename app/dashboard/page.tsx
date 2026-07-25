@@ -1,14 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import FootballBackground from "@/components/FootballBackground";
 import Navbar from "@/components/Navbar";
 import { useLanguage } from "@/components/LanguageProvider";
 import ManageSubscriptionButton from "@/components/ManageSubscriptionButton";
-import DailySlipsSection from "@/components/DailySlipsSection";
-import IntelligenceCompare from "@/components/IntelligenceCompare";
-import ValueBetsSection from "@/components/ValueBetsSection";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
 import PlanComparisonTable from "@/components/PlanComparisonTable";
 import { useIsMobile } from "@/lib/useMediaQuery";
@@ -28,8 +26,8 @@ type Analysis = {
 };
 
 const quickActions = [
-  { key: "aiTips" as const, icon: "🎯", href: "/dashboard#ai-tips", eliteOnly: false },
-  { key: "valueBets" as const, icon: "💎", href: "/dashboard#value-bets", eliteOnly: true },
+  { key: "aiTips" as const, icon: "🎯", href: "/ai-tips", eliteOnly: false },
+  { key: "valueBets" as const, icon: "💎", href: "/value-bets", eliteOnly: true },
   { key: "home" as const, icon: "🏠", href: "/", eliteOnly: false },
   { key: "builder" as const, icon: "⚽", href: "/builder", eliteOnly: false },
   { key: "analyze" as const, icon: "🧠", href: "/analyze", eliteOnly: false },
@@ -183,19 +181,14 @@ export default function DashboardPage() {
 
     const hash = window.location.hash;
 
-    if (hash !== "#ai-tips" && hash !== "#value-bets") {
+    if (hash === "#ai-tips") {
+      window.location.replace("/ai-tips");
       return;
     }
 
-    const frameId = window.requestAnimationFrame(() => {
-      document
-        .querySelector(hash)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+    if (hash === "#value-bets") {
+      window.location.replace("/value-bets");
+    }
   }, [loading]);
 
   const quickActionLabels: Record<
@@ -269,21 +262,21 @@ export default function DashboardPage() {
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
-              <a
-                href="#ai-tips"
+              <Link
+                href="/ai-tips"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15 sm:px-6 sm:text-base"
               >
                 🎯 {t.dashboard.viewAiTips}
-                <span aria-hidden>↓</span>
-              </a>
+                <span aria-hidden>→</span>
+              </Link>
               {plan === "elite" ? (
-                <a
-                  href="#value-bets"
+                <Link
+                  href="/value-bets"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#72d5ff33] bg-[#2fbfff]/10 px-5 py-3 text-sm font-bold text-[#72d5ff] transition hover:bg-[#2fbfff]/15 sm:px-6 sm:text-base"
                 >
                   💎 {t.dashboard.viewValueBets}
-                  <span aria-hidden>↓</span>
-                </a>
+                  <span aria-hidden>→</span>
+                </Link>
               ) : null}
             </div>
           </section>
@@ -356,9 +349,45 @@ export default function DashboardPage() {
             </section>
           ) : (
             <>
-              <IntelligenceCompare showValueBets={plan === "elite"} />
-              <DailySlipsSection showValueBetsLink={plan === "elite"} />
-              {plan === "elite" ? <ValueBetsSection /> : null}
+              <section className="mt-6 grid gap-4 sm:mt-8 lg:grid-cols-2">
+                <Link
+                  href="/ai-tips"
+                  className="brain-card rounded-[2rem] border border-[#18ff6d33] bg-[#18ff6d]/5 p-6 transition hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 sm:p-8"
+                >
+                  <p className="text-3xl" aria-hidden>
+                    🎯
+                  </p>
+                  <h2 className="mt-3 text-2xl font-black text-white">
+                    {t.intelligenceCompare.aiTips.label}
+                  </h2>
+                  <p className="mt-3 text-sm leading-7 text-[#A9A9A9]">
+                    {t.intelligenceCompare.aiTips.tagline}
+                  </p>
+                  <span className="mt-5 inline-flex text-sm font-bold text-[#18ff6d]">
+                    {t.intelligenceCompare.aiTips.cta} →
+                  </span>
+                </Link>
+
+                {plan === "elite" ? (
+                  <Link
+                    href="/value-bets"
+                    className="brain-card rounded-[2rem] border border-[#72d5ff33] bg-[#2fbfff]/5 p-6 transition hover:border-[#72d5ff55] hover:bg-[#2fbfff]/10 sm:p-8"
+                  >
+                    <p className="text-3xl" aria-hidden>
+                      💎
+                    </p>
+                    <h2 className="mt-3 text-2xl font-black text-white">
+                      {t.intelligenceCompare.valueBets.label}
+                    </h2>
+                    <p className="mt-3 text-sm leading-7 text-[#A9A9A9]">
+                      {t.intelligenceCompare.valueBets.tagline}
+                    </p>
+                    <span className="mt-5 inline-flex text-sm font-bold text-[#72d5ff]">
+                      {t.intelligenceCompare.valueBets.cta} →
+                    </span>
+                  </Link>
+                ) : null}
+              </section>
 
               <section className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 xl:grid-cols-4">
                 {[

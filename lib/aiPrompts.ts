@@ -789,7 +789,9 @@ Rules:
 - Use only matches from the list.
 - Each pick must include match, market, probability (10-95), and reason.
 - Prefer markets where your fair probability is meaningfully above the market implied probability shown.
-- Prioritise the safest picks with the strongest edge — probability should usually be at least 48%.
+- Prioritise the safest picks with the strongest edge — probability should usually be at least 52%.
+- Prefer conservative markets (Over 1.5 goals, home win with clear form edge) over risky longshots.
+- Return fewer picks rather than weak picks — quality over quantity.
 - probability is your AI fair probability in percent (integer).
 - Do not describe any pick as safe or guaranteed.
 
@@ -827,7 +829,9 @@ Regler:
 - Använd endast matcher i listan.
 - Varje tips ska innehålla match, market, probability (10-95) och reason.
 - Prioritera marknader där din fair-sannolikhet tydligt överstiger marknadens implicita sannolikhet i listan.
-- Välj helst de säkraste spelen med starkast edge — sannolikheten bör oftast vara minst 48%.
+- Välj helst de säkraste spelen med starkast edge — sannolikheten bör oftast vara minst 52%.
+- Prioritera konservativa marknader (Över 1.5 mål, hemmaseger med tydlig form) framför riskiga longshots.
+- Returnera färre tips hellre än svaga tips — kvalitet före kvantitet.
 - probability är din AI fair-sannolikhet i procent (heltal).
 - Beskriv inget spel som säkert eller garanterat.
 

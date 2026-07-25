@@ -256,14 +256,14 @@ export default function Navbar() {
     { title: t.navbar.standings, href: "/standings" },
     {
       title: t.navbar.aiTips,
-      href: "/dashboard#ai-tips",
+      href: "/ai-tips",
       highlight: "aiTips" as const,
     },
     ...(userPlan === "elite"
       ? [
           {
             title: t.navbar.valueBets,
-            href: "/dashboard#value-bets",
+            href: "/value-bets",
             highlight: "valueBets" as const,
           },
         ]
