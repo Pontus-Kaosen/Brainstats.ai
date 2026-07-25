@@ -861,6 +861,8 @@ export function getValueBetsApiMessages(language: Language) {
       authFailed: "Sign-in could not be verified.",
       eliteOnly: "Value Bets is an Elite feature.",
       noFixtures: "No upcoming matches with odds were found today.",
+      noValueFound:
+        "No markets cleared the value threshold right now. Check back later today.",
       createFailed: "Value bets could not be generated.",
     };
   }
@@ -870,6 +872,8 @@ export function getValueBetsApiMessages(language: Language) {
     authFailed: "Inloggningen kunde inte verifieras.",
     eliteOnly: "Value Bets är en Elite-funktion.",
     noFixtures: "Inga kommande matcher med odds hittades idag.",
+    noValueFound:
+      "Inga marknader nådde value-tröskeln just nu. Prova igen senare idag.",
     createFailed: "Value bets kunde inte genereras.",
   };
 }

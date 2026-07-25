@@ -281,9 +281,11 @@ export const translations = {
       disclaimer:
         "Jämför AI fair odds mot marknadsodds. Inte spelråd och inga resultat är garanterade.",
       loading: "Söker value bets...",
+      loadingHint: "Första laddningen kan ta upp till en halv minut.",
       errorTitle: "Value bets kunde inte laddas",
       errorDefault: "Value bets kunde inte hämtas.",
       mustLogin: "Du måste vara inloggad.",
+      retry: "Försök igen",
       empty: "Inga value bets hittades just nu.",
       eliteCta: "Value Bets ingår i Elite",
       eliteHint: "Uppgradera till Elite för att se dagliga value bets med marknadsodds.",
@@ -1274,9 +1276,11 @@ export const translations = {
       disclaimer:
         "Compares AI fair odds to market odds. Not betting advice and no results are guaranteed.",
       loading: "Scanning for value bets...",
+      loadingHint: "The first load may take up to half a minute.",
       errorTitle: "Value bets could not be loaded",
       errorDefault: "Value bets could not be fetched.",
       mustLogin: "You must be logged in.",
+      retry: "Try again",
       empty: "No value bets found right now.",
       eliteCta: "Value Bets is included in Elite",
       eliteHint: "Upgrade to Elite to see daily value bets with market odds.",

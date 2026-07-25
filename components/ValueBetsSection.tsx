@@ -159,6 +159,7 @@ export default function ValueBetsSection() {
       {loading ? (
         <div className="mt-8 rounded-3xl border border-[#72d5ff22] bg-black/30 p-8 text-center">
           <p className="font-semibold text-[#72d5ff]">{t.valueBets.loading}</p>
+          <p className="mt-2 text-sm text-[#A9A9A9]">{t.valueBets.loadingHint}</p>
         </div>
       ) : null}
 
@@ -166,6 +167,13 @@ export default function ValueBetsSection() {
         <div className="mt-8 rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
           <p className="font-bold text-red-300">{t.valueBets.errorTitle}</p>
           <p className="mt-2 text-sm text-red-200/80">{error}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-5 rounded-2xl border border-red-400/40 px-5 py-3 font-bold text-red-200"
+          >
+            {t.valueBets.retry}
+          </button>
         </div>
       ) : null}
 

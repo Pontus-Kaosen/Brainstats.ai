@@ -20,6 +20,8 @@ import {
 } from "@/lib/marketOdds";
 import { getStockholmDateKey } from "@/lib/stockholmDate";
 
+export const maxDuration = 60;
+
 export type ValueBetPick = {
   match: string;
   market: string;
@@ -50,8 +52,42 @@ const supabaseAdmin = createClient(
 );
 
 const MIN_EDGE_PERCENT = 2;
-const MAX_FIXTURES_WITH_ODDS = 18;
+const MAX_FIXTURES_WITH_ODDS = 10;
 const MAX_VALUE_PICKS = 5;
+const ODDS_FETCH_CONCURRENCY = 6;
+const OPENAI_ATTEMPTS = 2;
+
+function isMissingTableError(error: { code?: string; message?: string } | null) {
+  if (!error) {
+    return false;
+  }
+
+  const message = (error.message || "").toLowerCase();
+
+  return (
+    error.code === "42P01" ||
+    error.code === "PGRST116" ||
+    error.code === "PGRST205" ||
+    (message.includes("value_bets") &&
+      (message.includes("could not find") || message.includes("does not exist")))
+  );
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  mapper: (item: T) => Promise<R>
+) {
+  const results: R[] = [];
+
+  for (let index = 0; index < items.length; index += limit) {
+    const batch = items.slice(index, index + limit);
+    const batchResults = await Promise.all(batch.map(mapper));
+    results.push(...batchResults);
+  }
+
+  return results;
+}
 
 function cleanOpenAIJson(content: string) {
   return content
@@ -85,44 +121,99 @@ function normalizeMarketLabel(market: string, language: ReturnType<typeof parseR
 async function buildFixtureOddsPool(
   fixtures: Awaited<ReturnType<typeof resolveDailySlipFixtures>>["fixtures"]
 ) {
-  const pool: Array<{
-    fixtureId: number;
-    match: string;
-    league: string;
-    kickoffAt: string;
-    rawOptions: MarketOddOption[];
-    markets: Array<{
-      market: string;
-      selection: string;
-      decimalOdd: number;
-      impliedProbability: number;
-    }>;
-  }> = [];
+  const entries = await mapWithConcurrency(
+    fixtures.slice(0, MAX_FIXTURES_WITH_ODDS),
+    ODDS_FETCH_CONCURRENCY,
+    async (fixture) => {
+      const oddsResponse = await fetchFixtureOdds(fixture.fixtureId);
+      const options = extractMarketOdds(oddsResponse);
 
-  for (const fixture of fixtures.slice(0, MAX_FIXTURES_WITH_ODDS)) {
-    const oddsResponse = await fetchFixtureOdds(fixture.fixtureId);
-    const options = extractMarketOdds(oddsResponse);
+      if (options.length === 0) {
+        return null;
+      }
 
-    if (options.length === 0) {
-      continue;
+      return {
+        fixtureId: fixture.fixtureId,
+        match: `${fixture.homeTeam} - ${fixture.awayTeam}`,
+        league: fixture.league,
+        kickoffAt: fixture.date,
+        rawOptions: options,
+        markets: options.map((option) => ({
+          market: formatMarketLabel(option.market, option.selection),
+          selection: option.selection,
+          decimalOdd: option.decimalOdd,
+          impliedProbability: option.impliedProbability,
+        })),
+      };
     }
+  );
 
-    pool.push({
-      fixtureId: fixture.fixtureId,
-      match: `${fixture.homeTeam} - ${fixture.awayTeam}`,
-      league: fixture.league,
-      kickoffAt: fixture.date,
-      rawOptions: options,
-      markets: options.map((option) => ({
-        market: formatMarketLabel(option.market, option.selection),
-        selection: option.selection,
-        decimalOdd: option.decimalOdd,
-        impliedProbability: option.impliedProbability,
-      })),
-    });
+  return entries.filter(
+    (entry): entry is NonNullable<(typeof entries)[number]> => entry !== null
+  );
+}
+
+async function requestValueBetPicks(
+  language: ReturnType<typeof parseRequestLanguage>,
+  fixtureOddsPool: Awaited<ReturnType<typeof buildFixtureOddsPool>>
+) {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < OPENAI_ATTEMPTS; attempt += 1) {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.4,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: buildValueBetsSystemPrompt(language),
+          },
+          {
+            role: "user",
+            content: buildValueBetsUserPrompt(language, fixtureOddsPool),
+          },
+        ],
+      });
+
+      const content = completion.choices[0]?.message?.content;
+
+      if (!content) {
+        throw new Error("OpenAI returned empty content");
+      }
+
+      return JSON.parse(cleanOpenAIJson(content));
+    } catch (error) {
+      lastError = error;
+      console.error(`Value bets OpenAI attempt ${attempt + 1} failed:`, error);
+    }
   }
 
-  return pool;
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("OpenAI value bets generation failed");
+}
+
+async function cacheValueBets(
+  today: string,
+  picks: ValueBetPick[],
+  fixtureScope: string,
+  referenceDateKey: string
+) {
+  const { error } = await supabaseAdmin.from("value_bets").upsert(
+    {
+      valid_date: today,
+      picks,
+      fixture_scope: fixtureScope,
+      reference_date_key: referenceDateKey,
+    },
+    { onConflict: "valid_date" }
+  );
+
+  if (error && !isMissingTableError(error)) {
+    console.error("Value bets cache write failed:", error);
+  }
 }
 
 function enrichValuePicks(
@@ -257,11 +348,11 @@ export async function GET(request: Request) {
       .eq("valid_date", today)
       .maybeSingle();
 
-    if (cachedError && cachedError.code !== "PGRST116" && cachedError.code !== "42P01") {
+    if (cachedError && !isMissingTableError(cachedError)) {
       throw cachedError;
     }
 
-    if (cached?.picks) {
+    if (Array.isArray(cached?.picks) && cached.picks.length > 0) {
       return NextResponse.json({
         success: true,
         plan: "elite",
@@ -299,41 +390,11 @@ export async function GET(request: Request) {
       });
     }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.4,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: buildValueBetsSystemPrompt(language),
-        },
-        {
-          role: "user",
-          content: buildValueBetsUserPrompt(language, fixtureOddsPool),
-        },
-      ],
-    });
-
-    const content = completion.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error(messages.createFailed);
-    }
-
-    const parsed = JSON.parse(cleanOpenAIJson(content));
+    const parsed = await requestValueBetPicks(language, fixtureOddsPool);
     const rawPicks = Array.isArray(parsed?.picks) ? parsed.picks : [];
     const picks = enrichValuePicks(rawPicks, fixtures, fixtureOddsPool, language);
 
-    await supabaseAdmin.from("value_bets").upsert(
-      {
-        valid_date: today,
-        picks,
-        fixture_scope: fixtureScope,
-        reference_date_key: referenceDateKey,
-      },
-      { onConflict: "valid_date" }
-    );
+    await cacheValueBets(today, picks, fixtureScope, referenceDateKey);
 
     return NextResponse.json({
       success: true,
@@ -342,6 +403,7 @@ export async function GET(request: Request) {
       fixtureScope,
       referenceDateKey,
       cached: false,
+      message: picks.length === 0 ? messages.noValueFound : undefined,
     });
   } catch (error) {
     console.error("Value bets error:", error);
