@@ -81,6 +81,14 @@ export default async function TrackRecordPage() {
             </section>
           ) : null}
 
+          {!t.usingLiveData ? (
+            <p className="mx-auto mt-6 inline-flex rounded-full border border-[#E8DCC8]/25 bg-[#E8DCC8]/10 px-4 py-2 text-xs font-semibold text-[#E8DCC8]">
+              {language === "en"
+                ? "Example data — live log fills automatically"
+                : "Exempeldata — live logg fylls automatiskt"}
+            </p>
+          ) : null}
+
           <section className="mt-10 rounded-[2rem] border border-white/10 bg-black/30 p-6 text-center sm:p-8 sm:text-left">
             <h2 className="text-xl font-black text-white">{t.howTitle}</h2>
             <ol className="mt-4 space-y-3">

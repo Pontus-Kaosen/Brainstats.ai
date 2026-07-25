@@ -60,31 +60,24 @@ export default function HomeHeroCtas() {
 
   return (
     <div className="mt-6 grid w-full max-w-3xl grid-cols-1 gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4">
-      <HomeCtaLink
-        href="/login?next=/analyze%3Fmode%3Dimage"
-        className="w-full sm:col-span-2"
-      >
-        📸 {t.uploadBetSlip}
+      <HomeCtaLink href="/analyze?sample=1" className="w-full sm:col-span-2">
+        🧠 {t.sampleReportCta}
+      </HomeCtaLink>
+
+      <HomeCtaLink href="/builder" className="w-full">
+        ⚽ {t.buildBet}
       </HomeCtaLink>
 
       <HomeCtaLink href="/login?next=/analyze" className="w-full">
         ✨ {t.signupFree}
       </HomeCtaLink>
 
-      <HomeCtaLink href="/analyze?sample=1" className="w-full">
-        📝 {t.pasteBet}
-      </HomeCtaLink>
-
       <HomeCtaLink
-        href="/analyze?sample=1"
+        href="/login?next=/analyze%3Fmode%3Dimage"
         variant="secondary"
         className="w-full sm:col-span-2"
       >
-        🧠 {t.sampleReportCta}
-      </HomeCtaLink>
-
-      <HomeCtaLink href="/builder" variant="secondary" className="w-full sm:col-span-2">
-        ⚽ {t.buildBet}
+        📸 {t.uploadBetSlip}
       </HomeCtaLink>
     </div>
   );

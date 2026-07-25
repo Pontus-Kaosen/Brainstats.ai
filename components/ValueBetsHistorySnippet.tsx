@@ -153,7 +153,16 @@ export default function ValueBetsHistorySnippet({
       </div>
 
       {entries.length === 0 ? (
-        <p className="mt-4 text-sm leading-6 text-[#A9A9A9]">{t.valueBetsHistory.emptySidebar}</p>
+        <div className="mt-4 space-y-3">
+          <p className="text-sm leading-6 text-[#A9A9A9]">{t.valueBetsHistory.emptySidebar}</p>
+          <p className="text-xs leading-5 text-[#666]">{t.valueBetsHistory.emptyHint}</p>
+          <Link
+            href="/analyze?sample=1"
+            className="inline-flex text-xs font-bold text-[#72d5ff] transition hover:text-[#9de5ff] hover:underline"
+          >
+            {language === "en" ? "See sample BrainScore report" : "Se exempelrapport"} →
+          </Link>
+        </div>
       ) : (
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {entries.map((entry) => (
