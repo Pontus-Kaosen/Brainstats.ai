@@ -71,17 +71,66 @@ export function calculateValueBetScore(
   edgePercent: number,
   fairProbability: number
 ) {
-  return Number((edgePercent * 0.55 + fairProbability * 0.45).toFixed(2));
+  return Number((edgePercent * 0.35 + fairProbability * 0.65).toFixed(2));
+}
+
+export function isHighConfidenceValueMarket(market: string) {
+  const normalized = market.trim().toLowerCase();
+
+  if (
+    normalized.includes("draw") ||
+    normalized.includes("oavgjort") ||
+    normalized.includes("away win") ||
+    normalized.includes("bortalag vinner") ||
+    normalized.includes("both teams to score") ||
+    normalized.includes("båda lagen gör mål") ||
+    normalized.includes("over 2.5")
+  ) {
+    return false;
+  }
+
+  return (
+    normalized.includes("over 1.5") ||
+    normalized.includes("under 3.5") ||
+    normalized === "home win" ||
+    normalized === "hemmalag vinner" ||
+    normalized.includes("both teams not to score") ||
+    normalized.includes("båda lagen gör inte mål")
+  );
+}
+
+export function passesValueBetSafetyGate(
+  market: string,
+  fairProbability: number,
+  edgePercent: number
+) {
+  if (!isHighConfidenceValueMarket(market)) {
+    return false;
+  }
+
+  if (fairProbability < 55 || edgePercent < 3) {
+    return false;
+  }
+
+  if (
+    (/home win|hemmalag vinner/i.test(market) ||
+      /both teams not to score|båda lagen gör inte mål/i.test(market)) &&
+    fairProbability < 58
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 export function resolveValueBetTier(
   edgePercent: number,
   fairProbability: number
 ): ValueBetTier {
-  if (edgePercent >= 12 && fairProbability >= 58) return 5;
-  if (edgePercent >= 8 && fairProbability >= 52) return 4;
-  if (edgePercent >= 5 && fairProbability >= 48) return 3;
-  if (edgePercent >= 3 && fairProbability >= 42) return 2;
+  if (edgePercent >= 9 && fairProbability >= 62) return 5;
+  if (edgePercent >= 6 && fairProbability >= 58) return 4;
+  if (edgePercent >= 4 && fairProbability >= 55) return 3;
+  if (edgePercent >= 3 && fairProbability >= 52) return 2;
 
   return 1;
 }
@@ -89,6 +138,7 @@ export function resolveValueBetTier(
 export type RankedValueBetPick = {
   edgePercent: number;
   fairProbability: number;
+  market?: string;
   valueTier?: ValueBetTier;
   valueScore?: number;
   valueRank?: number;
@@ -96,30 +146,49 @@ export type RankedValueBetPick = {
 
 export function rankValueBetPicks<T extends RankedValueBetPick>(
   picks: T[],
-  maxPicks = 5
+  maxPicks = 4
 ): Array<T & { valueTier: ValueBetTier; valueScore: number; valueRank: number }> {
-  const graded = picks.map((pick) => {
-    const valueTier = resolveValueBetTier(pick.edgePercent, pick.fairProbability);
-    const valueScore = calculateValueBetScore(
-      pick.edgePercent,
-      pick.fairProbability
-    );
+  const graded = picks
+    .filter(
+      (pick) =>
+        pick.market &&
+        passesValueBetSafetyGate(
+          pick.market,
+          pick.fairProbability,
+          pick.edgePercent
+        )
+    )
+    .map((pick) => {
+      const valueTier = resolveValueBetTier(
+        pick.edgePercent,
+        pick.fairProbability
+      );
+      const valueScore = calculateValueBetScore(
+        pick.edgePercent,
+        pick.fairProbability
+      );
 
-    return {
-      ...pick,
-      valueTier,
-      valueScore,
-    };
-  });
+      return {
+        ...pick,
+        valueTier,
+        valueScore,
+      };
+    });
 
   let filtered = graded.filter((pick) => pick.valueTier >= 4);
 
   if (filtered.length === 0) {
-    filtered = graded.filter((pick) => pick.valueTier >= 3);
+    filtered = graded.filter(
+      (pick) => pick.valueTier >= 3 && pick.fairProbability >= 56
+    );
   }
 
   return filtered
     .sort((a, b) => {
+      if (b.fairProbability !== a.fairProbability) {
+        return b.fairProbability - a.fairProbability;
+      }
+
       if (b.valueTier !== a.valueTier) {
         return b.valueTier - a.valueTier;
       }

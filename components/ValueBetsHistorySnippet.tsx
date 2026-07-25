@@ -5,24 +5,18 @@ import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
 import { localizeMarketLabel } from "@/lib/marketOdds";
-import ValueStars from "@/components/ValueStars";
 
 type ValueBetHistoryEntry = {
   id: string;
   match_label: string;
   market: string;
   outcome: "pending" | "won" | "lost" | "void";
-  safety_tier: number | null;
-  probability: number | null;
-  published_at: string;
-  note: string | null;
 };
 
 type ValueBetHistoryStats = {
   resolved: number;
   hits: number;
   hitRate: number | null;
-  pending: number;
 };
 
 function outcomeLabel(
@@ -36,10 +30,19 @@ function outcomeLabel(
 }
 
 function outcomeClass(outcome: ValueBetHistoryEntry["outcome"]) {
-  if (outcome === "won") return "text-[#18ff6d]";
-  if (outcome === "lost") return "text-red-400";
-  if (outcome === "pending") return "text-[#E8DCC8]";
-  return "text-[#A9A9A9]";
+  if (outcome === "won") {
+    return "border-[#18ff6d33] bg-[#18ff6d]/10 text-[#18ff6d]";
+  }
+
+  if (outcome === "lost") {
+    return "border-red-500/30 bg-red-500/10 text-red-300";
+  }
+
+  if (outcome === "pending") {
+    return "border-[#E8DCC8]/20 bg-[#E8DCC8]/5 text-[#E8DCC8]";
+  }
+
+  return "border-white/10 bg-black/20 text-[#A9A9A9]";
 }
 
 export default function ValueBetsHistorySnippet() {
@@ -52,7 +55,7 @@ export default function ValueBetsHistorySnippet() {
 
     async function loadHistory() {
       try {
-        const response = await fetch("/api/value-bets/history", {
+        const response = await fetch("/api/value-bets/history?limit=8", {
           cache: "no-store",
         });
         const data = await response.json();
@@ -61,7 +64,7 @@ export default function ValueBetsHistorySnippet() {
           return;
         }
 
-        setEntries(data.entries.slice(0, 10));
+        setEntries(data.entries.slice(0, 8));
         setStats(data.stats || null);
       } catch {
         // Keep section hidden when unavailable
@@ -80,79 +83,61 @@ export default function ValueBetsHistorySnippet() {
   }
 
   return (
-    <section className="rounded-[2rem] border border-[#72d5ff33] bg-gradient-to-br from-[#2fbfff]/8 via-black/30 to-[#18ff6d]/5 p-5 sm:p-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#72d5ff]">
-            {t.valueBetsHistory.badge}
-          </p>
-          <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">
+    <section className="rounded-2xl border border-[#18ff6d22] bg-black/50 px-4 py-4 backdrop-blur-sm sm:rounded-[1.5rem] sm:px-5 sm:py-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 pb-3">
+        <div className="flex items-center gap-2">
+          <span aria-hidden className="text-lg">
+            💎
+          </span>
+          <h2 className="text-sm font-black uppercase tracking-[0.16em] text-[#18ff6d] sm:text-base">
             {t.valueBetsHistory.title}
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9]">
-            {t.valueBetsHistory.description}
-          </p>
         </div>
 
         {stats && stats.hitRate !== null && stats.resolved > 0 ? (
-          <div className="rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-4 text-center">
-            <p className="text-xs uppercase tracking-[0.18em] text-[#777]">
-              {t.valueBetsHistory.hitRateLabel}
-            </p>
-            <p className="mt-1 text-3xl font-black text-[#18ff6d]">
+          <p className="text-xs text-[#A9A9A9] sm:text-sm">
+            {t.valueBetsHistory.hitRateLabel}:{" "}
+            <span className="font-bold text-[#18ff6d]">
               {Math.round(stats.hitRate)}%
-            </p>
-            <p className="mt-1 text-xs text-[#A9A9A9]">
+            </span>
+            <span className="ml-2 text-[#777]">· {t.valueBetsHistory.hitRateTarget}</span>
+            <span className="hidden sm:inline">
+              {" "}
+              (
               {formatTranslation(t.valueBetsHistory.hitRateDetail, {
                 hits: stats.hits,
                 resolved: stats.resolved,
               })}
-            </p>
-          </div>
-        ) : null}
+              )
+            </span>
+          </p>
+        ) : (
+          <p className="text-xs text-[#777] sm:text-sm">{t.valueBetsHistory.hitRateTarget}</p>
+        )}
       </div>
 
-      <div className="mt-6 space-y-3">
+      <ul className="mt-3 space-y-2">
         {entries.map((entry) => (
-          <article
+          <li
             key={entry.id}
-            className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 sm:px-5 sm:py-4"
+            className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-black/30 px-3 py-2.5 sm:px-4"
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-white">
-                  {entry.match_label}
-                </p>
-                <p className="mt-1 text-sm text-[#CFCFCF]">
-                  {localizeMarketLabel(entry.market, language)}
-                </p>
-                {entry.safety_tier ? (
-                  <div className="mt-2">
-                    <ValueStars tier={entry.safety_tier} size="sm" />
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="flex shrink-0 items-center gap-4">
-                {entry.probability ? (
-                  <p className="text-sm text-[#777]">
-                    {entry.probability}%
-                  </p>
-                ) : null}
-                <span
-                  className={`text-sm font-bold uppercase tracking-[0.12em] ${outcomeClass(entry.outcome)}`}
-                >
-                  {outcomeLabel(entry.outcome, t)}
-                </span>
-              </div>
-            </div>
-          </article>
+            <p className="min-w-0 truncate text-sm text-[#E8E8E8]">
+              {entry.match_label} ·{" "}
+              {localizeMarketLabel(entry.market, language)}
+            </p>
+            <span
+              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${outcomeClass(entry.outcome)}`}
+            >
+              {outcomeLabel(entry.outcome, t)}
+            </span>
+          </li>
         ))}
-      </div>
+      </ul>
 
       <Link
         href="/premium"
-        className="mt-6 inline-flex text-sm font-bold text-[#72d5ff] transition hover:text-[#9de5ff]"
+        className="mt-3 inline-flex text-xs font-bold text-[#72d5ff] transition hover:text-[#9de5ff] sm:text-sm"
       >
         {t.valueBetsHistory.cta} →
       </Link>

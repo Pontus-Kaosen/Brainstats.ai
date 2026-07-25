@@ -21,6 +21,10 @@ export default async function Home() {
       <div className="relative z-10">
         <Navbar />
 
+        <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-8 sm:pt-6">
+          <ValueBetsHistorySnippet />
+        </section>
+
         <section className="mx-auto flex max-w-7xl flex-col items-center px-4 py-10 text-center sm:px-8 sm:py-32">
           <p className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-xs font-semibold text-[#18ff6d] sm:text-sm">
             {t.badge}
@@ -157,10 +161,6 @@ export default async function Home() {
 
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8">
           <DailySlipsTeaser />
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8">
-          <ValueBetsHistorySnippet />
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-8 sm:pb-24">

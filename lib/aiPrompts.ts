@@ -783,26 +783,24 @@ export function buildValueBetsUserPrompt(
 ) {
   if (language === "en") {
     return `
-Find up to 5 value bets from the list below.
+Find up to 4 value bets from the list below.
 
 Rules:
 - Use only matches from the list.
 - Each pick must include match, market, probability (10-95), and reason.
+- Target a conservative profile aimed at roughly 70–90% historical hit rate — never call this guaranteed.
 - Prefer markets where your fair probability is meaningfully above the market implied probability shown.
-- Prioritise the safest picks with the strongest edge — probability should usually be at least 52%.
-- Prefer conservative markets (Over 1.5 goals, home win with clear form edge) over risky longshots.
+- Probability should usually be at least 55% and preferably 58%+.
+- Prefer conservative markets only: Over 1.5 goals, Under 3.5 goals, home win with clear edge, both teams not to score.
+- Avoid draw, away win, Over 2.5 and both teams to score unless probability is exceptionally high (not recommended).
 - Return fewer picks rather than weak picks — quality over quantity.
 - probability is your AI fair probability in percent (integer).
 - Do not describe any pick as safe or guaranteed.
 
 Allowed markets:
 - Home win
-- Away win
-- Draw
 - Over 1.5 goals
-- Over 2.5 goals
 - Under 3.5 goals
-- Both teams to score
 - Both teams not to score
 
 Fixtures with market odds reference:
@@ -823,26 +821,24 @@ Respond exactly:
   }
 
   return `
-Hitta upp till 5 value bets från listan nedan.
+Hitta upp till 4 value bets från listan nedan.
 
 Regler:
 - Använd endast matcher i listan.
 - Varje tips ska innehålla match, market, probability (10-95) och reason.
+- Sikta på en konservativ profil med mål runt 70–90% träffsäkerhet historiskt — kalla aldrig detta garanterat.
 - Prioritera marknader där din fair-sannolikhet tydligt överstiger marknadens implicita sannolikhet i listan.
-- Välj helst de säkraste spelen med starkast edge — sannolikheten bör oftast vara minst 52%.
-- Prioritera konservativa marknader (Över 1.5 mål, hemmaseger med tydlig form) framför riskiga longshots.
+- Sannolikheten bör oftast vara minst 55% och hellre 58%+.
+- Prioritera endast konservativa marknader: Över 1.5 mål, Under 3.5 mål, hemmaseger med tydlig edge, båda lagen gör inte mål.
+- Undvik oavgjort, bortaseger, Över 2.5 och båda lagen gör mål om det inte är exceptionellt (rekommenderas inte).
 - Returnera färre tips hellre än svaga tips — kvalitet före kvantitet.
 - probability är din AI fair-sannolikhet i procent (heltal).
 - Beskriv inget spel som säkert eller garanterat.
 
 Tillåtna marknader:
 - Hemmalag vinner
-- Bortalag vinner
-- Oavgjort
 - Över 1.5 mål
-- Över 2.5 mål
 - Under 3.5 mål
-- Båda lagen gör mål
 - Båda lagen gör inte mål
 
 Matcher med referensodds:

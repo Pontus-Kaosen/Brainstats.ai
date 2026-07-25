@@ -333,7 +333,7 @@ export const translations = {
       badge: "Elite Intelligence",
       title: "💎 Value Bets",
       description:
-        "Vi väljer bara spel med stark edge och hög AI-sannolikhet. Varje tips loggas offentligt så du kan följa träffsäkerheten.",
+        "Vi väljer bara spel med stark edge och hög AI-sannolikhet (mål 70–90% träff). Varje tips loggas offentligt.",
       aiTipsLink: "Vill du ha kuponger istället? Se AI-tips",
       eliteGateTitle: "Value Bets ingår i Elite",
       eliteGateText:
@@ -358,11 +358,12 @@ export const translations = {
       badge: "Elite track record",
       title: "Senaste Value Bets",
       description:
-        "Offentlig logg över våra senaste Elite value bets — vunnit, förlorat eller väntande.",
+        "Kort logg över våra senaste Elite value bets — vad spelet var och om det gick in.",
       hitRateLabel: "Träffsäkerhet",
-      hitRateDetail: "{hits} träffar av {resolved} avgjorda",
-      won: "Träff",
-      lost: "Miss",
+      hitRateTarget: "Mål: 70–90%",
+      hitRateDetail: "{hits} av {resolved}",
+      won: "Gick in",
+      lost: "Gick inte",
       void: "Void",
       pending: "Väntar",
       cta: "Lås upp Value Bets med Elite",
@@ -1394,7 +1395,7 @@ export const translations = {
       badge: "Elite Intelligence",
       title: "💎 Value Bets",
       description:
-        "We only publish picks with strong edge and high AI probability. Every tip is logged publicly so you can follow the hit rate.",
+        "We only publish picks with strong edge and high AI probability (70–90% hit target). Every tip is logged publicly.",
       aiTipsLink: "Want slips instead? See AI tips",
       eliteGateTitle: "Value Bets is included in Elite",
       eliteGateText:
@@ -1421,9 +1422,10 @@ export const translations = {
       description:
         "Public log of our latest Elite value bets — won, lost or pending.",
       hitRateLabel: "Hit rate",
-      hitRateDetail: "{hits} hits of {resolved} resolved",
-      won: "Hit",
-      lost: "Miss",
+      hitRateTarget: "Target: 70–90%",
+      hitRateDetail: "{hits} of {resolved}",
+      won: "Won",
+      lost: "Lost",
       void: "Void",
       pending: "Pending",
       cta: "Unlock Value Bets with Elite",

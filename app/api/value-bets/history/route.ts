@@ -5,10 +5,16 @@ import {
   resolvePendingTrackPicks,
 } from "@/lib/trackRecordStore";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const limit = Math.min(
+    8,
+    Math.max(1, Number(searchParams.get("limit") || 8))
+  );
+
   await resolvePendingTrackPicks(30);
-  const entries = await fetchPublicValueBetPicks(10);
-  const stats = computeValueBetStats(entries);
+  const entries = await fetchPublicValueBetPicks(limit);
+  const stats = computeValueBetStats(await fetchPublicValueBetPicks(40));
 
   return NextResponse.json({
     success: true,

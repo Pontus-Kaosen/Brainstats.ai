@@ -19,7 +19,7 @@ import {
   type MarketOddOption,
 } from "@/lib/marketOdds";
 import { getStockholmDateKey } from "@/lib/stockholmDate";
-import { rankValueBetPicks } from "@/lib/valueBetGrades";
+import { rankValueBetPicks, passesValueBetSafetyGate } from "@/lib/valueBetGrades";
 import { publishValueBetPicks } from "@/lib/trackRecordStore";
 
 export const maxDuration = 60;
@@ -56,10 +56,10 @@ const supabaseAdmin = createClient(
   }
 );
 
-const MIN_EDGE_PERCENT = 5;
-const MIN_FAIR_PROBABILITY = 52;
+const MIN_EDGE_PERCENT = 3;
+const MIN_FAIR_PROBABILITY = 55;
 const MAX_FIXTURES_WITH_ODDS = 10;
-const MAX_VALUE_PICKS = 5;
+const MAX_VALUE_PICKS = 4;
 const ODDS_FETCH_CONCURRENCY = 6;
 const OPENAI_ATTEMPTS = 2;
 
@@ -268,6 +268,12 @@ function enrichValuePicks(
     );
 
     if (edgePercent < MIN_EDGE_PERCENT || fairProbability < MIN_FAIR_PROBABILITY) {
+      continue;
+    }
+
+    if (
+      !passesValueBetSafetyGate(market, fairProbability, edgePercent)
+    ) {
       continue;
     }
 
