@@ -12,12 +12,7 @@ export default function Button({
 }: ButtonProps) {
   const variants = {
     primary: `
-      border border-[#18ff6d55]
-      bg-gradient-to-r from-[#18ff6d] via-[#3cffb4] to-[#2fbfff]
-      text-black
-      shadow-[0_0_35px_rgba(24,255,109,.35)]
-      hover:shadow-[0_0_55px_rgba(24,255,109,.75)]
-      hover:brightness-110
+      brain-cta-primary
     `,
 
     secondary: `

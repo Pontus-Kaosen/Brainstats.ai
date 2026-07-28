@@ -14,8 +14,7 @@ export default function HomeCtaLink({
   children,
 }: HomeCtaLinkProps) {
   const variants = {
-    primary:
-      "border border-[#18ff6d55] bg-gradient-to-r from-[#18ff6d] via-[#3cffb4] to-[#2fbfff] text-black shadow-[0_0_35px_rgba(24,255,109,.35)] hover:shadow-[0_0_55px_rgba(24,255,109,.75)] hover:brightness-110",
+    primary: "brain-cta-primary",
     secondary:
       "border border-[#18ff6d55] bg-[#121212]/70 text-[#18ff6d] hover:bg-[#18ff6d22] hover:border-[#18ff6d] hover:shadow-[0_0_40px_rgba(24,255,109,.25)] max-md:backdrop-blur-none backdrop-blur-xl",
   };

@@ -490,7 +490,7 @@ export default function DashboardPage() {
                     {plan === "free" && (
                       <a
                         href="/premium"
-                        className="mt-8 inline-flex rounded-2xl border border-[#18ff6d55] bg-gradient-to-r from-[#18ff6d] via-[#3cffb4] to-[#2fbfff] px-6 py-4 font-bold text-black shadow-[0_0_35px_rgba(24,255,109,.35)] transition hover:-translate-y-1 hover:shadow-[0_0_55px_rgba(24,255,109,.65)]"
+                        className="brain-cta-primary mt-8 inline-flex rounded-2xl px-6 py-4 font-bold transition hover:-translate-y-1"
                       >
                         {t.dashboard.seePlans}
                       </a>
