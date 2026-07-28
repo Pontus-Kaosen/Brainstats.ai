@@ -37,7 +37,7 @@ export default async function Home() {
         <Navbar />
 
         <section className="mx-auto flex max-w-7xl flex-col items-center px-4 py-10 text-center sm:px-8 sm:py-16 lg:py-20">
-          <p className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-xs font-semibold text-[#18ff6d] sm:text-sm">
+          <p className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#18ff6d] sm:text-sm">
             {t.badge}
           </p>
 
@@ -123,7 +123,7 @@ export default async function Home() {
             {t.howItWorksSteps.map((step) => (
               <article
                 key={step.title}
-                className="rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6"
+                className="brain-section rounded-3xl p-6"
               >
                 <h3 className="text-lg font-bold text-[#18ff6d]">{step.title}</h3>
                 <p className="mt-3 text-sm leading-7 text-[#A9A9A9]">{step.text}</p>
@@ -133,7 +133,7 @@ export default async function Home() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8 sm:pb-16">
-          <div className="grid gap-8 rounded-[2rem] border border-[#E8DCC8]/20 bg-gradient-to-br from-[#18ff6d]/5 via-black/40 to-[#2fbfff]/5 p-6 text-center sm:grid-cols-2 sm:p-10 sm:text-left">
+          <div className="grid gap-8 rounded-[2rem] border border-[#18ff6d]/20 brain-section p-6 text-center sm:grid-cols-2 sm:p-10 sm:text-left">
             <div>
               <h2 className="text-2xl font-black text-white sm:text-3xl">
                 {t.brainScoreTitle}
@@ -191,7 +191,7 @@ export default async function Home() {
               <Link
                 key={card.title}
                 href={card.href}
-                className="rounded-3xl border border-white/5 bg-[#1A1A1A] p-4 text-center transition hover:border-[#18ff6d44] sm:p-8 md:text-left"
+                className="brain-card rounded-3xl p-4 text-center transition hover:-translate-y-1 sm:p-8 md:text-left"
               >
                 <h2 className="text-xl font-bold text-[#E8DCC8]">{card.title}</h2>
 

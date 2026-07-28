@@ -8,10 +8,12 @@
   --z-dropdown: 140;
   --z-cookie: 300;
 
-  /* Brand surfaces — mörk men med grön/blå ton */
-  --brain-page-from: #071018;
-  --brain-page-mid: #0b1a28;
-  --brain-page-to: #060e16;
+  /* Brand surfaces — mörk plan med grön ton */
+  --brain-page-from: #061018;
+  --brain-page-mid: #0a1f18;
+  --brain-page-to: #071612;
+  --brain-grass: #0f2e22;
+  --brain-grass-light: #144a32;
   --brain-accent-green: #18ff6d;
   --brain-accent-blue: #2fbfff;
   --brain-accent-cream: #e8dcc8;
@@ -33,20 +35,21 @@
 
 .brain-page {
   background: linear-gradient(
-    165deg,
+    180deg,
     var(--brain-page-from) 0%,
-    var(--brain-page-mid) 42%,
+    var(--brain-page-mid) 48%,
+    var(--brain-grass) 72%,
     var(--brain-page-to) 100%
   );
   color: #fafaf8;
 }
 
 .brain-section {
-  border: 1px solid rgba(24, 255, 109, 0.16);
+  border: 1px solid rgba(24, 255, 109, 0.2);
   background: linear-gradient(
     145deg,
-    rgba(12, 30, 42, 0.88) 0%,
-    rgba(8, 20, 30, 0.92) 100%
+    rgba(14, 36, 30, 0.9) 0%,
+    rgba(10, 26, 22, 0.94) 100%
   );
   backdrop-filter: blur(16px);
 }
@@ -61,11 +64,11 @@
 }
 
 .brain-stat-tile {
-  border: 1px solid rgba(24, 255, 109, 0.18);
+  border: 1px solid rgba(24, 255, 109, 0.22);
   background: linear-gradient(
     160deg,
-    rgba(18, 42, 36, 0.45) 0%,
-    rgba(10, 24, 34, 0.65) 100%
+    rgba(20, 48, 38, 0.55) 0%,
+    rgba(12, 28, 24, 0.72) 100%
   );
 }
 
@@ -176,12 +179,12 @@ a {
   touch-action: manipulation;
 }
 .brain-card {
-  border: 1px solid rgba(24, 255, 109, 0.18);
+  border: 1px solid rgba(24, 255, 109, 0.2);
   background: linear-gradient(
     145deg,
-    rgba(16, 38, 50, 0.84) 0%,
-    rgba(11, 26, 38, 0.9) 52%,
-    rgba(8, 18, 28, 0.92) 100%
+    rgba(18, 40, 34, 0.88) 0%,
+    rgba(12, 28, 24, 0.92) 52%,
+    rgba(10, 22, 20, 0.94) 100%
   );
   backdrop-filter: blur(18px);
   box-shadow:

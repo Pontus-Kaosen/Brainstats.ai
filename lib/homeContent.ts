@@ -43,7 +43,7 @@ export type HomeContent = {
 
 const homeContent: Record<Language, HomeContent> = {
   sv: {
-    badge: "AI-driven fotbollsanalys",
+    badge: "Live fotbollsintelligens",
     title: "Klistra in din spelidé. Få smart AI-analys.",
     description:
       "BrainStats hjälper dig att analysera matcher, statistik, form, skador och risker. Tjänsten är ett analysverktyg och tar inte emot spel eller pengar.",
@@ -123,7 +123,7 @@ const homeContent: Record<Language, HomeContent> = {
     ],
   },
   en: {
-    badge: "AI-powered football analysis",
+    badge: "Live football intelligence",
     title: "Paste your bet idea. Get smart AI analysis.",
     description:
       "BrainStats helps you analyze matches, stats, form, injuries and risk. This is an analysis tool — we do not accept bets or money.",
