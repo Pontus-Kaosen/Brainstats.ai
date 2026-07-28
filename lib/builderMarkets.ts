@@ -112,14 +112,6 @@ export function getMarketGroup(market: string): MarketGroupId {
   return "result";
 }
 
-export function getMarketIcon(market: string) {
-  if (isPlayerMarketLabel(market)) return "👤";
-  if (isGoalMarketLabel(market)) return "⚽";
-  if (isCornerMarketLabel(market)) return "🚩";
-  if (isCardMarketLabel(market)) return "🟨";
-  return "🎯";
-}
-
 export function groupMarkets(markets: readonly string[]) {
   const groups: Record<MarketGroupId, string[]> = {
     result: [],

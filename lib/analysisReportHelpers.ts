@@ -1,9 +1,9 @@
 import type { Injury, LastMatch } from "@/lib/analysisReportTypes";
 
 export function resultIcon(match: LastMatch) {
-  if (match.goals.home === match.goals.away) return "🟡";
-  if (match.teams.home.winner || match.teams.away.winner) return "🟢";
-  return "🔴";
+  if (match.goals.home === match.goals.away) return "D";
+  if (match.teams.home.winner || match.teams.away.winner) return "W";
+  return "L";
 }
 
 export function matchText(match: LastMatch) {

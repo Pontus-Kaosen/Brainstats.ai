@@ -21,9 +21,9 @@ export const translations = {
       riskMedium: "Medel risk",
       riskHigh: "Högre risk",
       riskSuffix: "risk",
-      planFree: "🟢 Free",
-      planPro: "💎 Pro",
-      planElite: "👑 Elite",
+      planFree: "Free",
+      planPro: "Pro",
+      planElite: "Elite",
       changeLanguage: "Byt språk",
     },
 
@@ -69,15 +69,15 @@ export const translations = {
       seePremium: "Se Premium",
       features: [
         {
-          title: "📋 Klistra in",
+          title: "Klistra in",
           text: "Kopiera din spelidé och låt BrainStats tolka den.",
         },
         {
-          title: "🧠 Brain Engine",
+          title: "Brain Engine",
           text: "Få BrainScore™, risknivå och identifierade marknader.",
         },
         {
-          title: "💎 Premium",
+          title: "Premium",
           text: "Lås upp djupare rapporter och fler analyser.",
         },
       ],
@@ -154,7 +154,7 @@ export const translations = {
     },
 
     dashboard: {
-      badge: "📊 BrainStats Dashboard",
+      badge: "BrainStats Dashboard",
       subtitle: "Analysis Center",
       title: "Din analyscentral.",
       description:
@@ -240,7 +240,7 @@ export const translations = {
 
     dailySlips: {
       subtitle: "Daily Intelligence",
-      title: "🧠 Dagens AI-kuponger",
+      title: "Dagens AI-kuponger",
       description:
         "Färdiga AI-kuponger med dagens matcher i större ligor, olika riskprofil och estimerade fair odds.",
       available: "{count} av {limit} tillgängliga",
@@ -275,7 +275,7 @@ export const translations = {
 
     valueBets: {
       subtitle: "Elite Intelligence",
-      title: "💎 Value Bets",
+      title: "Value Bets",
       description:
         "Marknader där AI:s fair-sannolikhet verkar ligga över bookmakerns odds — rankade efter value och säkerhet.",
       disclaimer:
@@ -310,7 +310,7 @@ export const translations = {
 
     aiTipsPage: {
       badge: "Daily Intelligence",
-      title: "🧠 Dagens AI-kuponger",
+      title: "Dagens AI-kuponger",
       description:
         "Färdiga AI-kuponger med dagens matcher, olika riskprofil och estimerade fair odds — uppdateras varje dag.",
       valueBetsLink: "Elite? Se Value Bets",
@@ -332,7 +332,7 @@ export const translations = {
 
     valueBetsPage: {
       badge: "Elite Intelligence",
-      title: "💎 Value Bets",
+      title: "Value Bets",
       description:
         "Vi väljer bara spel med stark edge och hög AI-sannolikhet (mål 70–90% träff). Varje tips loggas offentligt.",
       aiTipsLink: "Vill du ha kuponger istället? Se AI-tips",
@@ -384,14 +384,14 @@ export const translations = {
 
     manageSubscription: {
       opening: "Öppnar kundportalen...",
-      button: "⚙️ Hantera abonnemang",
+      button: "Hantera abonnemang",
       sessionError: "Kunde inte kontrollera din inloggning.",
       invalidResponse: "Customer Portal-routen returnerade ett ogiltigt svar.",
       portalError: "Kundportalen kunde inte öppnas.",
     },
 
     standings: {
-      badge: "📊 Tabeller",
+      badge: "Tabeller",
       title: "Ligatabeller",
       description:
         "Se tabellläge för alla ligor i BrainStats — poäng, gjorda mål, insläppta mål och målskillnad.",
@@ -427,7 +427,7 @@ export const translations = {
     },
 
     premium: {
-      badge: "💎 BrainStats Plans",
+      badge: "BrainStats Plans",
       title: "Välj din analysnivå.",
       description:
         "Börja gratis eller lås upp fler analyser, djupare rapporter och avancerade AI-insikter.",
@@ -563,7 +563,7 @@ export const translations = {
     },
 
     analyze: {
-      badge: "⚽ Live Football Intelligence",
+      badge: "Live Football Intelligence",
       subtitle: "Brain Engine™",
       title: "Analysera din spelidé med AI.",
       description:
@@ -603,10 +603,10 @@ export const translations = {
       imageMultipleMatchesWarning:
         "Flera matcher hittades på kupongen. Varje match analyseras separat nedan.",
       analyzing: "Analyserar...",
-      runEngine: "🧠 Kör Brain Engine",
+      runEngine: "Kör Brain Engine",
       loadingReport: "Brain Engine analyserar data...",
       premiumRequired: "Premium krävs",
-      upgradePro: "🚀 Uppgradera till Pro",
+      upgradePro: "Uppgradera till Pro",
       upgradeTrialCta: "Testa Pro gratis i 7 dagar",
       loginRequiredTitle: "Logga in för att analysera",
       loginRequiredDescription:
@@ -661,7 +661,7 @@ export const translations = {
       startingXiBadge: "Starting XI",
       teamFormBadge: "Team Form",
       startingXi: "Startelvor",
-      confirmed: "✓ Bekräftade",
+      confirmed: "Bekräftade",
       awaiting: "Inväntar publicering",
       lineupsNotPublished: "Startelvorna är ännu inte publicerade",
       lineupsHint:
@@ -800,7 +800,7 @@ export const translations = {
         player: "Spelare",
         line: "Linje",
       },
-      pageBadge: "⚽ Brain Builder™",
+      pageBadge: "Brain Builder™",
       pageTitle: "Bygg din spelidé steg för steg.",
       pageDescription:
         "Välj match, bygg din marknad och lägg till i BrainSlip — som en bet builder, fast med BrainStats AI.",
@@ -844,14 +844,14 @@ export const translations = {
       noTomorrowMatches: "Inga matcher hittades för imorgon.",
       selectMatchFirst: "Välj en match i listan ovan för att bygga ditt spel.",
       selectLeagueFirst: "Välj land och liga ovan för att se matcher.",
-      selectMatch: "⚽ Välj match",
-      searchMatch: "🔍 Sök match eller lag",
-      liveNow: "🔴 Live nu",
+      selectMatch: "Välj match",
+      searchMatch: "Sök match eller lag",
+      liveNow: "Live nu",
       liveError: "Live-fel:",
       liveNowTitle: "Live nu",
       upcomingMatches: "Kommande matcher",
       fixturesError: "Matcher kunde inte hämtas",
-      analyze: "🧠 Analysera",
+      analyze: "Analysera",
       selectMatchForLineups: "Välj en match för att kontrollera startelvorna.",
       lineupsPublishHint:
         "De publiceras vanligtvis nära matchstart. Välj matchen igen senare.",
@@ -877,7 +877,7 @@ export const translations = {
       startingXiBadge: "Starting XI",
       clearSlip: "Rensa BrainSlip",
       removeTitle: "Ta bort",
-      brainSlipTitle: "🧠 BrainSlip",
+      brainSlipTitle: "BrainSlip",
       noMatchSelected: "Ingen match vald ännu.",
       slipEmptyHint:
         "Välj en match, bygg din marknad och lägg till här — precis som en bet builder.",
@@ -956,7 +956,7 @@ export const translations = {
       backDashboard: "← Till Dashboard",
       notFoundTitle: "Rapporten hittades inte",
       notFoundText: "Analysen finns inte eller kunde inte hämtas.",
-      badge: "🧠 BrainStats Report",
+      badge: "BrainStats Report",
       subtitle: "AI Match Insight",
       description:
         "AI-genererad analys baserad på matchdata, form, tabell, H2H och vald marknad.",
@@ -965,10 +965,10 @@ export const translations = {
       brainScore: "BrainScore™",
       riskLevel: "Risknivå",
       confidence: "Confidence",
-      summaryTitle: "💡 Sammanfattning",
+      summaryTitle: "Sammanfattning",
       summarySubtitle: "AI Summary",
       noSummary: "Ingen sammanfattning tillgänglig.",
-      picksTitle: "🎯 AI:s spelförslag",
+      picksTitle: "AI:s spelförslag",
       picksSubtitle: "Brain Picks",
       fairOddsNote: "Estimerat fair odds – inte ett liveodds",
       noPicks:
@@ -978,11 +978,11 @@ export const translations = {
       aiProbability: "AI-sannolikhet",
       estimatedFairOdds: "Estimerat fair odds",
       noReason: "Ingen motivering tillgänglig.",
-      strengths: "✅ Styrkor",
+      strengths: "Styrkor",
       noStrengths: "Inga styrkor tillgängliga.",
       risksTitle: "⚠ Risker",
       noRisks: "Inga risker tillgängliga.",
-      verdictTitle: "🎯 Rekommendation",
+      verdictTitle: "Rekommendation",
       verdictSubtitle: "Final Verdict",
       noRecommendation: "Ingen rekommendation tillgänglig.",
       analyzeSimilar: "Analysera liknande spelidé",
@@ -993,9 +993,9 @@ export const translations = {
       selected: "VALD",
       select: "VÄLJ",
       addBadge: "+ LÄGG TILL",
-      inSlipBadge: "✓ I SLIP",
+      inSlipBadge: "I SLIP",
       noStandings: "Tabell saknas",
-      matchSelected: "✓ Tillagd i BrainSlip",
+      matchSelected: "Tillagd i BrainSlip",
       tapToSelect: "Tryck för att lägga till i BrainSlip",
     },
 
@@ -1119,9 +1119,9 @@ export const translations = {
       riskMedium: "Medium risk",
       riskHigh: "Higher risk",
       riskSuffix: "risk",
-      planFree: "🟢 Free",
-      planPro: "💎 Pro",
-      planElite: "👑 Elite",
+      planFree: "Free",
+      planPro: "Pro",
+      planElite: "Elite",
       changeLanguage: "Change language",
     },
 
@@ -1167,15 +1167,15 @@ export const translations = {
       seePremium: "See Premium",
       features: [
         {
-          title: "📋 Paste in",
+          title: "Paste in",
           text: "Copy your bet idea and let BrainStats interpret it.",
         },
         {
-          title: "🧠 Brain Engine",
+          title: "Brain Engine",
           text: "Get BrainScore™, risk level and identified markets.",
         },
         {
-          title: "💎 Premium",
+          title: "Premium",
           text: "Unlock deeper reports and more analyses.",
         },
       ],
@@ -1252,7 +1252,7 @@ export const translations = {
     },
 
     dashboard: {
-      badge: "📊 BrainStats Dashboard",
+      badge: "BrainStats Dashboard",
       subtitle: "Analysis Center",
       title: "Your analysis hub.",
       description:
@@ -1338,7 +1338,7 @@ export const translations = {
 
     dailySlips: {
       subtitle: "Daily Intelligence",
-      title: "🧠 Today's AI slips",
+      title: "Today's AI slips",
       description:
         "Ready-made AI slips for today's matches in major leagues, with different risk profiles and estimated fair odds.",
       available: "{count} of {limit} available",
@@ -1373,7 +1373,7 @@ export const translations = {
 
     valueBets: {
       subtitle: "Elite Intelligence",
-      title: "💎 Value Bets",
+      title: "Value Bets",
       description:
         "Markets where AI fair probability appears above bookmaker odds — ranked by value and safety.",
       disclaimer:
@@ -1408,7 +1408,7 @@ export const translations = {
 
     aiTipsPage: {
       badge: "Daily Intelligence",
-      title: "🧠 Today's AI slips",
+      title: "Today's AI slips",
       description:
         "Ready-made AI slips for today's matches, with different risk profiles and estimated fair odds — updated daily.",
       valueBetsLink: "Elite? See Value Bets",
@@ -1430,7 +1430,7 @@ export const translations = {
 
     valueBetsPage: {
       badge: "Elite Intelligence",
-      title: "💎 Value Bets",
+      title: "Value Bets",
       description:
         "We only publish picks with strong edge and high AI probability (70–90% hit target). Every tip is logged publicly.",
       aiTipsLink: "Want slips instead? See AI tips",
@@ -1482,14 +1482,14 @@ export const translations = {
 
     manageSubscription: {
       opening: "Opening customer portal...",
-      button: "⚙️ Manage subscription",
+      button: "Manage subscription",
       sessionError: "Could not verify your login.",
       invalidResponse: "Customer Portal returned an invalid response.",
       portalError: "Customer portal could not be opened.",
     },
 
     standings: {
-      badge: "📊 Standings",
+      badge: "Standings",
       title: "League tables",
       description:
         "Browse tables for every BrainStats league — points, goals for, goals against and goal difference.",
@@ -1525,7 +1525,7 @@ export const translations = {
     },
 
     premium: {
-      badge: "💎 BrainStats Plans",
+      badge: "BrainStats Plans",
       title: "Choose your analysis level.",
       description:
         "Start free or unlock more analyses, deeper reports and advanced AI insights.",
@@ -1661,7 +1661,7 @@ export const translations = {
     },
 
     analyze: {
-      badge: "⚽ Live Football Intelligence",
+      badge: "Live Football Intelligence",
       subtitle: "Brain Engine™",
       title: "Analyze your bet idea with AI.",
       description:
@@ -1701,10 +1701,10 @@ export const translations = {
       imageMultipleMatchesWarning:
         "Multiple matches were found on the slip. Each match is analyzed separately below.",
       analyzing: "Analyzing...",
-      runEngine: "🧠 Run Brain Engine",
+      runEngine: "Run Brain Engine",
       loadingReport: "Brain Engine is analyzing data...",
       premiumRequired: "Premium required",
-      upgradePro: "🚀 Upgrade to Pro",
+      upgradePro: "Upgrade to Pro",
       upgradeTrialCta: "Try Pro free for 7 days",
       loginRequiredTitle: "Log in to analyze",
       loginRequiredDescription:
@@ -1759,7 +1759,7 @@ export const translations = {
       startingXiBadge: "Starting XI",
       teamFormBadge: "Team form",
       startingXi: "Starting lineups",
-      confirmed: "✓ Confirmed",
+      confirmed: "Confirmed",
       awaiting: "Awaiting release",
       lineupsNotPublished: "Starting lineups are not published yet",
       lineupsHint:
@@ -1898,7 +1898,7 @@ export const translations = {
         player: "Player",
         line: "Line",
       },
-      pageBadge: "⚽ Brain Builder™",
+      pageBadge: "Brain Builder™",
       pageTitle: "Build your bet idea step by step.",
       pageDescription:
         "Pick a match, build your market, and add it to BrainSlip — like a bet builder, powered by BrainStats AI.",
@@ -1942,14 +1942,14 @@ export const translations = {
       noTomorrowMatches: "No matches found for tomorrow.",
       selectMatchFirst: "Select a match from the list above to build your pick.",
       selectLeagueFirst: "Choose country and league above to browse fixtures.",
-      selectMatch: "⚽ Select match",
-      searchMatch: "🔍 Search match or team",
-      liveNow: "🔴 Live now",
+      selectMatch: "Select match",
+      searchMatch: "Search match or team",
+      liveNow: "Live now",
       liveError: "Live error:",
       liveNowTitle: "Live now",
       upcomingMatches: "Upcoming matches",
       fixturesError: "Fixtures could not be loaded",
-      analyze: "🧠 Analyze",
+      analyze: "Analyze",
       selectMatchForLineups: "Select a match to check the lineups.",
       lineupsPublishHint:
         "They are usually published close to kick-off. Select the match again later.",
@@ -1975,7 +1975,7 @@ export const translations = {
       startingXiBadge: "Starting XI",
       clearSlip: "Clear BrainSlip",
       removeTitle: "Remove",
-      brainSlipTitle: "🧠 BrainSlip",
+      brainSlipTitle: "BrainSlip",
       noMatchSelected: "No match selected yet.",
       slipEmptyHint:
         "Select a match, build your market, and add it here — just like a bet builder.",
@@ -2054,7 +2054,7 @@ export const translations = {
       backDashboard: "← Back to Dashboard",
       notFoundTitle: "Report not found",
       notFoundText: "The analysis does not exist or could not be loaded.",
-      badge: "🧠 BrainStats Report",
+      badge: "BrainStats Report",
       subtitle: "AI Match Insight",
       description:
         "AI-generated analysis based on match data, form, table, H2H and selected market.",
@@ -2063,10 +2063,10 @@ export const translations = {
       brainScore: "BrainScore™",
       riskLevel: "Risk level",
       confidence: "Confidence",
-      summaryTitle: "💡 Summary",
+      summaryTitle: "Summary",
       summarySubtitle: "AI Summary",
       noSummary: "No summary available.",
-      picksTitle: "🎯 AI picks",
+      picksTitle: "AI picks",
       picksSubtitle: "Brain Picks",
       fairOddsNote: "Estimated fair odds — not live odds",
       noPicks:
@@ -2076,11 +2076,11 @@ export const translations = {
       aiProbability: "AI probability",
       estimatedFairOdds: "Estimated fair odds",
       noReason: "No reasoning available.",
-      strengths: "✅ Strengths",
+      strengths: "Strengths",
       noStrengths: "No strengths available.",
       risksTitle: "⚠ Risks",
       noRisks: "No risks available.",
-      verdictTitle: "🎯 Recommendation",
+      verdictTitle: "Recommendation",
       verdictSubtitle: "Final Verdict",
       noRecommendation: "No recommendation available.",
       analyzeSimilar: "Analyze a similar bet idea",
@@ -2091,9 +2091,9 @@ export const translations = {
       selected: "SELECTED",
       select: "SELECT",
       addBadge: "+ ADD",
-      inSlipBadge: "✓ IN SLIP",
+      inSlipBadge: "IN SLIP",
       noStandings: "No standings",
-      matchSelected: "✓ Added to BrainSlip",
+      matchSelected: "Added to BrainSlip",
       tapToSelect: "Tap to add to BrainSlip",
     },
 
