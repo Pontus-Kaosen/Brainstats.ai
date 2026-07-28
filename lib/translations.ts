@@ -601,7 +601,7 @@ export const translations = {
       imageFixtureWarning:
         "Match-ID kunde inte hittas automatiskt. Kontrollera lagnamnen eller bygg spelet via Builder för bästa analys.",
       imageMultipleMatchesWarning:
-        "Flera matcher hittades på kupongen. Första matchen används i analysen.",
+        "Flera matcher hittades på kupongen. Varje match analyseras separat nedan.",
       analyzing: "Analyserar...",
       runEngine: "🧠 Kör Brain Engine",
       loadingReport: "Brain Engine analyserar data...",
@@ -1699,7 +1699,7 @@ export const translations = {
       imageFixtureWarning:
         "Match ID could not be found automatically. Check team names or build the bet in Builder for the best analysis.",
       imageMultipleMatchesWarning:
-        "Multiple matches were found on the slip. The first match is used for analysis.",
+        "Multiple matches were found on the slip. Each match is analyzed separately below.",
       analyzing: "Analyzing...",
       runEngine: "🧠 Run Brain Engine",
       loadingReport: "Brain Engine is analyzing data...",

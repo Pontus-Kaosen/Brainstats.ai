@@ -40,6 +40,12 @@ import {
   normalizeWorthBetting,
   type WorthBetting,
 } from "@/lib/worthBetting";
+import {
+  extractBetBlocks,
+  extractNumberFromBlock,
+  getMarketsFromBlock,
+  getMatchLabelFromBlock,
+} from "@/lib/betTextParser";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -68,11 +74,327 @@ const supabaseAdmin = createClient(
 );
 
 function extractNumber(text: string, label: string) {
-  const match = text.match(
-    new RegExp(`${label}:\\s*(\\d+)`, "i")
+  return extractNumberFromBlock(text, label);
+}
+
+type AnalyzeBlockOptions = {
+  userPlan: UserPlan;
+  brainPickLimit: number;
+  language: ReturnType<typeof parseRequestLanguage>;
+  messages: ReturnType<typeof getAnalyzeApiMessages>;
+};
+
+async function analyzeSingleMatchBlock(
+  blockText: string,
+  options: AnalyzeBlockOptions
+) {
+  const { userPlan, brainPickLimit, language, messages } = options;
+  const text = blockText;
+
+  const homeTeamId = extractNumber(text, "Home Team ID");
+  const awayTeamId = extractNumber(text, "Away Team ID");
+  const fixtureId = extractNumber(text, "Fixture ID");
+  const playerId = extractNumber(text, "Player ID");
+
+  const fixture = await getFixture(fixtureId);
+
+  const leagueId = String(fixture?.league?.id || 39);
+
+  const season = String(
+    fixture?.league?.season || new Date().getFullYear()
   );
 
-  return match ? match[1] : null;
+  const [
+    homeStats,
+    awayStats,
+    standings,
+    h2h,
+    homeLastMatches,
+    awayLastMatches,
+    injuries,
+    weather,
+    playerStats,
+    lineups,
+    oddsResponse,
+  ] = await Promise.all([
+    getTeamStats(homeTeamId, leagueId, season),
+    getTeamStats(awayTeamId, leagueId, season),
+    getStandings(leagueId, season),
+    getH2H(homeTeamId, awayTeamId),
+    getLastMatches(homeTeamId),
+    getLastMatches(awayTeamId),
+    getInjuries(fixtureId),
+    getWeather(
+      fixture?.fixture?.venue?.city ||
+        fixture?.teams?.home?.name ||
+        null
+    ),
+    getPlayerStats(playerId, leagueId, season),
+    getLineups(fixtureId, homeTeamId, awayTeamId),
+    getOdds(fixtureId),
+  ]);
+
+  const homeName = fixture?.teams?.home?.name ?? "";
+  const awayName = fixture?.teams?.away?.name ?? "";
+  const betSides = resolveBetSides(text, homeName, awayName);
+  const betTeams: Array<{ id: number; name: string }> = [];
+
+  if (betSides.has("home") && homeTeamId) {
+    betTeams.push({
+      id: Number(homeTeamId),
+      name: homeName || "Home",
+    });
+  }
+
+  if (betSides.has("away") && awayTeamId) {
+    betTeams.push({
+      id: Number(awayTeamId),
+      name: awayName || "Away",
+    });
+  }
+
+  const upcomingLists = await Promise.all(
+    betTeams.map((team) => getUpcomingMatches(String(team.id), 12))
+  );
+
+  const upcomingFixturesByTeam = new Map<number, any[]>();
+
+  betTeams.forEach((team, index) => {
+    upcomingFixturesByTeam.set(team.id, upcomingLists[index] || []);
+  });
+
+  const rotationRisks = fixture
+    ? findRotationRisks({
+        currentFixture: fixture,
+        upcomingFixturesByTeam,
+        recentFixturesByTeam: new Map([
+          ...(homeTeamId && betSides.has("home")
+            ? [[Number(homeTeamId), homeLastMatches] as const]
+            : []),
+          ...(awayTeamId && betSides.has("away")
+            ? [[Number(awayTeamId), awayLastMatches] as const]
+            : []),
+        ]),
+        betTeams,
+      })
+    : [];
+
+  const scheduleContext = getScheduleContextStatus({
+    hasFixture: Boolean(fixture),
+    betTeams,
+    rotationRisks,
+  });
+
+  const isPlayerProp = Boolean(playerId);
+  const playerLineupStatus = playerId
+    ? getPlayerLineupStatus(playerId, lineups)
+    : null;
+  const confirmedLineups = areLineupsConfirmed(lineups);
+
+  const homeStanding = standings.find(
+    (item: any) => String(item.team?.id) === String(homeTeamId)
+  );
+
+  const awayStanding = standings.find(
+    (item: any) => String(item.team?.id) === String(awayTeamId)
+  );
+
+  const homeForm = summarizeRecentForm(
+    homeLastMatches,
+    homeTeamId,
+    homeName || "Home",
+    language
+  );
+
+  const awayForm = summarizeRecentForm(
+    awayLastMatches,
+    awayTeamId,
+    awayName || "Away",
+    language
+  );
+
+  const dataQuality = assessDataQuality({
+    fixture,
+    homeStanding,
+    awayStanding,
+    homeForm,
+    awayForm,
+    homeStats,
+    awayStats,
+    h2h,
+    injuries,
+    lineups,
+    weather,
+    oddsResponse,
+    language,
+  });
+
+  const structuredContext = buildStructuredAnalysisContext({
+    fixture,
+    homeStanding,
+    awayStanding,
+    homeForm,
+    awayForm,
+    homeStats,
+    awayStats,
+    h2h,
+    homeLastMatches,
+    awayLastMatches,
+    injuries,
+    weather,
+    oddsResponse,
+    dataQuality,
+    language,
+  });
+
+  const calibrationNote = await getTrackRecordCalibrationNote(language);
+
+  const calculatedScore = calculateEnhancedBrainScore({
+    homeStanding,
+    awayStanding,
+    homeForm,
+    awayForm,
+    homeStats,
+    awayStats,
+    h2h,
+    injuries,
+    weather,
+    playerStats,
+    lineups,
+    isPlayerProp,
+    playerLineupStatus,
+    dataQuality,
+  });
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4.1-mini",
+    temperature: 0.25,
+    response_format: {
+      type: "json_object",
+    },
+    messages: [
+      {
+        role: "system",
+        content: buildAnalyzeSystemPrompt(language),
+      },
+      {
+        role: "user",
+        content: buildAnalyzeUserPrompt(language, {
+          text,
+          fixture,
+          userPlan,
+          brainPickLimit,
+          lineups,
+          homeStanding,
+          awayStanding,
+          homeStats,
+          awayStats,
+          h2h,
+          homeLastMatches,
+          awayLastMatches,
+          injuries,
+          playerStats,
+          playerId,
+          rotationRisks,
+          playerLineupStatus,
+          structuredContext,
+          dataQualityNote: dataQuality.note,
+          calibrationNote,
+        }),
+      },
+    ],
+  });
+
+  const content = completion.choices[0]?.message?.content || "{}";
+
+  const parsedAnalysis = parseAIResponse(content, language);
+
+  const aiAnalysis = safeAnalysis(parsedAnalysis, brainPickLimit);
+
+  const guardedAnalysis = applyAnalysisSafetyGuardrails(aiAnalysis, {
+    language,
+    dataQuality,
+    oddsResponse,
+  });
+
+  const cleanAnalysis = {
+    ...guardedAnalysis,
+    brainScore: calculatedScore.brainScore,
+    riskLevel: calculatedScore.riskLevel,
+    confidence: calculatedScore.confidence,
+    scoreBreakdown: calculatedScore.scoreBreakdown,
+  };
+
+  const worthBettingFallback = deriveWorthBettingFallback(
+    {
+      brainScore: cleanAnalysis.brainScore,
+      riskLevel: cleanAnalysis.riskLevel,
+      dataQualityTier: dataQuality.tier,
+    },
+    language
+  );
+
+  const worthBetting: WorthBetting = applyWorthBettingGuardrails(
+    normalizeWorthBetting(
+      parsedAnalysis?.worthBetting ??
+        (guardedAnalysis as { worthBetting?: unknown }).worthBetting,
+      worthBettingFallback
+    ),
+    {
+      dataQualityTier: dataQuality.tier,
+      language,
+    }
+  );
+
+  const finalAnalysis = {
+    ...cleanAnalysis,
+    worthBetting,
+  };
+
+  const matchLabel = getMatchLabelFromBlock(text) || messages.unknownMatch;
+  const markets = getMarketsFromBlock(text);
+
+  const usedData = {
+    fixtureId,
+    homeTeamId,
+    awayTeamId,
+    leagueId,
+    season,
+    hasFixture: Boolean(fixture),
+    hasHomeStats: Boolean(homeStats),
+    hasAwayStats: Boolean(awayStats),
+    hasStandings: standings.length > 0,
+    hasH2H: h2h.length > 0,
+    hasHomeLastMatches: homeLastMatches.length > 0,
+    hasAwayLastMatches: awayLastMatches.length > 0,
+    hasInjuries: injuries.length > 0,
+    hasLineups: lineups.length > 0,
+    confirmedLineups,
+    playerLineupStatus,
+    lastMatches: {
+      home: homeLastMatches,
+      away: awayLastMatches,
+    },
+    injuries,
+    lineups,
+    weather,
+    oddsAvailable: oddsResponse.length > 0,
+    dataQuality,
+    referee: fixture?.fixture?.referee || null,
+    rotationRisks,
+    scheduleContext,
+    scheduleTeamsChecked: betTeams.map((team) => team.name),
+  };
+
+  return {
+    matchLabel,
+    markets,
+    blockText: text,
+    finalAnalysis,
+    usedData,
+    fixtureId,
+    fixture,
+  };
 }
 
 async function apiFootball(path: string) {
@@ -630,428 +952,65 @@ export async function POST(
       }
     }
 
-    const homeTeamId =
-      extractNumber(
-        text,
-        "Home Team ID"
-      );
-
-    const awayTeamId =
-      extractNumber(
-        text,
-        "Away Team ID"
-      );
-
-    const fixtureId =
-      extractNumber(
-        text,
-        "Fixture ID"
-      );
-
-    const playerId =
-      extractNumber(
-        text,
-        "Player ID"
-      );
-
-    const fixture =
-      await getFixture(fixtureId);
-
-    const leagueId = String(
-      fixture?.league?.id || 39
-    );
-
-    const season = String(
-      fixture?.league?.season ||
-        new Date().getFullYear()
-    );
-
-    const [
-      homeStats,
-      awayStats,
-      standings,
-      h2h,
-      homeLastMatches,
-      awayLastMatches,
-      injuries,
-      weather,
-      playerStats,
-      lineups,
-      oddsResponse,
-    ] = await Promise.all([
-      getTeamStats(
-        homeTeamId,
-        leagueId,
-        season
-      ),
-
-      getTeamStats(
-        awayTeamId,
-        leagueId,
-        season
-      ),
-
-      getStandings(
-        leagueId,
-        season
-      ),
-
-      getH2H(
-        homeTeamId,
-        awayTeamId
-      ),
-
-      getLastMatches(homeTeamId),
-
-      getLastMatches(awayTeamId),
-
-      getInjuries(fixtureId),
-
-      getWeather(
-        fixture?.fixture?.venue?.city ||
-          fixture?.teams?.home?.name ||
-          null
-      ),
-
-      getPlayerStats(
-        playerId,
-        leagueId,
-        season
-      ),
-
-      getLineups(fixtureId, homeTeamId, awayTeamId),
-      getOdds(fixtureId),
-    ]);
-
-    const homeName = fixture?.teams?.home?.name ?? "";
-    const awayName = fixture?.teams?.away?.name ?? "";
-    const betSides = resolveBetSides(text, homeName, awayName);
-    const betTeams: Array<{ id: number; name: string }> = [];
-
-    if (betSides.has("home") && homeTeamId) {
-      betTeams.push({
-        id: Number(homeTeamId),
-        name: homeName || "Home",
-      });
-    }
-
-    if (betSides.has("away") && awayTeamId) {
-      betTeams.push({
-        id: Number(awayTeamId),
-        name: awayName || "Away",
-      });
-    }
-
-    const upcomingLists = await Promise.all(
-      betTeams.map((team) =>
-        getUpcomingMatches(String(team.id), 12)
-      )
-    );
-
-    const upcomingFixturesByTeam = new Map<number, any[]>();
-
-    betTeams.forEach((team, index) => {
-      upcomingFixturesByTeam.set(
-        team.id,
-        upcomingLists[index] || []
-      );
-    });
-
-    const rotationRisks = fixture
-      ? findRotationRisks({
-          currentFixture: fixture,
-          upcomingFixturesByTeam,
-          recentFixturesByTeam: new Map([
-            ...(homeTeamId && betSides.has("home")
-              ? [[Number(homeTeamId), homeLastMatches] as const]
-              : []),
-            ...(awayTeamId && betSides.has("away")
-              ? [[Number(awayTeamId), awayLastMatches] as const]
-              : []),
-          ]),
-          betTeams,
-        })
-      : [];
-
-    const scheduleContext = getScheduleContextStatus({
-      hasFixture: Boolean(fixture),
-      betTeams,
-      rotationRisks,
-    });
-
-    const isPlayerProp = Boolean(playerId);
-    const playerLineupStatus = playerId
-      ? getPlayerLineupStatus(playerId, lineups)
-      : null;
-    const confirmedLineups = areLineupsConfirmed(lineups);
-
-    const homeStanding =
-      standings.find(
-        (item: any) =>
-          String(item.team?.id) ===
-          String(homeTeamId)
-      );
-
-    const awayStanding =
-      standings.find(
-        (item: any) =>
-          String(item.team?.id) ===
-          String(awayTeamId)
-      );
-
-    const homeForm = summarizeRecentForm(
-      homeLastMatches,
-      homeTeamId,
-      homeName || "Home",
-      language
-    );
-
-    const awayForm = summarizeRecentForm(
-      awayLastMatches,
-      awayTeamId,
-      awayName || "Away",
-      language
-    );
-
-    const dataQuality = assessDataQuality({
-      fixture,
-      homeStanding,
-      awayStanding,
-      homeForm,
-      awayForm,
-      homeStats,
-      awayStats,
-      h2h,
-      injuries,
-      lineups,
-      weather,
-      oddsResponse,
+    const blocks = extractBetBlocks(text);
+    const blockOptions = {
+      userPlan,
+      brainPickLimit,
       language,
-    });
-
-    const structuredContext = buildStructuredAnalysisContext({
-      fixture,
-      homeStanding,
-      awayStanding,
-      homeForm,
-      awayForm,
-      homeStats,
-      awayStats,
-      h2h,
-      homeLastMatches,
-      awayLastMatches,
-      injuries,
-      weather,
-      oddsResponse,
-      dataQuality,
-      language,
-    });
-
-    const calibrationNote = await getTrackRecordCalibrationNote(language);
-
-    const calculatedScore =
-      calculateEnhancedBrainScore({
-        homeStanding,
-        awayStanding,
-        homeForm,
-        awayForm,
-        homeStats,
-        awayStats,
-        h2h,
-        injuries,
-        weather,
-        playerStats,
-        lineups,
-        isPlayerProp,
-        playerLineupStatus,
-        dataQuality,
-      });
-
-    const completion =
-      await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
-
-        temperature: 0.25,
-
-        response_format: {
-          type: "json_object",
-        },
-
-        messages: [
-          {
-            role: "system",
-            content: buildAnalyzeSystemPrompt(language),
-          },
-
-          {
-            role: "user",
-            content: buildAnalyzeUserPrompt(language, {
-              text,
-              fixture,
-              userPlan,
-              brainPickLimit,
-              lineups,
-              homeStanding,
-              awayStanding,
-              homeStats,
-              awayStats,
-              h2h,
-              homeLastMatches,
-              awayLastMatches,
-              injuries,
-              playerStats,
-              playerId,
-              rotationRisks,
-              playerLineupStatus,
-              structuredContext,
-              dataQualityNote: dataQuality.note,
-              calibrationNote,
-            }),
-          },
-        ],
-      });
-
-    const content =
-      completion.choices[0]
-        ?.message?.content || "{}";
-
-    const parsedAnalysis = parseAIResponse(content, language);
-
-    const aiAnalysis =
-      safeAnalysis(
-        parsedAnalysis,
-        brainPickLimit
-      );
-
-    const guardedAnalysis = applyAnalysisSafetyGuardrails(
-      aiAnalysis,
-      {
-        language,
-        dataQuality,
-        oddsResponse,
-      }
-    );
-
-    const cleanAnalysis = {
-      ...guardedAnalysis,
-
-      brainScore:
-        calculatedScore.brainScore,
-
-      riskLevel:
-        calculatedScore.riskLevel,
-
-      confidence:
-        calculatedScore.confidence,
-
-      scoreBreakdown:
-        calculatedScore.scoreBreakdown,
+      messages,
     };
 
-    const worthBettingFallback = deriveWorthBettingFallback(
-      {
-        brainScore: cleanAnalysis.brainScore,
-        riskLevel: cleanAnalysis.riskLevel,
-        dataQualityTier: dataQuality.tier,
-      },
-      language
-    );
+    const matchResults = [];
 
-    const worthBetting: WorthBetting = applyWorthBettingGuardrails(
-      normalizeWorthBetting(
-        parsedAnalysis?.worthBetting ??
-          (guardedAnalysis as { worthBetting?: unknown }).worthBetting,
-        worthBettingFallback
-      ),
-      {
-        dataQualityTier: dataQuality.tier,
-        language,
-      }
-    );
+    for (const block of blocks) {
+      const result = await analyzeSingleMatchBlock(block, blockOptions);
+      matchResults.push(result);
+    }
 
-    const finalAnalysis = {
-      ...cleanAnalysis,
-      worthBetting,
+    const primary = matchResults[0];
+    const combinedMatch = matchResults
+      .map((result) => result.matchLabel)
+      .join(" · ");
+    const allMarkets = matchResults.flatMap((result) => result.markets);
+
+    const usedData = {
+      ...primary.usedData,
+      matchAnalyses: matchResults.map((result) => ({
+        matchLabel: result.matchLabel,
+        markets: result.markets,
+        blockText: result.blockText,
+        analysis: result.finalAnalysis,
+        usedData: result.usedData,
+      })),
     };
 
-    const lines = text
-      .split("\n")
-      .map(
-        (line: string) =>
-          line.trim()
-      )
-      .filter(Boolean);
-
-    const match = lines[0] || messages.unknownMatch;
-
-    const markets = lines.slice(1);
+    const matches = matchResults.map((result) => ({
+      matchLabel: result.matchLabel,
+      markets: result.markets,
+      blockText: result.blockText,
+      analysis: result.finalAnalysis,
+      usedData: result.usedData,
+    }));
 
     const analysisInsertBase = {
       user_id: userId,
-      match,
-      markets,
-      score: finalAnalysis.brainScore,
-      risk: finalAnalysis.riskLevel,
-      confidence: finalAnalysis.confidence,
-      summary: finalAnalysis.summary,
-      strengths: finalAnalysis.strengths,
-      risks: finalAnalysis.risks,
-      recommendation: finalAnalysis.recommendation,
-      brain_picks: finalAnalysis.brainPicks,
-    };
-
-    const usedData = {
-      fixtureId,
-      homeTeamId,
-      awayTeamId,
-      leagueId,
-      season,
-
-      hasFixture: Boolean(fixture),
-
-      hasHomeStats: Boolean(homeStats),
-
-      hasAwayStats: Boolean(awayStats),
-
-      hasStandings: standings.length > 0,
-
-      hasH2H: h2h.length > 0,
-
-      hasHomeLastMatches: homeLastMatches.length > 0,
-
-      hasAwayLastMatches: awayLastMatches.length > 0,
-
-      hasInjuries: injuries.length > 0,
-
-      hasLineups: lineups.length > 0,
-
-      confirmedLineups,
-
-      playerLineupStatus,
-
-      lastMatches: {
-        home: homeLastMatches,
-        away: awayLastMatches,
-      },
-
-      injuries,
-      lineups,
-      weather,
-      oddsAvailable: oddsResponse.length > 0,
-      dataQuality,
-
-      referee: fixture?.fixture?.referee || null,
-
-      rotationRisks,
-      scheduleContext,
-      scheduleTeamsChecked: betTeams.map((team) => team.name),
+      match: combinedMatch,
+      markets: allMarkets,
+      score: primary.finalAnalysis.brainScore,
+      risk: primary.finalAnalysis.riskLevel,
+      confidence: primary.finalAnalysis.confidence,
+      summary: primary.finalAnalysis.summary,
+      strengths: primary.finalAnalysis.strengths,
+      risks: primary.finalAnalysis.risks,
+      recommendation: primary.finalAnalysis.recommendation,
+      brain_picks: primary.finalAnalysis.brainPicks,
     };
 
     const insertResult = await insertAnalysisWithFallback(supabaseAdmin, {
       ...analysisInsertBase,
-      worth_betting: finalAnalysis.worthBetting,
+      worth_betting: primary.finalAnalysis.worthBetting,
       used_data: usedData,
-      score_breakdown: finalAnalysis.scoreBreakdown,
+      score_breakdown: primary.finalAnalysis.scoreBreakdown,
       bet_text: text,
     });
 
@@ -1071,28 +1030,31 @@ export async function POST(
         saved: null,
         saveWarning: insertError.message,
         usedData,
-        analysis: finalAnalysis,
+        analysis: primary.finalAnalysis,
+        matches,
       });
     }
 
-    const primaryPick = finalAnalysis.brainPicks[0];
+    for (const result of matchResults) {
+      const primaryPick = result.finalAnalysis.brainPicks[0];
 
-    if (fixtureId && primaryPick?.market) {
-      void insertPublicTrackPick({
-        sourceType: "analysis",
-        sourceRef: inserted?.[0]?.id ? String(inserted[0].id) : undefined,
-        fixtureId: Number(fixtureId),
-        matchLabel: match,
-        market: primaryPick.market,
-        brainScore: finalAnalysis.brainScore,
-        safetyTier: brainScoreToSafetyTier(finalAnalysis.brainScore),
-        probability: primaryPick.probability,
-        kickoffAt: fixture?.fixture?.date || null,
-        note:
-          language === "en"
-            ? "Featured Brain Pick from user analysis"
-            : "Utvalt Brain Pick från användaranalys",
-      });
+      if (result.fixtureId && primaryPick?.market) {
+        void insertPublicTrackPick({
+          sourceType: "analysis",
+          sourceRef: inserted?.[0]?.id ? String(inserted[0].id) : undefined,
+          fixtureId: Number(result.fixtureId),
+          matchLabel: result.matchLabel,
+          market: primaryPick.market,
+          brainScore: result.finalAnalysis.brainScore,
+          safetyTier: brainScoreToSafetyTier(result.finalAnalysis.brainScore),
+          probability: primaryPick.probability,
+          kickoffAt: result.fixture?.fixture?.date || null,
+          note:
+            language === "en"
+              ? "Featured Brain Pick from user analysis"
+              : "Utvalt Brain Pick från användaranalys",
+        });
+      }
     }
 
     return NextResponse.json({
@@ -1101,7 +1063,8 @@ export async function POST(
       brainPickLimit,
       saved: inserted,
       usedData,
-      analysis: finalAnalysis,
+      analysis: primary.finalAnalysis,
+      matches,
     });
   } catch (error: unknown) {
     console.error(

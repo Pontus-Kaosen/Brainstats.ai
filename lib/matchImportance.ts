@@ -1,3 +1,5 @@
+import { extractBetBlocks } from "@/lib/betTextParser";
+
 export const IMPORTANT_TOURNAMENT_IDS = new Set([
   1, // World Cup
   2, // Champions League
@@ -205,17 +207,6 @@ function resolveBetSidesSingle(
   }
 
   return sides;
-}
-
-function extractBetBlocks(text: string) {
-  if (/fixture id:/i.test(text)) {
-    return text
-      .split(/\n\s*\n/)
-      .map((block) => block.trim())
-      .filter(Boolean);
-  }
-
-  return [text];
 }
 
 export function resolveBetSides(

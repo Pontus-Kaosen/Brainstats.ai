@@ -156,60 +156,72 @@ export async function resolvePicksToAnalyzeText(picks: ExtractedBetPick[]) {
     };
   }
 
-  const primary = picks[0];
-  const homeTeam = await searchTeam(primary.homeTeam);
-  const awayTeam = await searchTeam(primary.awayTeam);
-
-  let fixture: ApiFixture | null = null;
-
-  if (homeTeam?.id && awayTeam?.id) {
-    fixture = await findFixtureBetweenTeams(homeTeam.id, awayTeam.id);
-  }
-
   const blocks: string[] = [];
   const uniqueMatches = new Set(
     picks.map((pick) => `${pick.homeTeam}::${pick.awayTeam}`)
   );
+  const picksByMatch = new Map<string, ExtractedBetPick[]>();
 
-  if (fixture?.fixture?.id) {
-    const matchMeta = normalizePickTeams(primary, fixture);
+  for (const pick of picks) {
+    const key = `${pick.homeTeam}::${pick.awayTeam}`;
+    const group = picksByMatch.get(key) || [];
+    group.push(pick);
+    picksByMatch.set(key, group);
+  }
 
-    for (const pick of picks) {
+  let anyResolved = false;
+
+  for (const matchPicks of picksByMatch.values()) {
+    const primary = matchPicks[0];
+    const homeTeam = await searchTeam(primary.homeTeam);
+    const awayTeam = await searchTeam(primary.awayTeam);
+
+    let fixture: ApiFixture | null = null;
+
+    if (homeTeam?.id && awayTeam?.id) {
+      fixture = await findFixtureBetweenTeams(homeTeam.id, awayTeam.id);
+    }
+
+    if (fixture?.fixture?.id) {
+      anyResolved = true;
+      const matchMeta = normalizePickTeams(primary, fixture);
+
+      for (const pick of matchPicks) {
+        blocks.push(
+          buildAnalyzeTextBlock({
+            homeTeam: matchMeta.homeTeam,
+            awayTeam: matchMeta.awayTeam,
+            market: pick.market,
+            fixtureId: matchMeta.fixtureId,
+            homeTeamId: matchMeta.homeTeamId,
+            awayTeamId: matchMeta.awayTeamId,
+            playerName: pick.playerName || null,
+          })
+        );
+      }
+
+      continue;
+    }
+
+    for (const pick of matchPicks) {
       blocks.push(
         buildAnalyzeTextBlock({
-          homeTeam: matchMeta.homeTeam,
-          awayTeam: matchMeta.awayTeam,
+          homeTeam: pick.homeTeam,
+          awayTeam: pick.awayTeam,
           market: pick.market,
-          fixtureId: matchMeta.fixtureId,
-          homeTeamId: matchMeta.homeTeamId,
-          awayTeamId: matchMeta.awayTeamId,
           playerName: pick.playerName || null,
         })
       );
     }
-
-    return {
-      text: blocks.join("\n\n"),
-      resolved: true,
-      warning:
-        uniqueMatches.size > 1 ? "multiple_matches" : null,
-    };
-  }
-
-  for (const pick of picks) {
-    blocks.push(
-      buildAnalyzeTextBlock({
-        homeTeam: pick.homeTeam,
-        awayTeam: pick.awayTeam,
-        market: pick.market,
-        playerName: pick.playerName || null,
-      })
-    );
   }
 
   return {
     text: blocks.join("\n\n"),
-    resolved: false,
-    warning: "fixture_not_found",
+    resolved: anyResolved,
+    warning: !anyResolved
+      ? "fixture_not_found"
+      : uniqueMatches.size > 1
+        ? "multiple_matches"
+        : null,
   };
 }

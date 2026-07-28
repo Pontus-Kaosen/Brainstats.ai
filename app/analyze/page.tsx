@@ -1,19 +1,14 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
-import BrainCard from "@/components/BrainCard";
 import { useLanguage } from "@/components/LanguageProvider";
-import {
-  formatTranslation,
-  translateBreakdownKey,
-  translateRiskLevel,
-} from "@/lib/locale";
+import { formatTranslation } from "@/lib/locale";
 import {
   ANALYZE_DRAFT_KEY,
   ANALYZE_INPUT_MODE_KEY,
@@ -21,28 +16,10 @@ import {
 import BetSlipImageUpload from "@/components/BetSlipImageUpload";
 import AnalyzeQuickStart from "@/components/AnalyzeQuickStart";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
-import WorthBettingBlock from "@/components/WorthBettingBlock";
 import type { WorthBetting } from "@/lib/worthBetting";
 import { getSampleAnalysis } from "@/lib/sampleAnalysis";
-import {
-  summarizeRotationRisksForUi,
-  type RotationRisk,
-  type ScheduleContextStatus,
-} from "@/lib/matchImportance";
-import {
-  hasPartialLineups,
-  type PlayerLineupStatus,
-} from "@/lib/lineups";
-
-
-type ScoreBreakdown = {
-  form?: number;
-  table?: number;
-  h2h?: number;
-  stats?: number;
-  market?: number;
-  confidence?: number;
-};
+import AnalyzeMatchReport from "@/components/AnalyzeMatchReport";
+import type { AnalysisUsedData, ScoreBreakdown } from "@/lib/analysisReportTypes";
 
 type BrainPick = {
   market: string;
@@ -51,52 +28,6 @@ type BrainPick = {
   estimatedOdds?: number;
   riskLevel?: string;
   reason: string;
-};
-
-type LastMatch = {
-  fixture: { id: number; date: string };
-  teams: {
-    home: { id: number; name: string; winner?: boolean | null };
-    away: { id: number; name: string; winner?: boolean | null };
-  };
-  goals: { home: number | null; away: number | null };
-};
-
-type Injury = {
-  player?: {
-    id?: number;
-    name?: string;
-    photo?: string;
-    type?: string;
-    reason?: string;
-  };
-  team?: { id?: number; name?: string; logo?: string };
-  type?: string;
-  reason?: string;
-};
-
-type LineupPlayer = {
-  id?: number;
-  name?: string;
-  number?: number;
-  position?: string;
-  grid?: string;
-};
-
-type TeamLineup = {
-  team?: {
-    id?: number;
-    name?: string;
-    logo?: string;
-  };
-  formation?: string | null;
-  coach?: {
-    id?: number;
-    name?: string;
-    photo?: string;
-  };
-  startXI?: LineupPlayer[];
-  substitutes?: LineupPlayer[];
 };
 
 type AIResult = {
@@ -113,70 +44,15 @@ type AIResult = {
   brainPicks?: BrainPick[];
 };
 
-type Weather = {
-  temperature?: string | number;
-  description?: string;
-  wind?: string | number;
-  humidity?: string | number;
+type MatchResult = {
+  matchLabel: string;
+  blockText: string;
+  analysis: AIResult;
+  usedData: AnalysisUsedData;
 };
-
-type UsedData = {
-  lastMatches?: {
-    home?: LastMatch[];
-    away?: LastMatch[];
-  };
-  injuries?: Injury[];
-  lineups?: TeamLineup[];
-  confirmedLineups?: boolean;
-  weather?: Weather | null;
-  referee?: string | null;
-  rotationRisks?: RotationRisk[];
-  scheduleContext?: ScheduleContextStatus;
-  scheduleTeamsChecked?: string[];
-  playerLineupStatus?: PlayerLineupStatus | null;
-  homeTeamId?: string | null;
-  awayTeamId?: string | null;
-};
-
-const cardClass =
-  "brain-card rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1";
 
 const titleGradient =
   "bg-gradient-to-r from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] bg-clip-text text-transparent";
-
-function resultIcon(match: LastMatch) {
-  if (match.goals.home === match.goals.away) return "🟡";
-  if (match.teams.home.winner || match.teams.away.winner) return "🟢";
-  return "🔴";
-}
-
-function matchText(match: LastMatch) {
-  return `${match.teams.home.name} ${match.goals.home ?? "-"}-${
-    match.goals.away ?? "-"
-  } ${match.teams.away.name}`;
-}
-
-function riskColor(risk?: string) {
-  if (risk === "Low" || risk === "Lägre risk" || risk === "Lower risk") {
-    return "border-green-500/30 bg-green-500/10 text-green-300";
-  }
-
-  if (risk === "High" || risk === "Högre risk" || risk === "Higher risk") {
-    return "border-red-500/30 bg-red-500/10 text-red-300";
-  }
-
-  return "border-yellow-500/30 bg-yellow-500/10 text-yellow-200";
-}
-
-function injuryReason(injury: Injury, fallback: string) {
-  return (
-    injury.reason ||
-    injury.player?.reason ||
-    injury.player?.type ||
-    injury.type ||
-    fallback
-  );
-}
 
 function AnalyzePageContent() {
   const { t, language } = useLanguage();
@@ -202,7 +78,7 @@ function AnalyzePageContent() {
   const [showReport, setShowReport] = useState(false);
   const [loading, setLoading] = useState(false);
   const [aiResult, setAiResult] = useState<AIResult | null>(null);
-  const [usedData, setUsedData] = useState<UsedData | null>(null);
+  const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
   const [premiumError, setPremiumError] = useState("");
   const [analysisError, setAnalysisError] = useState("");
   const [saveWarning, setSaveWarning] = useState("");
@@ -219,6 +95,24 @@ function AnalyzePageContent() {
 
     const sample = getSampleAnalysis(language);
     setBetText(sample.betText);
+    setMatchResults([
+      {
+        matchLabel: sample.betText.split("\n")[0]?.trim() || t.analyze.reportTitle,
+        blockText: sample.betText,
+        analysis: {
+          summary: sample.summary,
+          strengths: sample.strengths,
+          risks: sample.risks,
+          recommendation: sample.recommendation,
+          brainScore: sample.brainScore,
+          riskLevel: sample.riskLevel,
+          confidence: sample.confidence,
+          worthBetting: sample.worthBetting,
+          brainPicks: sample.brainPicks,
+        },
+        usedData: {},
+      },
+    ]);
     setAiResult({
       summary: sample.summary,
       strengths: sample.strengths,
@@ -339,7 +233,7 @@ function AnalyzePageContent() {
     setShowReport(false);
     setIsSampleReport(false);
     setAiResult(null);
-    setUsedData(null);
+    setMatchResults([]);
     setPremiumError("");
     setAnalysisError("");
     setSaveWarning("");
@@ -373,8 +267,31 @@ function AnalyzePageContent() {
     }
 
     if (data.analysis) {
+      const matches: MatchResult[] = Array.isArray(data.matches)
+        ? data.matches.map(
+            (entry: {
+              matchLabel: string;
+              blockText: string;
+              analysis: AIResult;
+              usedData: AnalysisUsedData;
+            }) => ({
+              matchLabel: entry.matchLabel,
+              blockText: entry.blockText,
+              analysis: entry.analysis,
+              usedData: entry.usedData,
+            })
+          )
+        : [
+            {
+              matchLabel: betText.split("\n")[0]?.trim() || t.analyze.reportTitle,
+              blockText: betText,
+              analysis: data.analysis,
+              usedData: (data.usedData || {}) as AnalysisUsedData,
+            },
+          ];
+
+      setMatchResults(matches);
       setAiResult(data.analysis);
-      setUsedData(data.usedData || null);
       setLoading(false);
       setShowReport(true);
 
@@ -399,54 +316,19 @@ function AnalyzePageContent() {
     }
   }
 
-  const score = aiResult?.brainScore ?? 0;
-  const confidence = aiResult?.confidence ?? 0;
-  const risk = translateRiskLevel(aiResult?.riskLevel, t);
-  const breakdown = aiResult?.scoreBreakdown || {};
-  const homeLastMatches = usedData?.lastMatches?.home || [];
-  const awayLastMatches = usedData?.lastMatches?.away || [];
-  const injuries = usedData?.injuries || [];
-const lineups = usedData?.lineups || [];
-const homeLineup = lineups[0];
-const awayLineup = lineups[1];
-const confirmedLineups = usedData?.confirmedLineups === true;
-const partialLineups = hasPartialLineups(lineups);
-const playerLineupStatus = usedData?.playerLineupStatus ?? null;
-
-const selectedPlayerId = useMemo(() => {
-  const match = betText.match(/Player ID:\s*(\d+)/i);
-  return match ? Number(match[1]) : null;
-}, [betText]);
-
-const weather = usedData?.weather;
-const referee = usedData?.referee;
-const rotationRisks = usedData?.rotationRisks || [];
-const scheduleContext = usedData?.scheduleContext;
-const scheduleTeamsChecked = usedData?.scheduleTeamsChecked || [];
-const rotationSummaries = summarizeRotationRisksForUi(
-  rotationRisks,
-  language
-);
-const scheduleStatusMessage =
-  scheduleContext === "checked_clear"
-    ? formatTranslation(t.analyze.scheduleCheckedClear, {
-        teams: scheduleTeamsChecked.join(", "),
-      })
-    : scheduleContext === "no_team"
-      ? t.analyze.scheduleNoTeam
-      : scheduleContext === "no_fixture"
-        ? t.analyze.scheduleNoFixture
-        : "";
-
-const brainPicks = useMemo(() => {
-  if (!aiResult) return [];
-
-  if (Array.isArray(aiResult.brainPicks) && aiResult.brainPicks.length > 0) {
-    return aiResult.brainPicks;
-  }
-
-  return aiResult.brainPick ? [aiResult.brainPick] : [];
-}, [aiResult]);
+  const reportEntries =
+    matchResults.length > 0
+      ? matchResults
+      : aiResult
+        ? [
+            {
+              matchLabel: betText.split("\n")[0]?.trim() || t.analyze.reportTitle,
+              blockText: betText,
+              analysis: aiResult,
+              usedData: {} as AnalysisUsedData,
+            },
+          ]
+        : [];
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
@@ -700,7 +582,7 @@ const brainPicks = useMemo(() => {
   </section>
 )}
 
-          {showReport && aiResult && (
+          {showReport && reportEntries.length > 0 && (
             <section className="mt-8 space-y-8">
               {saveWarning ? (
                 <div className="rounded-2xl border border-yellow-500/40 bg-yellow-500/10 p-4 text-sm text-yellow-100">
@@ -722,550 +604,20 @@ const brainPicks = useMemo(() => {
                 </div>
               ) : null}
 
-              <div className="brain-card overflow-hidden rounded-[2rem] p-10">
-  <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-    <div>
-      <p className={`text-sm uppercase tracking-[0.45em] ${titleGradient}`}>
-        {t.analyze.reportSubtitle}
-      </p>
-
-      <h2 className="mt-4 text-5xl font-black">
-        {t.analyze.reportTitle}
-      </h2>
-
-      <p className="mt-4 max-w-2xl leading-8 text-[#A9A9A9]">
-        {aiResult.summary}
-      </p>
-    </div>
-
-    <div className="relative flex h-56 w-56 items-center justify-center rounded-full border border-[#18ff6d33] bg-black/40 shadow-[0_0_80px_rgba(24,255,109,.22)]">
-      <div className="absolute inset-4 rounded-full border border-[#18ff6d22]" />
-      <div className="absolute inset-8 rounded-full border border-[#2fbfff22]" />
-
-      <div className="text-center">
-        <div className="text-7xl font-black text-[#18ff6d] drop-shadow-[0_0_40px_rgba(24,255,109,.75)]">
-          {score}
-        </div>
-        <p className="mt-1 text-sm text-[#A9A9A9]">{t.analyze.brainScore}</p>
-      </div>
-  </div>
-</div>
-
-              {(rotationSummaries.length > 0 || scheduleStatusMessage) && (
+              {reportEntries.map((entry, index) => (
                 <div
-                  className={`rounded-3xl border p-6 sm:p-8 ${
-                    rotationSummaries.length > 0
-                      ? "border-yellow-500/30 bg-yellow-500/10"
-                      : "border-white/10 bg-black/30"
-                  }`}
+                  key={`${entry.matchLabel}-${index}`}
+                  className={index > 0 ? "border-t border-white/10 pt-10" : ""}
                 >
-                  <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-                    {t.analyze.scheduleContextTitle}
-                  </p>
-                  <p className="mt-2 text-sm text-[#A9A9A9]">
-                    {t.analyze.scheduleContextHint}
-                  </p>
-                  {rotationSummaries.length > 0 ? (
-                    <ul className="mt-4 space-y-3">
-                      {rotationSummaries.map((item) => (
-                        <li
-                          key={item}
-                          className="rounded-2xl border border-yellow-500/20 bg-black/30 px-4 py-3 text-sm leading-6 text-[#E8E8E8]"
-                        >
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="mt-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-[#A9A9A9]">
-                      {scheduleStatusMessage}
-                    </p>
-                  )}
+                  <AnalyzeMatchReport
+                    matchLabel={entry.matchLabel}
+                    aiResult={entry.analysis}
+                    usedData={entry.usedData}
+                    blockBetText={entry.blockText}
+                    showMatchHeading={reportEntries.length > 1}
+                  />
                 </div>
-              )}
-
-  <div className="mt-10 grid gap-5 md:grid-cols-3">
-    <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">{t.analyze.riskLevel}</p>
-      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{risk}</p>
-    </div>
-
-    <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">{t.analyze.confidence}</p>
-      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{confidence}%</p>
-    </div>
-
-    <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-      <p className="text-sm text-[#A9A9A9]">{t.analyze.analysisMode}</p>
-      <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.liveAi}</p>
-    </div>
-  </div>
-
-  <div className="mt-8">
-    <div className="mb-3 flex justify-between text-sm">
-      <span className="text-[#A9A9A9]">{t.analyze.brainScorePower}</span>
-      <span className="font-semibold text-[#18ff6d]">{score}%</span>
-    </div>
-
-    <div className="h-5 overflow-hidden rounded-full bg-black/60">
-      <div
-        className="h-full rounded-full bg-gradient-to-r from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] transition-all duration-700"
-        style={{ width: `${Math.min(score, 100)}%` }}
-      />
-    </div>
-  </div>
-</div>
-
-<div className="grid gap-6 md:grid-cols-2">
-  <div className={cardClass}>
-    <p
-      className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}
-    >
-      {t.analyze.scoreBreakdownBadge}
-    </p>
-
-    <h3 className="mt-2 text-2xl font-bold text-white">
-      <span className="mr-2">📊</span>
-      {t.analyze.scoreBreakdownTitle}
-    </h3>
-
-    <div className="mt-6 space-y-5">
-      {Object.entries(breakdown).map(([key, value]) => (
-        <div key={key}>
-          <div className="mb-2 flex justify-between text-sm">
-            <span className="capitalize text-[#A9A9A9]">
-              {translateBreakdownKey(key, t)}
-            </span>
-
-            <span className="font-semibold text-[#18ff6d]">
-              +{value}
-            </span>
-          </div>
-
-          <div className="h-3 overflow-hidden rounded-full bg-black/50">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#18ff6d] to-[#2fbfff] transition-all duration-700"
-              style={{
-                width: `${Math.min(Number(value) * 5, 100)}%`,
-              }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-
-  <div className={cardClass}>
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <p
-          className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}
-        >
-          {t.analyze.startingXiBadge}
-        </p>
-
-        <h3 className="mt-2 text-2xl font-bold text-white">
-          <span className="mr-2">👥</span>
-          {t.analyze.startingXi}
-        </h3>
-      </div>
-
-      <span
-        className={`rounded-full border px-4 py-2 text-xs font-bold ${
-          confirmedLineups
-            ? "border-[#18ff6d44] bg-[#18ff6d]/10 text-[#18ff6d]"
-            : "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
-        }`}
-      >
-        {confirmedLineups
-          ? t.analyze.confirmed
-          : t.analyze.awaiting}
-      </span>
-    </div>
-
-    {!confirmedLineups && !partialLineups ? (
-      <div className="mt-6 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-5">
-        <p className="font-semibold text-yellow-200">
-          {t.analyze.lineupsNotPublished}
-        </p>
-
-        <p className="mt-2 text-sm leading-6 text-[#A9A9A9]">
-          {t.analyze.lineupsHint}
-        </p>
-      </div>
-    ) : (
-      <div className="mt-6 space-y-6">
-        {playerLineupStatus === "bench" ? (
-          <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-100">
-            {t.analyze.playerOnBenchWarningReport}
-          </div>
-        ) : null}
-
-        {playerLineupStatus === "not_in_squad" ? (
-          <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-            {t.analyze.playerNotStartingWarningReport}
-          </div>
-        ) : null}
-
-        {[homeLineup, awayLineup]
-          .filter((lineup) => (lineup?.startXI?.length ?? 0) > 0)
-          .map((lineup, teamIndex) => (
-          <div
-            key={lineup?.team?.id || teamIndex}
-            className="overflow-hidden rounded-2xl border border-[#18ff6d22] bg-black/35"
-          >
-            <div className="flex items-center gap-4 border-b border-white/10 p-5">
-              {lineup?.team?.logo && (
-                <img
-                  src={lineup.team.logo}
-                  alt={lineup.team.name || t.common.teamAlt}
-                  className="h-12 w-12 rounded-full bg-white p-1"
-                />
-              )}
-
-              <div>
-                <p className="text-lg font-black text-white">
-                  {lineup?.team?.name ||
-                    (teamIndex === 0
-                      ? t.analyze.homeTeam
-                      : t.analyze.awayTeam)}
-                </p>
-
-                <p className="mt-1 text-sm text-[#18ff6d]">
-                  {t.analyze.formation}{" "}
-                  {lineup?.formation || t.analyze.notSpecified}
-                </p>
-
-                {lineup?.coach?.name && (
-                  <p className="mt-1 text-xs text-[#A9A9A9]">
-                    {t.analyze.coach} {lineup.coach.name}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#777]">
-                {t.analyze.startingPlayers}
-              </p>
-
-              <div className="mt-4 space-y-2">
-                {(lineup?.startXI || []).map(
-                  (player, playerIndex) => (
-                    <div
-                      key={
-                        player.id ||
-                        `${player.name}-${playerIndex}`
-                      }
-                      className={`flex items-center justify-between rounded-xl border px-4 py-3 ${
-                        selectedPlayerId &&
-                        player.id === selectedPlayerId
-                          ? "border-[#18ff6d] bg-[#18ff6d]/10"
-                          : "border-white/5 bg-[#101010]/80"
-                      }`}
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#18ff6d]/10 text-sm font-black text-[#18ff6d]">
-                          {player.number ?? "–"}
-                        </span>
-
-                        <span className="truncate font-semibold text-[#E8E8E8]">
-                          {player.name || t.builder.unknownPlayer}
-                        </span>
-
-                        {selectedPlayerId &&
-                        player.id === selectedPlayerId ? (
-                          <span className="rounded-full bg-[#18ff6d]/20 px-2 py-0.5 text-[10px] font-bold text-[#18ff6d]">
-                            {t.analyze.selectedPlayerBadge}
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <span className="ml-3 shrink-0 text-xs font-bold text-[#A9A9A9]">
-                        {player.position || "–"}
-                      </span>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-</div>
-
-
-              <div className="grid gap-6 md:grid-cols-2">
-                {weather && (
-                  <div className={cardClass}>
-                    <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-                      {t.analyze.matchConditions}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-bold text-white">
-                      <span className="mr-2">🌦️</span>
-                      {t.analyze.weather}
-                    </h3>
-
-                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                      {[
-                        [t.analyze.temperature, `${weather.temperature ?? "-"}°C`],
-                        [t.analyze.weatherDesc, weather.description ?? "-"],
-                        [t.analyze.wind, `${weather.wind ?? "-"} km/h`],
-                        [t.analyze.humidity, `${weather.humidity ?? "-"}%`],
-                      ].map(([label, value]) => (
-                        <div
-                          key={label}
-                          className="rounded-2xl border border-[#18ff6d11] bg-black/35 p-5"
-                        >
-                          <p className="text-sm text-[#A9A9A9]">{label}</p>
-                          <p className="mt-2 text-2xl font-bold text-[#18ff6d]">
-                            {value}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {referee && (
-                  <div className={cardClass}>
-                    <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-                      {t.analyze.matchOfficial}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-bold text-white">
-                      <span className="mr-2">👨‍⚖️</span>
-                      {t.analyze.referee}
-                    </h3>
-
-                    <div className="mt-6 rounded-2xl border border-[#18ff6d11] bg-black/35 p-6">
-                      <p className="text-sm text-[#A9A9A9]">
-                        {t.analyze.matchOfficial}
-                      </p>
-                      <p className="mt-3 text-3xl font-bold text-[#18ff6d]">
-                        {referee}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className={cardClass}>
-                <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-                  {t.analyze.teamFormBadge}
-                </p>
-                <h3 className="mt-2 text-2xl font-bold text-white">
-                  <span className="mr-2">📈</span>
-                  {t.analyze.lastFiveMatches}
-                </h3>
-
-                <div className="mt-6 grid gap-6 md:grid-cols-2">
-                  {[
-                    [t.analyze.homeTeam, homeLastMatches],
-                    [t.analyze.awayTeam, awayLastMatches],
-                  ].map(([label, matches]) => (
-                    <div
-                      key={label as string}
-                      className="rounded-2xl border border-[#18ff6d11] bg-black/35 p-5"
-                    >
-                      <h4 className="font-bold text-[#18ff6d]">
-                        {label as string}
-                      </h4>
-
-                      <div className="mt-4 space-y-3">
-                        {(matches as LastMatch[]).length === 0 ? (
-                          <p className="text-sm text-[#A9A9A9]">
-                            {t.analyze.noMatchData}
-                          </p>
-                        ) : (
-                          (matches as LastMatch[]).map((match) => (
-                            <div
-                              key={match.fixture.id}
-                              className="rounded-xl bg-[#101010]/80 p-3 text-sm text-[#D8D8D8] transition hover:bg-[#151515]"
-                            >
-                              <span className="mr-2">{resultIcon(match)}</span>
-                              {matchText(match)}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={cardClass}>
-                <h3 className="text-2xl font-bold text-white">
-                  <span className="mr-2">🏥</span>
-                  {t.analyze.injuries}
-                </h3>
-
-                <div className="mt-6 space-y-3">
-                  {injuries.length === 0 ? (
-                    <p className="text-sm text-[#A9A9A9]">
-                      {t.analyze.noInjuries}
-                    </p>
-                  ) : (
-                    injuries.map((injury, index) => (
-                      <div
-                        key={`${injury.player?.name}-${index}`}
-                        className="flex items-center gap-4 rounded-2xl bg-black/35 p-4 text-sm"
-                      >
-                        {injury.team?.logo && (
-                          <img
-                            src={injury.team.logo}
-                            alt={injury.team.name || t.common.teamAlt}
-                            className="h-9 w-9 rounded-full bg-white p-1"
-                          />
-                        )}
-
-                        <div>
-                          <p className="font-semibold text-[#18ff6d]">
-                            {injury.player?.name || t.builder.unknownPlayer}
-                          </p>
-                          <p className="mt-1 text-[#D8D8D8]">
-                            {injury.team?.name || t.analyze.unknownTeam}
-                          </p>
-                          <p className="mt-1 text-[#A9A9A9]">
-                            {injuryReason(injury, t.analyze.noInjuryReason)}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div className={cardClass}>
-                <h3 className="text-2xl font-bold text-white">
-                  {t.analyze.yourBetIdea}
-                </h3>
-                <pre className="mt-5 whitespace-pre-wrap rounded-2xl bg-black/40 p-5 text-sm text-[#D8D8D8]">
-                  {betText}
-                </pre>
-              </div>
-
-              {aiResult.worthBetting ? (
-                <WorthBettingBlock
-                  worthBetting={aiResult.worthBetting}
-                  className="mt-8"
-                />
-              ) : null}
-
-              <section className="mt-8">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-                      {t.report.picksSubtitle}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-black text-white sm:text-3xl">
-                      {t.report.picksTitle}
-                    </h3>
-                  </div>
-                  <p className="text-sm text-[#A9A9A9]">{t.report.fairOddsNote}</p>
-                </div>
-
-                {brainPicks.length === 0 ? (
-                  <div className="mt-6 rounded-3xl border border-white/10 bg-black/30 p-8">
-                    <p className="text-[#A9A9A9]">{t.report.noPicks}</p>
-                  </div>
-                ) : (
-                  <div className="mt-6 grid gap-6 lg:grid-cols-2">
-                    {brainPicks.map((pick, index) => (
-                      <article
-                        key={`${pick.market}-${index}`}
-                        className="brain-card relative overflow-hidden rounded-3xl border border-[#18ff6d22] p-6 sm:p-7"
-                      >
-                        <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#18ff6d]/10 blur-[70px]" />
-
-                        <div className="relative">
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <span className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-black text-[#18ff6d]">
-                              {formatTranslation(t.report.pickNumber, {
-                                n: index + 1,
-                              })}
-                            </span>
-
-                            <span
-                              className={`rounded-full border px-4 py-2 text-sm font-bold ${riskColor(
-                                pick.riskLevel
-                              )}`}
-                            >
-                              {translateRiskLevel(pick.riskLevel, t)}{" "}
-                              {t.common.riskSuffix}
-                            </span>
-                          </div>
-
-                          <h4 className="mt-6 text-2xl font-black text-white sm:text-3xl">
-                            {pick.market || t.report.unknownMarket}
-                          </h4>
-
-                          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                            <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-                              <p className="text-sm text-[#A9A9A9]">
-                                {t.report.aiProbability}
-                              </p>
-                              <p className="mt-2 text-3xl font-black text-[#18ff6d]">
-                                {pick.probability ?? pick.confidence ?? 0}%
-                              </p>
-                            </div>
-
-                            <div className="rounded-2xl border border-[#2fbfff33] bg-black/35 p-5">
-                              <p className="text-sm text-[#A9A9A9]">
-                                {t.report.estimatedFairOdds}
-                              </p>
-                              <p className="mt-2 text-3xl font-black text-[#72d5ff]">
-                                {Number(pick.estimatedOdds || 0).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-
-                          <p className="mt-6 leading-8 text-[#D8D8D8]">
-                            {pick.reason || t.report.noReason}
-                          </p>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className={cardClass}>
-                  <h3 className="text-2xl font-bold text-white">
-                    <span className="mr-2">👍</span>
-                    {t.analyze.strengths}
-                  </h3>
-                  <ul className="mt-5 space-y-3 text-[#D8D8D8]">
-                    {aiResult.strengths.map((item) => (
-                      <li key={item}>✓ {item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className={cardClass}>
-                  <h3 className="text-2xl font-bold text-white">
-                    <span className="mr-2">⚠</span>
-                    {t.analyze.risks}
-                  </h3>
-                  <ul className="mt-5 space-y-3 text-[#D8D8D8]">
-                    {aiResult.risks.map((item) => (
-                      <li key={item}>• {item}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <div className={cardClass}>
-                <h3 className="text-2xl font-bold text-white">
-                  <span className="mr-2">💡</span>
-                  {t.analyze.recommendation}
-                </h3>
-                <p className="mt-5 leading-8 text-[#D8D8D8]">
-                  {aiResult.recommendation}
-                </p>
-              </div>
+              ))}
             </section>
           )}
         </div>
