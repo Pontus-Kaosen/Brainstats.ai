@@ -7,6 +7,14 @@
   --z-nav-overlay: 125;
   --z-dropdown: 140;
   --z-cookie: 300;
+
+  /* Brand surfaces — mörk men med grön/blå ton */
+  --brain-page-from: #071018;
+  --brain-page-mid: #0b1a28;
+  --brain-page-to: #060e16;
+  --brain-accent-green: #18ff6d;
+  --brain-accent-blue: #2fbfff;
+  --brain-accent-cream: #e8dcc8;
 }
 
 @theme inline {
@@ -18,9 +26,47 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #0b1520;
     --foreground: #ededed;
   }
+}
+
+.brain-page {
+  background: linear-gradient(
+    165deg,
+    var(--brain-page-from) 0%,
+    var(--brain-page-mid) 42%,
+    var(--brain-page-to) 100%
+  );
+  color: #fafaf8;
+}
+
+.brain-section {
+  border: 1px solid rgba(24, 255, 109, 0.16);
+  background: linear-gradient(
+    145deg,
+    rgba(12, 30, 42, 0.88) 0%,
+    rgba(8, 20, 30, 0.92) 100%
+  );
+  backdrop-filter: blur(16px);
+}
+
+.brain-inset {
+  border: 1px solid rgba(47, 191, 255, 0.1);
+  background: linear-gradient(
+    145deg,
+    rgba(14, 32, 44, 0.62) 0%,
+    rgba(10, 22, 32, 0.72) 100%
+  );
+}
+
+.brain-stat-tile {
+  border: 1px solid rgba(24, 255, 109, 0.18);
+  background: linear-gradient(
+    160deg,
+    rgba(18, 42, 36, 0.45) 0%,
+    rgba(10, 24, 34, 0.65) 100%
+  );
 }
 
 body {
@@ -117,15 +163,26 @@ a {
   touch-action: manipulation;
 }
 .brain-card {
-  border: 1px solid rgba(24, 255, 109, 0.14);
-  background: rgba(18, 18, 18, 0.74);
+  border: 1px solid rgba(24, 255, 109, 0.18);
+  background: linear-gradient(
+    145deg,
+    rgba(16, 38, 50, 0.84) 0%,
+    rgba(11, 26, 38, 0.9) 52%,
+    rgba(8, 18, 28, 0.92) 100%
+  );
   backdrop-filter: blur(18px);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 30px 90px rgba(0,0,0,0.45);
+  box-shadow:
+    0 0 0 1px rgba(47, 191, 255, 0.05),
+    inset 0 1px 0 rgba(232, 220, 200, 0.04),
+    0 24px 70px rgba(0, 0, 0, 0.38);
 }
 
 .brain-card:hover {
-  border-color: rgba(24, 255, 109, 0.52);
-  box-shadow: 0 0 60px rgba(24, 255, 109, 0.18), 0 30px 90px rgba(0,0,0,0.55);
+  border-color: rgba(47, 191, 255, 0.38);
+  box-shadow:
+    0 0 36px rgba(24, 255, 109, 0.14),
+    0 0 72px rgba(47, 191, 255, 0.08),
+    0 24px 70px rgba(0, 0, 0, 0.42);
 }
 
 .brain-title {

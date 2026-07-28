@@ -67,7 +67,7 @@ export default function ReportView({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#050505] px-4 py-10 text-white sm:px-8">
+      <main className="min-h-screen brain-page px-4 py-10 text-white sm:px-8">
         <div className="mx-auto max-w-5xl">
           <section className="mt-10 rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">
             <p className="font-semibold text-[#18ff6d]">{t.common.loading}</p>
@@ -79,7 +79,7 @@ export default function ReportView({
 
   if (!analysis) {
     return (
-      <main className="min-h-screen bg-[#050505] px-4 py-10 text-white sm:px-8">
+      <main className="min-h-screen brain-page px-4 py-10 text-white sm:px-8">
         <div className="mx-auto max-w-5xl">
           <a
             href="/dashboard"
@@ -110,7 +110,7 @@ export default function ReportView({
   const scoreBreakdown = analysis.score_breakdown ?? {};
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-hidden brain-page">
       <FootballBackground />
 
       <div className="relative z-10">

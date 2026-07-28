@@ -24,7 +24,7 @@ export default function BuilderStickyBar({
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#18ff6d33] bg-[#050505]/95 px-4 py-3 backdrop-blur-xl xl:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#18ff6d33] bg-[#071018]/95 px-4 py-3 backdrop-blur-xl xl:hidden">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-[#A9A9A9] sm:text-sm">
           {slipCount > 0

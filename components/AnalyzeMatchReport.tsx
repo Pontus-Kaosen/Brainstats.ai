@@ -108,7 +108,7 @@ export default function AnalyzeMatchReport({
               ].map(([label, value]) => (
                 <div
                   key={label as string}
-                  className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2.5"
+                  className="brain-stat-tile rounded-xl px-3 py-2.5"
                 >
                   <p className="text-[10px] uppercase tracking-wide text-[#888] sm:text-xs">
                     {label as string}
@@ -209,7 +209,7 @@ export default function AnalyzeMatchReport({
                   </h4>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border border-[#18ff6d22] bg-black/35 p-3.5">
+                    <div className="brain-inset rounded-xl p-3.5">
                       <p className="text-xs text-[#A9A9A9]">
                         {t.report.aiProbability}
                       </p>
@@ -218,7 +218,7 @@ export default function AnalyzeMatchReport({
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-[#2fbfff33] bg-black/35 p-3.5">
+                    <div className="brain-inset rounded-xl border-[#2fbfff33] p-3.5">
                       <p className="text-xs text-[#A9A9A9]">
                         {t.report.estimatedFairOdds}
                       </p>

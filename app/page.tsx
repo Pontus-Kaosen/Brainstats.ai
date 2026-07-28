@@ -30,7 +30,7 @@ export default async function Home() {
   const valueBetsHistory = await getValueBetsHistoryData(8);
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden brain-page">
       <FootballBackground />
 
       <div className="relative z-10">
@@ -70,15 +70,15 @@ export default async function Home() {
           />
 
               <div className="mt-6 grid w-full max-w-3xl grid-cols-3 gap-2 sm:hidden">
-                <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+                <div className="rounded-xl border border-[#18ff6d22] brain-stat-tile px-3 py-2 text-center">
                   <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatAi}</p>
                   <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatOnline}</p>
                 </div>
-                <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+                <div className="rounded-xl border border-[#18ff6d22] brain-stat-tile px-3 py-2 text-center">
                   <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatData}</p>
                   <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatLive}</p>
                 </div>
-                <div className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2 text-center">
+                <div className="rounded-xl border border-[#18ff6d22] brain-stat-tile px-3 py-2 text-center">
                   <p className="text-[10px] text-[#A9A9A9]">{t.mobileStatRisk}</p>
                   <p className="text-xs font-bold text-[#18ff6d]">{t.mobileStatActive}</p>
                 </div>

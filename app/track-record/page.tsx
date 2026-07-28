@@ -30,7 +30,7 @@ export default async function TrackRecordPage() {
   const t = await getTrackRecordPageData(language);
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden brain-page">
       <FootballBackground />
 
       <div className="relative z-10">

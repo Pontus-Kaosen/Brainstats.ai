@@ -331,14 +331,14 @@ function AnalyzePageContent() {
         : [];
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="brain-page relative min-h-screen overflow-x-hidden">
       <FootballBackground />
 
       <div className="relative z-10">
         <Navbar />
 
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
-          <section className="mobile-hero mt-4 overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-5 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:mt-14 sm:p-10 md:text-left">
+          <section className="mobile-hero brain-section mt-4 overflow-hidden rounded-[2rem] p-5 shadow-[0_0_80px_rgba(24,255,109,.14)] sm:mt-14 sm:p-10 md:text-left">
   <div className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
     {t.analyze.badge}
   </div>
@@ -358,24 +358,24 @@ function AnalyzePageContent() {
   <ResponsibleUseNotice className="mt-5 sm:mt-6" />
 
   <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4">
-    <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
+    <div className="brain-stat-tile rounded-2xl p-5">
       <p className="text-sm text-[#A9A9A9]">{t.analyze.aiEngine}</p>
       <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.online}</p>
     </div>
 
-    <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
+    <div className="brain-stat-tile rounded-2xl p-5">
       <p className="text-sm text-[#A9A9A9]">{t.analyze.dataSources}</p>
       <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.live}</p>
     </div>
 
-    <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
+    <div className="brain-stat-tile rounded-2xl p-5">
       <p className="text-sm text-[#A9A9A9]">{t.analyze.riskModel}</p>
       <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{t.analyze.active}</p>
     </div>
   </div>
 </section>
 
-          <section className="mt-6 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-4 max-md:backdrop-blur-none backdrop-blur-xl sm:mt-10 sm:p-6">
+          <section className="brain-section mt-6 rounded-3xl p-4 sm:mt-10 sm:p-6">
             {(isLoggedIn !== true || totalAnalyses === 0) && !showReport ? (
               <AnalyzeQuickStart />
             ) : null}
@@ -556,7 +556,7 @@ function AnalyzePageContent() {
           </section>
 
           {loading && (
-            <section className="mt-8 rounded-3xl border border-[#18ff6d22] bg-[#121212]/75 p-6 max-md:backdrop-blur-none backdrop-blur-xl">
+            <section className="brain-section mt-8 rounded-3xl p-6">
               <p className={titleGradient}>{t.analyze.loadingReport}</p>
             </section>
           )}
@@ -605,7 +605,7 @@ function AnalyzePageContent() {
               ) : null}
 
               {reportEntries.length > 1 ? (
-                <nav className="sticky top-16 z-20 flex flex-wrap gap-2 rounded-2xl border border-[#18ff6d22] bg-[#0a0a0a]/95 p-3 backdrop-blur-md">
+                <nav className="sticky top-16 z-20 flex flex-wrap gap-2 rounded-2xl border border-[#2fbfff33] bg-[#0b1a28]/95 p-3 backdrop-blur-md">
                   {reportEntries.map((entry, index) => (
                     <a
                       key={`${entry.matchLabel}-nav-${index}`}
@@ -645,7 +645,7 @@ function AnalyzeLoadingFallback() {
   const { t } = useLanguage();
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="brain-page relative min-h-screen overflow-x-hidden">
       <FootballBackground />
       <div className="relative z-10">
         <Navbar />

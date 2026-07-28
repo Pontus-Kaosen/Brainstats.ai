@@ -67,7 +67,7 @@ export default function ValueBetsPageClient({
 
   if (!auth.isElite) {
     return (
-      <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
+      <main className="relative min-h-screen overflow-x-hidden brain-page">
         <FootballBackground />
 
         <div className="relative z-10">
@@ -98,7 +98,7 @@ export default function ValueBetsPageClient({
   }
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden brain-page">
       <FootballBackground />
 
       <div className="relative z-10">

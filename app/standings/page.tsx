@@ -202,7 +202,7 @@ export default function StandingsPage() {
   ];
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-hidden brain-page">
       <FootballBackground />
 
       <div className="relative z-10">

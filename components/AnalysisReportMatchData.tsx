@@ -194,7 +194,7 @@ export default function AnalysisReportMatchData({
                 .map((lineup, teamIndex) => (
                   <div
                     key={lineup?.team?.id || teamIndex}
-                    className="overflow-hidden rounded-xl border border-[#18ff6d22] bg-black/35"
+                    className="overflow-hidden rounded-xl border border-[#18ff6d22] brain-inset"
                   >
                     <div className={`flex items-center gap-3 border-b border-white/10 ${compact ? "p-3" : "p-5"}`}>
                       {lineup?.team?.logo ? (
@@ -285,7 +285,7 @@ export default function AnalysisReportMatchData({
                   ].map(([label, value]) => (
                     <div
                       key={label}
-                      className="rounded-xl border border-[#18ff6d11] bg-black/35 p-3"
+                      className="rounded-xl border border-[#18ff6d11] brain-inset p-3"
                     >
                       <p className="text-[10px] text-[#A9A9A9] sm:text-xs">{label}</p>
                       <p className="mt-1 text-sm font-bold text-[#18ff6d] sm:text-base">
@@ -301,7 +301,7 @@ export default function AnalysisReportMatchData({
               )}
             </div>
 
-            <div className="rounded-xl border border-[#18ff6d11] bg-black/35 p-4">
+            <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
               <p className="text-xs text-[#A9A9A9]">{t.analyze.matchOfficial}</p>
               <p className={`mt-2 text-lg font-bold sm:text-xl ${referee ? "text-[#18ff6d]" : "text-[#A9A9A9]"}`}>
                 {referee || t.analyze.noRefereeData}
@@ -329,7 +329,7 @@ export default function AnalysisReportMatchData({
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="rounded-2xl border border-[#18ff6d11] bg-black/35 p-5"
+                    className="rounded-2xl border border-[#18ff6d11] brain-inset p-5"
                   >
                     <p className="text-sm text-[#A9A9A9]">{label}</p>
                     <p className="mt-2 text-2xl font-bold text-[#18ff6d]">
@@ -353,7 +353,7 @@ export default function AnalysisReportMatchData({
               <span className="mr-2">👨‍⚖️</span>
               {t.analyze.referee}
             </h3>
-            <div className="mt-6 rounded-2xl border border-[#18ff6d11] bg-black/35 p-6">
+            <div className="mt-6 rounded-2xl border border-[#18ff6d11] brain-inset p-6">
               <p className="text-sm text-[#A9A9A9]">{t.analyze.matchOfficial}</p>
               <p
                 className={`mt-3 text-3xl font-bold ${
@@ -383,7 +383,7 @@ export default function AnalysisReportMatchData({
           ].map(([label, matches]) => (
             <div
               key={label as string}
-              className="rounded-xl border border-[#18ff6d11] bg-black/35 p-4"
+              className="rounded-xl border border-[#18ff6d11] brain-inset p-4"
             >
               <h4 className="text-sm font-bold text-[#18ff6d]">{label as string}</h4>
               <div className={`${compact ? "mt-2 space-y-1.5" : "mt-4 space-y-3"}`}>
@@ -423,7 +423,7 @@ export default function AnalysisReportMatchData({
             injuries.map((injury, index) => (
               <div
                 key={`${injury.player?.name}-${index}`}
-                className={`flex items-center gap-3 rounded-xl bg-black/35 text-sm ${compact ? "p-3" : "gap-4 rounded-2xl p-4"}`}
+                className={`flex items-center gap-3 rounded-xl brain-inset text-sm ${compact ? "p-3" : "gap-4 rounded-2xl p-4"}`}
               >
                 {injury.team?.logo ? (
                   <img

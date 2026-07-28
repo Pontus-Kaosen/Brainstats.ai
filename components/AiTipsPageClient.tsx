@@ -72,7 +72,7 @@ export default function AiTipsPageClient({
   const plan = auth.plan;
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#050505] text-[#FAFAF8]">
+    <main className="relative min-h-screen overflow-x-hidden brain-page">
       <FootballBackground />
 
       <div className="relative z-10">
