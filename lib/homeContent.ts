@@ -106,17 +106,17 @@ const homeContent: Record<Language, HomeContent> = {
     mobileStatActive: "Aktiv",
     features: [
       {
-        title: "📸 Ladda upp kupong",
+        title: "Ladda upp kupong",
         text: "AI läser skärmdump och tolkar match och marknader automatiskt.",
         href: "/analyze?mode=image",
       },
       {
-        title: "🧠 Brain Engine",
+        title: "Brain Engine",
         text: "Få BrainScore™, risknivå och identifierade marknader.",
         href: "/analyze?sample=1",
       },
       {
-        title: "🎯 AI-tips & Value Bets",
+        title: "AI-tips & Value Bets",
         text: "Dagliga AI-kuponger och Elite value bets med öppen logg.",
         href: "/ai-tips",
       },
@@ -186,17 +186,17 @@ const homeContent: Record<Language, HomeContent> = {
     mobileStatActive: "Active",
     features: [
       {
-        title: "📸 Upload bet slip",
+        title: "Upload bet slip",
         text: "AI reads your screenshot and parses match and markets automatically.",
         href: "/analyze?mode=image",
       },
       {
-        title: "🧠 Brain Engine",
+        title: "Brain Engine",
         text: "Get BrainScore™, risk level and identified markets.",
         href: "/analyze?sample=1",
       },
       {
-        title: "🎯 AI tips & Value Bets",
+        title: "AI tips & Value Bets",
         text: "Daily AI slips and Elite value bets with a public log.",
         href: "/ai-tips",
       },

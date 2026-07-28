@@ -30,10 +30,7 @@ export default function IntelligenceCompare({
         <article className="rounded-3xl border border-[#18ff6d33] bg-[#18ff6d]/5 p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-2xl" aria-hidden>
-                🎯
-              </p>
-              <h3 className="mt-2 text-lg font-black text-white">
+              <h3 className="text-lg font-black text-white">
                 {compare.aiTips.label}
               </h3>
               <p className="mt-2 text-sm leading-6 text-[#CFCFCF]">
@@ -68,10 +65,7 @@ export default function IntelligenceCompare({
         <article className="rounded-3xl border border-[#72d5ff33] bg-[#2fbfff]/5 p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-2xl" aria-hidden>
-                💎
-              </p>
-              <h3 className="mt-2 text-lg font-black text-white">
+              <h3 className="text-lg font-black text-white">
                 {compare.valueBets.label}
               </h3>
               <p className="mt-2 text-sm leading-6 text-[#CFCFCF]">

@@ -241,7 +241,6 @@ export default function AnalyzeMatchReport({
       <div className="grid gap-4 lg:grid-cols-3">
         <div className={cardClass}>
           <h3 className="text-lg font-bold text-white">
-            <span className="mr-2">👍</span>
             {t.analyze.strengths}
           </h3>
           <ul className="mt-3 space-y-2 text-sm leading-6 text-[#D8D8D8]">
@@ -253,7 +252,6 @@ export default function AnalyzeMatchReport({
 
         <div className={cardClass}>
           <h3 className="text-lg font-bold text-white">
-            <span className="mr-2">⚠</span>
             {t.analyze.risks}
           </h3>
           <ul className="mt-3 space-y-2 text-sm leading-6 text-[#D8D8D8]">
@@ -265,7 +263,6 @@ export default function AnalyzeMatchReport({
 
         <div className={`${cardClass} lg:col-span-1`}>
           <h3 className="text-lg font-bold text-white">
-            <span className="mr-2">💡</span>
             {t.analyze.recommendation}
           </h3>
           <p className="mt-3 text-sm leading-6 text-[#D8D8D8] sm:leading-7">

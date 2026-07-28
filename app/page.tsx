@@ -111,7 +111,7 @@ export default async function Home() {
             href="/premium"
             className="mt-4 text-sm font-semibold text-[#18ff6d] transition hover:underline sm:mt-5"
           >
-            💎 {t.seePremium}
+            {t.seePremium}
           </Link>
         </section>
 
@@ -168,7 +168,7 @@ export default async function Home() {
             className="block rounded-[2rem] border border-white/10 bg-black/30 p-6 text-center transition hover:border-[#18ff6d44] sm:p-8 sm:text-left"
           >
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#18ff6d]">
-              📊 {t.transparencyBadge}
+              {t.transparencyBadge}
             </p>
             <h2 className="mt-3 text-2xl font-black text-white">{t.trackRecordTitle}</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9]">

@@ -76,7 +76,7 @@ const entries: TrackRecordEntry[] = [
 
 const content: Record<Language, TrackRecordContent> = {
   sv: {
-    badge: "📊 Transparens",
+    badge: "Transparens",
     title: "Analys vs resultat",
     description:
       "Vi visar exempel på hur BrainStats AI-analyser såg ut före match — och vad som hände efteråt. Ingen garanti för framtida resultat.",
@@ -110,7 +110,7 @@ const content: Record<Language, TrackRecordContent> = {
     entries,
   },
   en: {
-    badge: "📊 Transparency",
+    badge: "Transparency",
     title: "Analysis vs outcome",
     description:
       "Examples of how BrainStats AI analyses looked before kick-off — and what happened after. No guarantee of future results.",

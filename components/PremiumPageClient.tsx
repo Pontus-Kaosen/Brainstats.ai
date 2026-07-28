@@ -281,7 +281,7 @@ export default function PremiumPageClient({ trustData }: PremiumPageClientProps)
 
                   {plan.elite && (
                     <div className="absolute right-6 top-6 rounded-full border border-[#2fbfff66] bg-[#2fbfff]/10 px-4 py-2 text-xs font-black text-[#72d5ff]">
-                      👑 {t.premium.eliteBadge}
+                      {t.premium.eliteBadge}
                     </div>
                   )}
 

@@ -40,19 +40,19 @@ export default function HomeHeroCtas() {
     return (
       <div className="mt-6 grid w-full max-w-3xl grid-cols-1 gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4">
         <HomeCtaLink href="/analyze?mode=image" className="w-full sm:col-span-2">
-          📸 {t.uploadBetSlipLoggedIn ?? t.uploadBetSlip}
+          {t.uploadBetSlipLoggedIn ?? t.uploadBetSlip}
         </HomeCtaLink>
 
         <HomeCtaLink href="/analyze" className="w-full">
-          🧠 {t.analyzeNow ?? t.pasteBet}
+          {t.analyzeNow ?? t.pasteBet}
         </HomeCtaLink>
 
         <HomeCtaLink href="/dashboard" className="w-full">
-          📊 {t.openDashboard ?? "Dashboard"}
+          {t.openDashboard ?? "Dashboard"}
         </HomeCtaLink>
 
         <HomeCtaLink href="/builder" variant="secondary" className="w-full sm:col-span-2">
-          ⚽ {t.buildBet}
+          {t.buildBet}
         </HomeCtaLink>
       </div>
     );
@@ -61,15 +61,15 @@ export default function HomeHeroCtas() {
   return (
     <div className="mt-6 grid w-full max-w-3xl grid-cols-1 gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4">
       <HomeCtaLink href="/analyze?sample=1" className="w-full sm:col-span-2">
-        🧠 {t.sampleReportCta}
+        {t.sampleReportCta}
       </HomeCtaLink>
 
       <HomeCtaLink href="/builder" className="w-full">
-        ⚽ {t.buildBet}
+        {t.buildBet}
       </HomeCtaLink>
 
       <HomeCtaLink href="/login?next=/analyze" className="w-full">
-        ✨ {t.signupFree}
+        {t.signupFree}
       </HomeCtaLink>
 
       <HomeCtaLink
@@ -77,7 +77,7 @@ export default function HomeHeroCtas() {
         variant="secondary"
         className="w-full sm:col-span-2"
       >
-        📸 {t.uploadBetSlip}
+        {t.uploadBetSlip}
       </HomeCtaLink>
     </div>
   );

@@ -19,7 +19,7 @@ type PickerOption = {
 
 type BuilderPickerProps = {
   label: string;
-  icon: string;
+  icon?: string;
   value: string | number;
   options: PickerOption[];
   onChange: (value: string) => void;
@@ -66,7 +66,7 @@ function getMenuPosition(trigger: HTMLElement): MenuPosition {
 
 export default function BuilderPicker({
   label,
-  icon,
+  icon = "",
   value,
   options,
   onChange,
@@ -232,11 +232,11 @@ export default function BuilderPicker({
                           alt=""
                           className="h-10 w-10 shrink-0 object-contain"
                         />
-                      ) : (
+                      ) : option.icon ? (
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-xl">
-                          {option.icon || "⚽"}
+                          {option.icon}
                         </span>
-                      )}
+                      ) : null}
 
                       <div className="min-w-0 flex-1">
                         <p className="break-words font-bold leading-5">
@@ -267,9 +267,11 @@ export default function BuilderPicker({
     <div ref={containerRef} className="relative isolate min-w-0">
       <div className="relative sm:hidden">
         <div className="pointer-events-none flex items-center gap-3 rounded-xl border border-[#18ff6d22] bg-[#111]/90 px-3 py-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#18ff6d33] bg-[#18ff6d]/10 text-base">
-            {icon}
-          </span>
+          {icon ? (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#18ff6d33] bg-[#18ff6d]/10 text-base">
+              {icon}
+            </span>
+          ) : null}
 
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#7C8A82]">
@@ -330,9 +332,13 @@ export default function BuilderPicker({
 
           <div className="relative flex h-full flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 text-2xl">
-                {icon}
-              </span>
+              {icon ? (
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 text-2xl">
+                  {icon}
+                </span>
+              ) : (
+                <span />
+              )}
 
               <span
                 className={`text-[#18ff6d] transition-transform duration-300 ${

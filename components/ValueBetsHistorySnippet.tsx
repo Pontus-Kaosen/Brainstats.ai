@@ -147,7 +147,7 @@ export default function ValueBetsHistorySnippet({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#18ff6d]">
-            💎 {t.valueBetsHistory.title}
+            {t.valueBetsHistory.title}
           </p>
           <p className="mt-2 text-xs leading-5 text-[#777]">{t.valueBetsHistory.publicNote}</p>
         </div>

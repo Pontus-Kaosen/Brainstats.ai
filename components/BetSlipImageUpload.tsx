@@ -185,8 +185,7 @@ export default function BetSlipImageUpload({
             : "border-[#18ff6d33] bg-black/30"
         }`}
       >
-        <span className="text-4xl">📸</span>
-        <p className="mt-4 text-lg font-bold text-white">
+        <p className="text-lg font-bold text-white">
           {parsing ? t.analyze.imageParsing : t.analyze.imageUploadTitle}
         </p>
         <p className="mt-2 max-w-md mx-auto text-sm leading-6 text-[#A9A9A9]">

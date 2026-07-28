@@ -26,12 +26,12 @@ type Analysis = {
 };
 
 const quickActions = [
-  { key: "aiTips" as const, icon: "🎯", href: "/ai-tips", eliteOnly: false },
-  { key: "valueBets" as const, icon: "💎", href: "/value-bets", eliteOnly: true },
-  { key: "home" as const, icon: "🏠", href: "/", eliteOnly: false },
-  { key: "builder" as const, icon: "⚽", href: "/builder", eliteOnly: false },
-  { key: "analyze" as const, icon: "🧠", href: "/analyze", eliteOnly: false },
-  { key: "premium" as const, icon: "💎", href: "/premium", eliteOnly: false },
+  { key: "aiTips" as const, href: "/ai-tips", eliteOnly: false },
+  { key: "valueBets" as const, href: "/value-bets", eliteOnly: true },
+  { key: "home" as const, href: "/", eliteOnly: false },
+  { key: "builder" as const, href: "/builder", eliteOnly: false },
+  { key: "analyze" as const, href: "/analyze", eliteOnly: false },
+  { key: "premium" as const, href: "/premium", eliteOnly: false },
 ];
 
 const titleGradient =
@@ -266,7 +266,7 @@ export default function DashboardPage() {
                 href="/ai-tips"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15 sm:px-6 sm:text-base"
               >
-                🎯 {t.dashboard.viewAiTips}
+                {t.dashboard.viewAiTips}
                 <span aria-hidden>→</span>
               </Link>
               {plan === "elite" ? (
@@ -274,7 +274,7 @@ export default function DashboardPage() {
                   href="/value-bets"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#72d5ff33] bg-[#2fbfff]/10 px-5 py-3 text-sm font-bold text-[#72d5ff] transition hover:bg-[#2fbfff]/15 sm:px-6 sm:text-base"
                 >
-                  💎 {t.dashboard.viewValueBets}
+                  {t.dashboard.viewValueBets}
                   <span aria-hidden>→</span>
                 </Link>
               ) : null}
@@ -354,10 +354,7 @@ export default function DashboardPage() {
                   href="/ai-tips"
                   className="brain-card rounded-[2rem] border border-[#18ff6d33] bg-[#18ff6d]/5 p-6 transition hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 sm:p-8"
                 >
-                  <p className="text-3xl" aria-hidden>
-                    🎯
-                  </p>
-                  <h2 className="mt-3 text-2xl font-black text-white">
+                  <h2 className="text-2xl font-black text-white">
                     {t.intelligenceCompare.aiTips.label}
                   </h2>
                   <p className="mt-3 text-sm leading-7 text-[#A9A9A9]">
@@ -373,10 +370,7 @@ export default function DashboardPage() {
                     href="/value-bets"
                     className="brain-card rounded-[2rem] border border-[#72d5ff33] bg-[#2fbfff]/5 p-6 transition hover:border-[#72d5ff55] hover:bg-[#2fbfff]/10 sm:p-8"
                   >
-                    <p className="text-3xl" aria-hidden>
-                      💎
-                    </p>
-                    <h2 className="mt-3 text-2xl font-black text-white">
+                    <h2 className="text-2xl font-black text-white">
                       {t.intelligenceCompare.valueBets.label}
                     </h2>
                     <p className="mt-3 text-sm leading-7 text-[#A9A9A9]">
@@ -523,10 +517,7 @@ export default function DashboardPage() {
                           href={action.href}
                           className="flex items-center justify-between rounded-2xl border border-[#18ff6d11] bg-black/35 p-3 text-sm transition hover:border-[#18ff6d55] hover:bg-black/50 sm:p-4 sm:text-base"
                         >
-                          <span>
-                            {action.icon}{" "}
-                            {quickActionLabels[action.key]}
-                          </span>
+                          <span>{quickActionLabels[action.key]}</span>
 
                           <span className="text-[#18ff6d]">
                             →

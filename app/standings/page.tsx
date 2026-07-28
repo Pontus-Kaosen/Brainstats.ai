@@ -187,12 +187,10 @@ export default function StandingsPage() {
     {
       label: t.standings.allCountries,
       value: ALL_COUNTRIES_VALUE,
-      icon: "🌍",
     },
     {
       label: t.standings.tournaments,
       value: TOURNAMENTS_VALUE,
-      icon: "🏆",
     },
     ...countries.map((item) => ({
       label: item.name,
@@ -231,7 +229,6 @@ export default function StandingsPage() {
             >
               <BuilderPicker
                 label={t.standings.countryLabel}
-                icon="🌍"
                 value={country}
                 options={countryOptions}
                 onChange={setCountry}
@@ -305,9 +302,7 @@ export default function StandingsPage() {
                                   className="h-6 w-6 shrink-0 object-contain"
                                 />
                               ) : (
-                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/5 text-[10px]">
-                                  ⚽
-                                </span>
+                                <span className="flex h-6 w-6 shrink-0 rounded-full bg-white/5" />
                               )}
                               <span className="min-w-0">
                                 <span className="block truncate text-sm font-semibold text-white">

@@ -148,9 +148,7 @@ export default function FixtureCard({
                 className="h-7 w-7 shrink-0 rounded-lg bg-white p-0.5 object-contain"
               />
             ) : (
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/5">
-                🏆
-              </div>
+              <div className="flex h-7 w-7 shrink-0 rounded-lg bg-white/5" />
             )}
 
             <div className="min-w-0">
@@ -255,9 +253,7 @@ export default function FixtureCard({
                 className="h-10 w-10 rounded-xl bg-white p-1 object-contain"
               />
             ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                🏆
-              </div>
+              <div className="flex h-10 w-10 rounded-xl bg-white/5" />
             )}
 
             <div className="min-w-0">

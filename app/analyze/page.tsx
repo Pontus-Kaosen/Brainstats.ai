@@ -439,7 +439,7 @@ function AnalyzePageContent() {
                     : "text-[#A9A9A9] hover:text-white"
                 }`}
               >
-                📋 {t.analyze.inputModeText}
+                {t.analyze.inputModeText}
               </button>
 
               <button
@@ -451,7 +451,7 @@ function AnalyzePageContent() {
                     : "text-[#A9A9A9] hover:text-white"
                 }`}
               >
-                📸 {t.analyze.inputModeImage}
+                {t.analyze.inputModeImage}
               </button>
             </div>
 

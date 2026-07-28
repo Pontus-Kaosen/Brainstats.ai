@@ -119,7 +119,6 @@ export default function AnalysisReportMatchData({
             {t.analyze.scoreBreakdownBadge}
           </p>
           <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
-            <span className="mr-2">📊</span>
             {t.analyze.scoreBreakdownTitle}
           </h3>
           <div className={`${blockGap} ${compact ? "space-y-3" : "space-y-5"}`}>
@@ -153,7 +152,6 @@ export default function AnalysisReportMatchData({
                 {t.analyze.startingXiBadge}
               </p>
               <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
-                <span className="mr-2">👥</span>
                 {t.analyze.startingXi}
               </h3>
             </div>
@@ -272,7 +270,6 @@ export default function AnalysisReportMatchData({
           <div className={`${blockGap} grid gap-4 lg:grid-cols-[1.4fr_1fr]`}>
             <div>
               <h3 className={`${sectionTitle} text-white`}>
-                <span className="mr-2">🌦️</span>
                 {t.analyze.weather}
               </h3>
               {weather ? (
@@ -316,7 +313,6 @@ export default function AnalysisReportMatchData({
               {t.analyze.matchConditions}
             </p>
             <h3 className="mt-2 text-2xl font-bold text-white">
-              <span className="mr-2">🌦️</span>
               {t.analyze.weather}
             </h3>
             {weather ? (
@@ -350,7 +346,6 @@ export default function AnalysisReportMatchData({
               {t.analyze.matchOfficial}
             </p>
             <h3 className="mt-2 text-2xl font-bold text-white">
-              <span className="mr-2">👨‍⚖️</span>
               {t.analyze.referee}
             </h3>
             <div className="mt-6 rounded-2xl border border-[#18ff6d11] brain-inset p-6">
@@ -373,7 +368,6 @@ export default function AnalysisReportMatchData({
           {t.analyze.teamFormBadge}
         </p>
         <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
-          <span className="mr-2">📈</span>
           {t.analyze.lastFiveMatches}
         </h3>
         <div className={`${blockGap} grid gap-4 md:grid-cols-2`}>
@@ -413,7 +407,6 @@ export default function AnalysisReportMatchData({
           {t.analyze.injuriesBadge}
         </p>
         <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
-          <span className="mr-2">🏥</span>
           {t.analyze.injuries}
         </h3>
         <div className={`${blockGap} ${compact ? "space-y-2" : "space-y-3"}`}>

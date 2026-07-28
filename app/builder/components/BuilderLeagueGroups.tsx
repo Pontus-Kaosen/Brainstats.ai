@@ -49,9 +49,7 @@ function LeagueGroupSection({
             className="h-7 w-7 rounded-lg bg-white p-0.5 object-contain"
           />
         ) : (
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 text-sm">
-            🏆
-          </div>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 text-sm" />
         )}
 
         <div className="min-w-0">

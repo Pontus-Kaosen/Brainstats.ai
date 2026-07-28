@@ -12,7 +12,7 @@ export default function DailySlipsTeaser() {
 
       <div className="relative">
         <p className="inline-flex rounded-full border border-[#E8DCC8]/25 bg-black/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#E8DCC8]">
-          🎯 {t.dailySlipsTeaser.badge}
+          {t.dailySlipsTeaser.badge}
         </p>
 
         <h2 className="mt-4 text-2xl font-black text-white sm:text-3xl">

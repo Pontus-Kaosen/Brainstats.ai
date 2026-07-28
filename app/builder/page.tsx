@@ -1347,20 +1347,17 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-5">
                       <BuilderPicker
                         label={t.builder.labels.country}
-                        icon="🌍"
                         value={country}
                         onChange={setCountry}
                         options={[
                           {
                             label: t.builder.allCountries,
                             value: ALL_COUNTRIES_VALUE,
-                            icon: "🌍",
                             description: t.builder.allCountriesDescription,
                           },
                           {
                             label: t.builder.tournaments,
                             value: TOURNAMENTS_VALUE,
-                            icon: "🌍",
                             description: t.builder.tournamentsDescription,
                           },
                           ...countries.map((item) => ({
@@ -1374,7 +1371,6 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
                       <BuilderPicker
                         label={t.builder.labels.league}
-                        icon="🏆"
                         value={leagueId}
                         onChange={(value) => {
                           if (value === ALL_LEAGUES_VALUE) {
@@ -1388,14 +1384,12 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                           {
                             label: t.builder.allLeagues,
                             value: ALL_LEAGUES_VALUE,
-                            icon: "🏆",
                             description: t.builder.allLeaguesDescription,
                           },
                           ...leagues.map((league) => ({
                             label: league.name,
                             value: league.id,
                             image: league.logo || undefined,
-                            icon: "🏆",
                             description: league.currentSeason
                               ? formatTranslation(t.builder.seasonLabel, {
                                   season: league.currentSeason,
@@ -1582,7 +1576,6 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   <div className="mt-4 grid grid-cols-1 gap-2 sm:mt-6 sm:grid-cols-2 md:grid-cols-3 sm:gap-5">
     <BuilderPicker
       label={t.builder.labels.team}
-      icon="👕"
       value={playerTeam}
       onChange={(value) => {
         const team = value as "home" | "away";
@@ -1611,7 +1604,6 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
     <BuilderPicker
       label={t.builder.labels.player}
-      icon="👤"
       value={playerId || ""}
       onChange={(value) => {
         const selected = selectedPlayers.find(
@@ -1624,7 +1616,6 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
       options={selectedPlayers.map((player) => ({
         label: player.name,
         value: player.id,
-        icon: "👤",
         description: [
           player.position || t.builder.playerFallback,
           getPlayerLineupStatusLabel(
@@ -1641,14 +1632,12 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
     <BuilderPicker
       label={t.builder.labels.line}
-      icon="📏"
       value={playerLine}
       onChange={setPlayerLine}
       searchable={false}
       options={["1+", "2+", "3+", "4+", "5+"].map((line) => ({
         label: line,
         value: line,
-        icon: "📏",
         description: formatTranslation(t.builder.playerLineDescription, {
           line,
         }),
@@ -1725,14 +1714,12 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   <div className="mt-6">
     <BuilderPicker
       label={t.builder.cornerLineLabel}
-      icon="🚩"
       value={cornerLine}
       onChange={setCornerLine}
       searchable={false}
       options={CORNER_LINE_OPTIONS.map((line) => ({
         label: line,
         value: line,
-        icon: "🚩",
         description: formatTranslation(t.builder.cornerLineDescription, {
           line,
         }),
@@ -1746,14 +1733,12 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
   <div className="mt-6">
     <BuilderPicker
       label={t.builder.cardLineLabel}
-      icon="🟨"
       value={cardLine}
       onChange={setCardLine}
       searchable={false}
       options={CARD_LINE_OPTIONS.map((line) => ({
         label: line,
         value: line,
-        icon: "🟨",
         description: formatTranslation(t.builder.cardLineDescription, {
           line,
         }),
@@ -1776,7 +1761,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                     </p>
 
                     <h2 className="mt-2 text-xl font-black text-white sm:text-2xl">
-                      👥 {t.builder.startingXiTitle}
+                      {t.builder.startingXiTitle}
                     </h2>
                   </div>
 

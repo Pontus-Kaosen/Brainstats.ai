@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
 import {
-  getMarketIcon,
   groupMarkets,
   isPlayerMarketLabel,
   splitPopularMarkets,
@@ -64,9 +63,8 @@ function MarketButton({
               : "border-white/20 bg-black/40 text-transparent"
           }`}
         >
-          ✓
+          {selected ? "✓" : ""}
         </span>
-        <span className="text-lg">{getMarketIcon(marketOption)}</span>
         <span
           className={`truncate text-sm font-semibold sm:text-base ${
             selected ? "text-white" : "text-[#E8E8E8]"

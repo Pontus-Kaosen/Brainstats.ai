@@ -281,11 +281,6 @@ export default function Navbar() {
     return "border-transparent text-[#D8D8D8] hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 hover:text-[#18ff6d]";
   }
 
-  function navLinkIcon(highlight?: "aiTips" | "valueBets") {
-    if (highlight === "aiTips") return "🎯 ";
-    if (highlight === "valueBets") return "💎 ";
-    return "";
-  }
 
   const memberBadgeLabel =
     userPlan === "elite"
@@ -315,7 +310,6 @@ export default function Navbar() {
               href={link.href}
               className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${navLinkClass(link.highlight)}`}
             >
-              {navLinkIcon(link.highlight)}
               {link.title}
             </Link>
           ))}
@@ -479,7 +473,6 @@ export default function Navbar() {
                         : "text-[#D8D8D8]"
                 }`}
               >
-                {navLinkIcon(link.highlight)}
                 {link.title}
               </Link>
             ))}

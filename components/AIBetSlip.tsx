@@ -65,7 +65,7 @@ export default function AIBetSlip({
             </div>
 
             <h3 className="mt-2 text-2xl font-black text-white">
-              🧠 {title}
+              {title}
             </h3>
 
             {tier === 1 && (
