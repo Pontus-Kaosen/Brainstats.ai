@@ -25,5 +25,8 @@ export function injuryReason(injury: Injury, fallback: string) {
 export const analysisReportCardClass =
   "brain-card rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1";
 
+export const analysisReportCardClassCompact =
+  "brain-card rounded-2xl p-5";
+
 export const analysisReportTitleGradient =
   "bg-gradient-to-r from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] bg-clip-text text-transparent";

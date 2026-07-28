@@ -583,7 +583,7 @@ function AnalyzePageContent() {
 )}
 
           {showReport && reportEntries.length > 0 && (
-            <section className="mt-8 space-y-8">
+            <section className="mt-6 space-y-5">
               {saveWarning ? (
                 <div className="rounded-2xl border border-yellow-500/40 bg-yellow-500/10 p-4 text-sm text-yellow-100">
                   {t.analyze.saveWarning}
@@ -604,10 +604,24 @@ function AnalyzePageContent() {
                 </div>
               ) : null}
 
+              {reportEntries.length > 1 ? (
+                <nav className="sticky top-16 z-20 flex flex-wrap gap-2 rounded-2xl border border-[#18ff6d22] bg-[#0a0a0a]/95 p-3 backdrop-blur-md">
+                  {reportEntries.map((entry, index) => (
+                    <a
+                      key={`${entry.matchLabel}-nav-${index}`}
+                      href={`#match-report-${index}`}
+                      className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-3 py-1.5 text-xs font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15 sm:text-sm"
+                    >
+                      {entry.matchLabel}
+                    </a>
+                  ))}
+                </nav>
+              ) : null}
+
               {reportEntries.map((entry, index) => (
                 <div
                   key={`${entry.matchLabel}-${index}`}
-                  className={index > 0 ? "border-t border-white/10 pt-10" : ""}
+                  className={index > 0 ? "border-t border-white/10 pt-6" : ""}
                 >
                   <AnalyzeMatchReport
                     matchLabel={entry.matchLabel}
@@ -615,6 +629,7 @@ function AnalyzePageContent() {
                     usedData={entry.usedData}
                     blockBetText={entry.blockText}
                     showMatchHeading={reportEntries.length > 1}
+                    sectionId={`match-report-${index}`}
                   />
                 </div>
               ))}

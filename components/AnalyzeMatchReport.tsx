@@ -38,10 +38,10 @@ type AnalyzeMatchReportProps = {
   usedData: AnalysisUsedData;
   blockBetText: string;
   showMatchHeading?: boolean;
+  sectionId?: string;
 };
 
-const cardClass =
-  "brain-card rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1";
+const cardClass = "brain-card rounded-2xl p-5";
 
 const titleGradient =
   "bg-gradient-to-r from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] bg-clip-text text-transparent";
@@ -64,6 +64,7 @@ export default function AnalyzeMatchReport({
   usedData,
   blockBetText,
   showMatchHeading = false,
+  sectionId,
 }: AnalyzeMatchReportProps) {
   const { t } = useLanguage();
 
@@ -80,78 +81,69 @@ export default function AnalyzeMatchReport({
     return aiResult.brainPick ? [aiResult.brainPick] : [];
   }, [aiResult]);
 
-  return (
-    <section className="space-y-8">
-      {showMatchHeading ? (
-        <div className="rounded-[2rem] border border-[#2fbfff33] bg-[#071018]/90 p-6 sm:p-8">
-          <p className={`text-sm uppercase tracking-[0.35em] ${titleGradient}`}>
-            {t.analyze.reportSubtitle}
-          </p>
-          <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">
-            {matchLabel}
-          </h2>
-        </div>
-      ) : null}
+  const heroTitle = showMatchHeading ? matchLabel : t.analyze.reportTitle;
 
-      <div className="brain-card overflow-hidden rounded-[2rem] p-10">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className={`text-sm uppercase tracking-[0.45em] ${titleGradient}`}>
+  return (
+    <section id={sectionId} className="scroll-mt-24 space-y-5">
+      <div className={`${cardClass} overflow-hidden`}>
+        <div className="flex gap-4 sm:gap-5">
+          <div className="min-w-0 flex-1">
+            <p className={`text-xs uppercase tracking-[0.35em] ${titleGradient}`}>
               {t.analyze.reportSubtitle}
             </p>
 
-            <h2 className="mt-4 text-5xl font-black">
-              {showMatchHeading ? matchLabel : t.analyze.reportTitle}
+            <h2 className="mt-2 text-2xl font-black text-white sm:text-3xl">
+              {heroTitle}
             </h2>
 
-            <p className="mt-4 max-w-2xl leading-8 text-[#A9A9A9]">
+            <p className="mt-3 text-sm leading-6 text-[#A9A9A9] sm:text-[15px] sm:leading-7">
               {aiResult.summary}
             </p>
-          </div>
 
-          <div className="relative flex h-56 w-56 items-center justify-center rounded-full border border-[#18ff6d33] bg-black/40 shadow-[0_0_80px_rgba(24,255,109,.22)]">
-            <div className="absolute inset-4 rounded-full border border-[#18ff6d22]" />
-            <div className="absolute inset-8 rounded-full border border-[#2fbfff22]" />
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+              {[
+                [t.analyze.riskLevel, risk],
+                [t.analyze.confidence, `${confidence}%`],
+                [t.analyze.analysisMode, t.analyze.liveAi],
+              ].map(([label, value]) => (
+                <div
+                  key={label as string}
+                  className="rounded-xl border border-[#18ff6d22] bg-black/35 px-3 py-2.5"
+                >
+                  <p className="text-[10px] uppercase tracking-wide text-[#888] sm:text-xs">
+                    {label as string}
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-[#18ff6d] sm:text-base">
+                    {value as string}
+                  </p>
+                </div>
+              ))}
+            </div>
 
-            <div className="text-center">
-              <div className="text-7xl font-black text-[#18ff6d] drop-shadow-[0_0_40px_rgba(24,255,109,.75)]">
-                {score}
+            <div className="mt-3">
+              <div className="mb-1.5 flex justify-between text-xs sm:text-sm">
+                <span className="text-[#A9A9A9]">{t.analyze.brainScorePower}</span>
+                <span className="font-semibold text-[#18ff6d]">{score}%</span>
               </div>
-              <p className="mt-1 text-sm text-[#A9A9A9]">{t.analyze.brainScore}</p>
+              <div className="h-2.5 overflow-hidden rounded-full bg-black/60 sm:h-3">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] transition-all duration-700"
+                  style={{ width: `${Math.min(score, 100)}%` }}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-            <p className="text-sm text-[#A9A9A9]">{t.analyze.riskLevel}</p>
-            <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{risk}</p>
-          </div>
-
-          <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-            <p className="text-sm text-[#A9A9A9]">{t.analyze.confidence}</p>
-            <p className="mt-2 text-2xl font-bold text-[#18ff6d]">{confidence}%</p>
-          </div>
-
-          <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-            <p className="text-sm text-[#A9A9A9]">{t.analyze.analysisMode}</p>
-            <p className="mt-2 text-2xl font-bold text-[#18ff6d]">
-              {t.analyze.liveAi}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <div className="mb-3 flex justify-between text-sm">
-            <span className="text-[#A9A9A9]">{t.analyze.brainScorePower}</span>
-            <span className="font-semibold text-[#18ff6d]">{score}%</span>
-          </div>
-
-          <div className="h-5 overflow-hidden rounded-full bg-black/60">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] transition-all duration-700"
-              style={{ width: `${Math.min(score, 100)}%` }}
-            />
+          <div className="relative flex h-24 w-24 shrink-0 items-center justify-center self-start rounded-full border border-[#18ff6d33] bg-black/40 shadow-[0_0_40px_rgba(24,255,109,.18)] sm:h-28 sm:w-28">
+            <div className="absolute inset-3 rounded-full border border-[#18ff6d22]" />
+            <div className="text-center">
+              <div className="text-4xl font-black text-[#18ff6d] sm:text-5xl">
+                {score}
+              </div>
+              <p className="mt-0.5 text-[10px] text-[#A9A9A9] sm:text-xs">
+                {t.analyze.brainScore}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -160,48 +152,50 @@ export default function AnalyzeMatchReport({
         usedData={usedData}
         breakdown={breakdown}
         betText={blockBetText}
+        compact
       />
 
       {aiResult.worthBetting ? (
-        <WorthBettingBlock worthBetting={aiResult.worthBetting} className="mt-8" />
+        <WorthBettingBlock
+          worthBetting={aiResult.worthBetting}
+          compact
+        />
       ) : null}
 
       <section>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
+            <p className={`text-xs uppercase tracking-[0.25em] ${titleGradient}`}>
               {t.report.picksSubtitle}
             </p>
-            <h3 className="mt-2 text-2xl font-black text-white sm:text-3xl">
+            <h3 className="mt-1 text-xl font-black text-white sm:text-2xl">
               {t.report.picksTitle}
             </h3>
           </div>
-          <p className="text-sm text-[#A9A9A9]">{t.report.fairOddsNote}</p>
+          <p className="text-xs text-[#A9A9A9] sm:text-sm">{t.report.fairOddsNote}</p>
         </div>
 
         {brainPicks.length === 0 ? (
-          <div className="mt-6 rounded-3xl border border-white/10 bg-black/30 p-8">
-            <p className="text-[#A9A9A9]">{t.report.noPicks}</p>
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/30 p-5">
+            <p className="text-sm text-[#A9A9A9]">{t.report.noPicks}</p>
           </div>
         ) : (
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
             {brainPicks.map((pick, index) => (
               <article
                 key={`${pick.market}-${index}`}
-                className="brain-card relative overflow-hidden rounded-3xl border border-[#18ff6d22] p-6 sm:p-7"
+                className="brain-card relative overflow-hidden rounded-2xl border border-[#18ff6d22] p-5"
               >
-                <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#18ff6d]/10 blur-[70px]" />
-
                 <div className="relative">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <span className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-black text-[#18ff6d]">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-3 py-1.5 text-xs font-black text-[#18ff6d]">
                       {formatTranslation(t.report.pickNumber, {
                         n: index + 1,
                       })}
                     </span>
 
                     <span
-                      className={`rounded-full border px-4 py-2 text-sm font-bold ${riskColor(
+                      className={`rounded-full border px-3 py-1.5 text-xs font-bold ${riskColor(
                         pick.riskLevel
                       )}`}
                     >
@@ -210,31 +204,31 @@ export default function AnalyzeMatchReport({
                     </span>
                   </div>
 
-                  <h4 className="mt-6 text-2xl font-black text-white sm:text-3xl">
+                  <h4 className="mt-4 text-xl font-black text-white">
                     {pick.market || t.report.unknownMarket}
                   </h4>
 
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-[#18ff6d22] bg-black/35 p-5">
-                      <p className="text-sm text-[#A9A9A9]">
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl border border-[#18ff6d22] bg-black/35 p-3.5">
+                      <p className="text-xs text-[#A9A9A9]">
                         {t.report.aiProbability}
                       </p>
-                      <p className="mt-2 text-3xl font-black text-[#18ff6d]">
+                      <p className="mt-1 text-2xl font-black text-[#18ff6d]">
                         {pick.probability ?? pick.confidence ?? 0}%
                       </p>
                     </div>
 
-                    <div className="rounded-2xl border border-[#2fbfff33] bg-black/35 p-5">
-                      <p className="text-sm text-[#A9A9A9]">
+                    <div className="rounded-xl border border-[#2fbfff33] bg-black/35 p-3.5">
+                      <p className="text-xs text-[#A9A9A9]">
                         {t.report.estimatedFairOdds}
                       </p>
-                      <p className="mt-2 text-3xl font-black text-[#72d5ff]">
+                      <p className="mt-1 text-2xl font-black text-[#72d5ff]">
                         {Number(pick.estimatedOdds || 0).toFixed(2)}
                       </p>
                     </div>
                   </div>
 
-                  <p className="mt-6 leading-8 text-[#D8D8D8]">
+                  <p className="mt-4 text-sm leading-6 text-[#D8D8D8] sm:leading-7">
                     {pick.reason || t.report.noReason}
                   </p>
                 </div>
@@ -244,13 +238,13 @@ export default function AnalyzeMatchReport({
         )}
       </section>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
         <div className={cardClass}>
-          <h3 className="text-2xl font-bold text-white">
+          <h3 className="text-lg font-bold text-white">
             <span className="mr-2">👍</span>
             {t.analyze.strengths}
           </h3>
-          <ul className="mt-5 space-y-3 text-[#D8D8D8]">
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-[#D8D8D8]">
             {aiResult.strengths.map((item) => (
               <li key={item}>✓ {item}</li>
             ))}
@@ -258,24 +252,26 @@ export default function AnalyzeMatchReport({
         </div>
 
         <div className={cardClass}>
-          <h3 className="text-2xl font-bold text-white">
+          <h3 className="text-lg font-bold text-white">
             <span className="mr-2">⚠</span>
             {t.analyze.risks}
           </h3>
-          <ul className="mt-5 space-y-3 text-[#D8D8D8]">
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-[#D8D8D8]">
             {aiResult.risks.map((item) => (
               <li key={item}>• {item}</li>
             ))}
           </ul>
         </div>
-      </div>
 
-      <div className={cardClass}>
-        <h3 className="text-2xl font-bold text-white">
-          <span className="mr-2">💡</span>
-          {t.analyze.recommendation}
-        </h3>
-        <p className="mt-5 leading-8 text-[#D8D8D8]">{aiResult.recommendation}</p>
+        <div className={`${cardClass} lg:col-span-1`}>
+          <h3 className="text-lg font-bold text-white">
+            <span className="mr-2">💡</span>
+            {t.analyze.recommendation}
+          </h3>
+          <p className="mt-3 text-sm leading-6 text-[#D8D8D8] sm:leading-7">
+            {aiResult.recommendation}
+          </p>
+        </div>
       </div>
     </section>
   );
