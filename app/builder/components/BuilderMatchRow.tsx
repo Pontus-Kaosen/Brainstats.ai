@@ -13,14 +13,18 @@ type BuilderMatchRowProps = {
   fixture: MappedFixture;
   selected?: boolean;
   inSlip?: boolean;
+  slipCount?: number;
   onClick?: () => void;
+  compact?: boolean;
 };
 
 export default function BuilderMatchRow({
   fixture,
   selected = false,
   inSlip = false,
+  slipCount = 0,
   onClick,
+  compact = false,
 }: BuilderMatchRowProps) {
   const { t, language } = useLanguage();
   const locale = getLocale(language);
@@ -37,18 +41,64 @@ export default function BuilderMatchRow({
 
   const score =
     fixture.goals?.home != null && fixture.goals?.away != null
-      ? `${fixture.goals.home}–${fixture.goals.away}`
+      ? `${fixture.goals.home}-${fixture.goals.away}`
       : null;
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`flex w-full items-center gap-2 border-l-[3px] px-2 py-2.5 text-left transition ${
+          selected
+            ? "border-l-[#18ff6d] bg-[#18ff6d]/10"
+            : inSlip
+              ? "border-l-[#2fbfff] bg-[#2fbfff]/5 hover:bg-[#2fbfff]/10"
+              : "border-l-transparent hover:bg-white/[0.04]"
+        }`}
+      >
+        <div className="w-11 shrink-0 text-center">
+          {isLive ? (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-300">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />
+              {fixture.fixture.status?.elapsed ?? "LIVE"}'
+            </span>
+          ) : (
+            <span className="text-xs font-bold text-[#A9A9A9]">{time}</span>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-white">
+            {fixture.teams.home.name}
+          </p>
+          <p className="truncate text-xs text-[#888]">
+            {fixture.teams.away.name}
+          </p>
+        </div>
+
+        {score ? (
+          <span className="shrink-0 text-xs font-black text-white">{score}</span>
+        ) : null}
+
+        {slipCount > 0 ? (
+          <span className="shrink-0 rounded-full bg-[#18ff6d] px-1.5 py-0.5 text-[10px] font-black text-black">
+            {slipCount}
+          </span>
+        ) : null}
+      </button>
+    );
+  }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition sm:gap-4 sm:px-4 ${
+      className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition sm:gap-4 sm:px-4 ${
         selected
           ? "border-[#18ff6d] bg-[#18ff6d]/10"
           : "border-white/8 bg-black/30 hover:border-[#18ff6d]/40"
-      } ${inSlip ? "ring-1 ring-[#18ff6d]/30" : ""}`}
+      } ${inSlip ? "ring-1 ring-[#18ff6d]/25" : ""}`}
     >
       <div className="w-14 shrink-0 text-center sm:w-16">
         {isLive ? (
@@ -110,21 +160,15 @@ export default function BuilderMatchRow({
         </div>
       </div>
 
-      <span
-        className={`hidden shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold sm:inline-flex ${
-          inSlip
-            ? "border-[#18ff6d] bg-[#18ff6d]/20 text-[#18ff6d]"
-            : selected
-              ? "border-[#18ff6d]/50 bg-[#18ff6d]/10 text-[#18ff6d]"
-              : "border-white/10 bg-black/40 text-[#777]"
-        }`}
-      >
-        {inSlip
-          ? t.fixtureCard.inSlipBadge
-          : selected
-            ? t.builder.buildPickCta
-            : t.fixtureCard.select}
-      </span>
+      {slipCount > 0 ? (
+        <span className="shrink-0 rounded-full border border-[#18ff6d] bg-[#18ff6d]/20 px-2.5 py-1 text-[10px] font-bold text-[#18ff6d]">
+          {slipCount}
+        </span>
+      ) : selected ? (
+        <span className="hidden shrink-0 rounded-full border border-[#18ff6d]/50 bg-[#18ff6d]/10 px-3 py-1.5 text-[11px] font-bold text-[#18ff6d] sm:inline-flex">
+          {t.builder.buildPickCta}
+        </span>
+      ) : null}
     </button>
   );
 }

@@ -807,7 +807,7 @@ export const translations = {
       pageBadge: "Brain Builder™",
       pageTitle: "Bygg din spelidé steg för steg.",
       pageDescription:
-        "Välj match, bygg din marknad och lägg till i BrainSlip — som en bet builder, fast med BrainStats AI.",
+        "Välj match, klicka på odds och bygg din kupong — som på Bet365, fast med BrainStats AI-analys.",
       viewTabToday: "Idag",
       viewTabTomorrow: "Imorgon",
       viewTabLive: "Live",
@@ -823,7 +823,7 @@ export const translations = {
       },
       buildPickTitle: "Bygg ditt spel",
       buildPickHint:
-        "Välj en eller flera marknader — lägg till alla på en gång i BrainSlip.",
+        "Klicka på ett odds för att lägga till i kupongen. Ta bort genom att klicka igen.",
       marketSelected: "Vald",
       addSelectedMarkets: "Lägg till {count} marknader i BrainSlip",
       addOneMarket: "Lägg till 1 marknad i BrainSlip",
@@ -886,7 +886,14 @@ export const translations = {
       slipEmptyHint:
         "Välj en match, bygg din marknad och lägg till här — precis som en bet builder.",
       matchTapHint:
-        "Tryck på en match, välj marknad och tryck Analysera — du behöver inte fylla BrainSlip om du bara vill testa ett spel.",
+        "Klicka en match till vänster, välj odds — spelet hamnar direkt i kupongen.",
+      mobileTabMatches: "Matcher",
+      mobileTabMarkets: "Marknader",
+      mobileTabSlip: "Kupong",
+      slipSelectionCount: "{count} val i kupongen",
+      analyzeSlipCount: "Analysera {count} val",
+      oddsPick: "Välj",
+      oddsSelected: "Vald",
       showAdvancedFilters: "Visa land & liga",
       hideAdvancedFilters: "Dölj land & liga",
       popularMarketsTitle: "Populära marknader",
@@ -903,9 +910,9 @@ export const translations = {
         "Matcher tillagda! Lägg till fler om du vill, eller tryck Analysera.",
       steps: {
         title: "Så funkar det",
-        filters: "Välj filter",
-        match: "Tryck på match",
-        slip: "BrainSlip fylls",
+        filters: "Välj match",
+        match: "Klicka odds",
+        slip: "Kupongen fylls",
         analyze: "Analysera",
       },
       liveMatchCount: "{count} matcher",
@@ -1909,7 +1916,7 @@ export const translations = {
       pageBadge: "Brain Builder™",
       pageTitle: "Build your bet idea step by step.",
       pageDescription:
-        "Pick a match, build your market, and add it to BrainSlip — like a bet builder, powered by BrainStats AI.",
+        "Pick a match, tap the odds, and build your slip — Bet365-style, powered by BrainStats AI.",
       viewTabToday: "Today",
       viewTabTomorrow: "Tomorrow",
       viewTabLive: "Live",
@@ -1925,7 +1932,7 @@ export const translations = {
       },
       buildPickTitle: "Build your pick",
       buildPickHint:
-        "Pick one or more markets — add them all to BrainSlip at once.",
+        "Tap an odds button to add it to your slip. Tap again to remove.",
       marketSelected: "Selected",
       addSelectedMarkets: "Add {count} markets to BrainSlip",
       addOneMarket: "Add 1 market to BrainSlip",
@@ -1988,7 +1995,14 @@ export const translations = {
       slipEmptyHint:
         "Select a match, build your market, and add it here — just like a bet builder.",
       matchTapHint:
-        "Tap a match, pick a market and hit Analyze — you do not need BrainSlip for a single bet.",
+        "Select a match on the left, tap the odds — your pick goes straight into the slip.",
+      mobileTabMatches: "Matches",
+      mobileTabMarkets: "Markets",
+      mobileTabSlip: "Slip",
+      slipSelectionCount: "{count} selections in slip",
+      analyzeSlipCount: "Analyze {count} picks",
+      oddsPick: "Pick",
+      oddsSelected: "Added",
       showAdvancedFilters: "Show country & league",
       hideAdvancedFilters: "Hide country & league",
       popularMarketsTitle: "Popular markets",
@@ -2005,9 +2019,9 @@ export const translations = {
         "Matches added! Add more if you like, or tap Analyze.",
       steps: {
         title: "How it works",
-        filters: "Choose filters",
-        match: "Tap a match",
-        slip: "BrainSlip fills",
+        filters: "Pick a match",
+        match: "Tap the odds",
+        slip: "Slip fills up",
         analyze: "Analyze",
       },
       liveMatchCount: "{count} matches",

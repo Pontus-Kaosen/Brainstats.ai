@@ -162,3 +162,57 @@ export function splitPopularMarkets(markets: readonly string[]) {
 
   return { popular, other };
 }
+
+const matchResultMatchers = [
+  /^hemmalag vinner$/i,
+  /^bortalag vinner$/i,
+  /^home win$/i,
+  /^away win$/i,
+  /^oavgjort$/i,
+  /^draw$/i,
+];
+
+export function isMatchResultMarket(market: string) {
+  return matchResultMatchers.some((pattern) => pattern.test(market.trim()));
+}
+
+function abbreviateTeamName(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+
+  if (words.length >= 2) {
+    return words
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 3)
+      .toUpperCase();
+  }
+
+  return name.slice(0, 4).toUpperCase();
+}
+
+export function getMarketShortLabel(
+  market: string,
+  fixture?: {
+    teams: { home: { name: string }; away: { name: string } };
+  }
+) {
+  const normalized = market.trim();
+
+  if (/^hemmalag vinner$/i.test(normalized) || /^home win$/i.test(normalized)) {
+    return fixture ? abbreviateTeamName(fixture.teams.home.name) : "1";
+  }
+
+  if (/^bortalag vinner$/i.test(normalized) || /^away win$/i.test(normalized)) {
+    return fixture ? abbreviateTeamName(fixture.teams.away.name) : "2";
+  }
+
+  if (/^oavgjort$/i.test(normalized) || /^draw$/i.test(normalized)) {
+    return "X";
+  }
+
+  return normalized.length > 22 ? `${normalized.slice(0, 20)}…` : normalized;
+}
+
+export function getMatchResultMarkets(markets: readonly string[]) {
+  return markets.filter(isMatchResultMarket);
+}

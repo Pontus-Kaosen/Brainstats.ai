@@ -20,26 +20,32 @@ type BuilderLeagueGroupsProps = {
   fixtures: MappedFixture[];
   selectedFixtureId: number | null;
   isInSlip: (fixture: MappedFixture) => boolean;
+  getSlipCount?: (fixture: MappedFixture) => number;
   onSelectFixture: (fixture: MappedFixture) => void;
   collapseOtherLeagues?: boolean;
   loadingMoreLeagues?: boolean;
   resetCollapseKey?: string;
+  compact?: boolean;
 };
 
 function LeagueGroupSection({
   group,
   selectedFixtureId,
   isInSlip,
+  getSlipCount,
   onSelectFixture,
+  compact = false,
 }: {
   group: LeagueGroup;
   selectedFixtureId: number | null;
   isInSlip: (fixture: MappedFixture) => boolean;
+  getSlipCount?: (fixture: MappedFixture) => number;
   onSelectFixture: (fixture: MappedFixture) => void;
+  compact?: boolean;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/8 bg-black/20">
-      <div className="flex items-center gap-3 border-b border-white/8 bg-black/30 px-3 py-3 sm:px-4">
+    <section className="overflow-hidden rounded-xl border border-white/8 bg-black/20">
+      <div className="flex items-center gap-2 border-b border-white/8 bg-black/30 px-2.5 py-2">
         {group.league.logo ? (
           <Image
             src={group.league.logo}
@@ -68,13 +74,15 @@ function LeagueGroupSection({
         </span>
       </div>
 
-      <div className="space-y-2 p-2 sm:p-3">
+      <div className="divide-y divide-white/5">
         {group.fixtures.map((fixture) => (
           <BuilderMatchRow
             key={fixture.fixture.id}
             fixture={fixture}
             selected={fixture.fixture.id === selectedFixtureId}
             inSlip={isInSlip(fixture)}
+            slipCount={getSlipCount?.(fixture) ?? 0}
+            compact={compact}
             onClick={() => onSelectFixture(fixture)}
           />
         ))}
@@ -87,10 +95,12 @@ export default function BuilderLeagueGroups({
   fixtures,
   selectedFixtureId,
   isInSlip,
+  getSlipCount,
   onSelectFixture,
   collapseOtherLeagues = false,
   loadingMoreLeagues = false,
   resetCollapseKey = "",
+  compact = false,
 }: BuilderLeagueGroupsProps) {
   const { t } = useLanguage();
   const [showOtherLeagues, setShowOtherLeagues] = useState(false);
@@ -117,7 +127,9 @@ export default function BuilderLeagueGroups({
           group={group}
           selectedFixtureId={selectedFixtureId}
           isInSlip={isInSlip}
+          getSlipCount={getSlipCount}
           onSelectFixture={onSelectFixture}
+          compact={compact}
         />
       ))}
 

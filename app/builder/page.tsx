@@ -11,6 +11,9 @@ import BuilderViewTabs, {
 import BuilderLeagueGroups from "./components/BuilderLeagueGroups";
 import BuilderMatchRow from "./components/BuilderMatchRow";
 import BuilderMarketGrid from "./components/BuilderMarketGrid";
+import BuilderMobileTabs, {
+  type BuilderMobilePane,
+} from "./components/BuilderMobileTabs";
 import Navbar from "@/components/Navbar";
 import Button from "@/components/Button";
 import FootballBackground from "@/components/FootballBackground";
@@ -257,6 +260,7 @@ export default function BuilderPage() {
     useState(false);
   const [matchError, setMatchError] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [mobilePane, setMobilePane] = useState<BuilderMobilePane>("matches");
 
   const specificLeagueId =
     typeof leagueId === "number" ? leagueId : null;
@@ -934,11 +938,39 @@ export default function BuilderPage() {
     setPlayerPickDrafts([]);
     setBuilderError("");
 
-    window.requestAnimationFrame(() => {
-      builderPanelRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+    if (isMobile) {
+      setMobilePane("markets");
+    }
+
+    if (isMobile) {
+      window.requestAnimationFrame(() => {
+        builderPanelRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       });
+    }
+  }
+
+  function getSlipCountForFixture(fixture: Fixture) {
+    return slip.filter((item) => item.fixtureId === fixture.fixture.id).length;
+  }
+
+  function addMarketToSlip(marketName: string) {
+    if (!selectedFixture || isPlayerMarket(marketName)) {
+      return;
+    }
+
+    const item = createSlipItem(selectedFixture, marketName);
+
+    setSlip((current) => {
+      const exists = current.some(
+        (existing) =>
+          existing.fixtureId === item.fixtureId &&
+          existing.market === item.market
+      );
+
+      return exists ? current : [...current, item];
     });
   }
 
@@ -976,13 +1008,14 @@ export default function BuilderPage() {
       return;
     }
 
-    setSelectedMarkets((current) => {
-      if (current.includes(marketName)) {
-        return current.filter((item) => item !== marketName);
-      }
+    if (!selectedFixture) {
+      return;
+    }
 
-      return [...current, marketName];
-    });
+    addMarketToSlip(marketName);
+    setSelectedMarkets((current) =>
+      current.includes(marketName) ? current : [...current, marketName]
+    );
     setMarket(marketName);
   }
 
@@ -1010,23 +1043,58 @@ export default function BuilderPage() {
     }
 
     setBuilderError("");
-    setPlayerPickDrafts((current) => [
-      ...current,
-      {
-        id: `${playerId}-${market}-${playerLine}-${Date.now()}`,
-        market,
-        playerTeam,
-        playerId,
-        playerName,
-        playerLine,
-      },
-    ]);
+    const newDraft = {
+      id: `${playerId}-${market}-${playerLine}-${Date.now()}`,
+      market,
+      playerTeam,
+      playerId,
+      playerName,
+      playerLine,
+    };
+
+    setPlayerPickDrafts((current) => [...current, newDraft]);
+
+    if (selectedFixture) {
+      const item = createSlipItemFromDraft(selectedFixture, newDraft);
+
+      setSlip((current) => {
+        const exists = current.some(
+          (existing) =>
+            existing.fixtureId === item.fixtureId &&
+            existing.market === item.market &&
+            existing.playerId === item.playerId
+        );
+
+        return exists ? current : [...current, item];
+      });
+    }
   }
 
   function removePlayerPickDraft(id: string) {
+    const draft = playerPickDrafts.find((item) => item.id === id);
+
     setPlayerPickDrafts((current) =>
-      current.filter((draft) => draft.id !== id)
+      current.filter((item) => item.id !== id)
     );
+
+    if (draft && selectedFixture) {
+      const marketText = buildMarketTextFor(draft.market, selectedFixture, {
+        playerTeam: draft.playerTeam,
+        playerName: draft.playerName,
+        playerLine: draft.playerLine,
+      });
+
+      setSlip((current) =>
+        current.filter(
+          (item) =>
+            !(
+              item.fixtureId === selectedFixture.fixture.id &&
+              item.market === marketText &&
+              item.playerId === draft.playerId
+            )
+        )
+      );
+    }
   }
 
   function playerDraftCountForMarket(marketName: string) {
@@ -1314,8 +1382,19 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
             />
           </section>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-start xl:gap-8">
-            <section className="brain-card relative z-20 min-w-0 overflow-visible rounded-3xl p-4 sm:p-8">
+          <BuilderMobileTabs
+            value={mobilePane}
+            onChange={setMobilePane}
+            slipCount={slip.length}
+            marketsDisabled={!selectedFixture}
+          />
+
+          <div className="grid gap-4 xl:grid-cols-[minmax(250px,290px)_minmax(0,1fr)_minmax(300px,340px)] xl:items-start xl:gap-5">
+            <aside
+              className={`brain-card min-w-0 rounded-2xl p-3 sm:p-4 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-hidden xl:flex xl:flex-col ${
+                mobilePane !== "matches" ? "hidden xl:flex" : ""
+              }`}
+            >
               <BuilderViewTabs
                 value={viewMode}
                 onChange={setViewMode}
@@ -1326,17 +1405,15 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               />
 
               {loadingOptions ? (
-                <div className="mt-5 rounded-3xl border border-[#18ff6d22] bg-black/30 p-6 text-center">
-                  <p className="text-[#18ff6d]">
-                    {t.builder.loadingOptionsLong}
-                  </p>
+                <div className="mt-4 rounded-2xl border border-[#18ff6d22] bg-black/30 p-4 text-center text-sm text-[#18ff6d]">
+                  {t.builder.loadingOptionsLong}
                 </div>
               ) : (
                 <>
                   <button
                     type="button"
                     onClick={() => setShowAdvancedFilters((value) => !value)}
-                    className="mt-5 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-[#E8DCC8] transition hover:border-[#18ff6d44] sm:w-auto"
+                    className="mt-4 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-xs font-semibold text-[#E8DCC8] transition hover:border-[#18ff6d44]"
                   >
                     {showAdvancedFilters
                       ? t.builder.hideAdvancedFilters
@@ -1344,7 +1421,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   </button>
 
                   {showAdvancedFilters ? (
-                    <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-5">
+                    <div className="mt-3 space-y-3">
                       <BuilderPicker
                         label={t.builder.labels.country}
                         value={country}
@@ -1403,108 +1480,87 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 </>
               )}
 
-              <div className="mt-5 flex flex-col gap-4 sm:mt-6 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
-                    {t.builder.matchCenter}
-                  </p>
-
-                  <h2 className="mt-1 text-xl font-black sm:text-2xl">
-                    {t.builder.selectMatch}
-                  </h2>
-
-                  <p className="mt-2 text-xs text-[#A9A9A9]">
-                    {t.builder.matchTapHint}
-                  </p>
-                </div>
-
-                <div className="w-full md:w-80">
-                  <label className="text-sm text-[#A9A9A9]">
-                    {t.builder.searchMatch}
-                  </label>
-
-                  <input
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder={t.builder.searchPlaceholder}
-                    className="mt-2 w-full rounded-2xl border border-[#18ff6d22] bg-black/40 p-4 outline-none transition focus:border-[#18ff6d88]"
-                  />
-                </div>
+              <div className="mt-4">
+                <label className="text-xs font-semibold text-[#888]">
+                  {t.builder.searchMatch}
+                </label>
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={t.builder.searchPlaceholder}
+                  className="mt-1.5 w-full rounded-xl border border-[#18ff6d22] bg-black/40 px-3 py-2.5 text-sm outline-none transition focus:border-[#18ff6d88]"
+                />
               </div>
 
               {viewMode === "live" && liveError ? (
-                <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
+                <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
                   {t.builder.liveError} {liveError}
                 </div>
               ) : null}
 
-              {viewMode === "live" && loadingLive ? (
-                <div className="mt-5 rounded-3xl border border-red-500/30 bg-red-500/10 p-8 text-center">
-                  <p className="font-bold text-red-300">
+              <div className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+                {viewMode === "live" && loadingLive ? (
+                  <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-center text-sm text-red-300">
                     {t.builder.loadingLive}
-                  </p>
-                </div>
-              ) : viewMode === "live" && filteredFixtures.length === 0 ? (
-                <div className="mt-5 rounded-3xl border border-white/10 bg-black/30 p-8">
-                  <p className="text-[#A9A9A9]">{t.builder.noLiveMatches}</p>
-                </div>
-              ) : viewMode !== "live" && loadingMatches ? (
-                <div className="mt-5 rounded-3xl border border-[#18ff6d22] bg-black/30 p-8 text-center">
-                  <p className="font-semibold text-[#18ff6d]">
+                  </div>
+                ) : viewMode === "live" && filteredFixtures.length === 0 ? (
+                  <div className="rounded-2xl border border-white/10 bg-black/30 p-6 text-sm text-[#A9A9A9]">
+                    {t.builder.noLiveMatches}
+                  </div>
+                ) : viewMode !== "live" && loadingMatches ? (
+                  <div className="rounded-2xl border border-[#18ff6d22] bg-black/30 p-6 text-center text-sm text-[#18ff6d]">
                     {viewMode === "today" || viewMode === "tomorrow"
                       ? t.builder.loadingTodayFixtures
-                      : viewMode === "week"
-                        ? t.builder.loadingFixtures
-                        : t.builder.loadingFixtures}
+                      : t.builder.loadingFixtures}
+                  </div>
+                ) : viewMode !== "live" && matchError ? (
+                  <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+                    {t.builder.fixturesError} {matchError}
+                  </div>
+                ) : filteredFixtures.length === 0 ? (
+                  <p className="rounded-2xl border border-white/10 bg-black/30 p-4 text-sm text-[#A9A9A9]">
+                    {viewMode === "today"
+                      ? t.builder.noTodayMatches
+                      : viewMode === "tomorrow"
+                        ? t.builder.noTomorrowMatches
+                        : t.builder.noFilteredMatches}
                   </p>
-                </div>
-              ) : viewMode !== "live" && matchError ? (
-                <div className="mt-5 rounded-3xl border border-red-500/30 bg-red-500/10 p-6">
-                  <p className="font-bold text-red-300">
-                    {t.builder.fixturesError}
-                  </p>
-                  <p className="mt-2 text-sm text-red-200/80">{matchError}</p>
-                </div>
-              ) : filteredFixtures.length === 0 ? (
-                <p className="mt-5 rounded-3xl border border-white/10 bg-black/30 p-6 text-[#A9A9A9]">
-                  {viewMode === "today"
-                    ? t.builder.noTodayMatches
-                    : viewMode === "tomorrow"
-                      ? t.builder.noTomorrowMatches
-                      : t.builder.noFilteredMatches}
-                </p>
-              ) : (
-                <div
-                  className={`mt-5 overflow-y-auto overscroll-contain pr-1 transition-all ${
-                    selectedFixture
-                      ? "max-h-[42vh] sm:max-h-[36vh]"
-                      : "max-h-[52vh] sm:max-h-[60vh] md:max-h-[65vh]"
-                  }`}
-                >
+                ) : (
                   <BuilderLeagueGroups
                     fixtures={filteredFixtures}
                     selectedFixtureId={selectedFixtureId}
                     isInSlip={isFixtureSelectedInSlip}
+                    getSlipCount={getSlipCountForFixture}
                     onSelectFixture={selectFixture}
                     collapseOtherLeagues={
                       !specificLeagueId && !search.trim() && viewMode !== "live"
                     }
                     loadingMoreLeagues={loadingBackgroundFixtures}
                     resetCollapseKey={`${viewMode}-${leagueId}-${country}-${search}`}
+                    compact
                   />
-                </div>
-              )}
+                )}
+              </div>
+            </aside>
 
+            <section
+              ref={builderPanelRef}
+              className={`brain-card min-w-0 rounded-2xl p-4 sm:p-6 ${
+                mobilePane !== "markets" ? "hidden xl:block" : ""
+              }`}
+            >
               {selectedFixture ? (
-                <section
-                  ref={builderPanelRef}
-                  className="mt-6 rounded-3xl border border-[#18ff6d33] bg-[#18ff6d]/5 p-4 sm:p-6"
-                >
-                  <div className="mb-5">
-                    <p className="brain-title text-sm font-semibold uppercase tracking-[0.25em]">
+                <>
+                  <div className="mb-4">
+                    <p className="brain-title text-xs font-semibold uppercase tracking-[0.22em]">
                       {t.builder.buildPickTitle}
                     </p>
-                    <p className="mt-2 text-sm text-[#A9A9A9]">
+                    <h2 className="mt-1 text-xl font-black text-white">
+                      {selectedFixture.teams.home.name}{" "}
+                      <span className="text-[#777]">v</span>{" "}
+                      {selectedFixture.teams.away.name}
+                    </h2>
+                    <p className="mt-2 text-xs text-[#A9A9A9]">
                       {t.builder.buildPickHint}
                     </p>
                   </div>
@@ -1512,11 +1568,12 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   <BuilderMatchRow
                     fixture={selectedFixture}
                     selected
-                    inSlip={isFixtureInSlip(selectedFixture)}
+                    inSlip={isFixtureSelectedInSlip(selectedFixture)}
+                    slipCount={getSlipCountForFixture(selectedFixture)}
                     onClick={() => selectFixture(selectedFixture)}
                   />
 
-                  <div className="mt-5 max-h-[42vh] overflow-y-auto overscroll-contain pr-1 sm:max-h-[55vh]">
+                  <div className="mt-5 max-h-[calc(100vh-18rem)] overflow-y-auto overscroll-contain pr-1">
                     <BuilderMarketGrid
                       markets={markets}
                       selectedMarkets={selectedMarkets}
@@ -1526,49 +1583,26 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       playerDraftCountForMarket={playerDraftCountForMarket}
                       isMarketInSlip={isMarketInSlip}
                       getMarketDisplayLabel={getMarketDisplayLabel}
+                      fixture={selectedFixture}
                       simpleMode
                     />
                   </div>
 
-                  {totalPendingPicks > 0 ? (
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                      <Button
-                        onClick={analyzeSelectionDirect}
-                        className="w-full py-3"
-                      >
-                        {t.builder.analyzeDirect}
-                      </Button>
-
-                      <Button
-                        variant="secondary"
-                        onClick={addSelectedMarketsToSlip}
-                        className="w-full py-3"
-                      >
-                        {totalPendingPicks === 1
-                          ? t.builder.addOneMarket
-                          : formatTranslation(t.builder.addSelectedMarkets, {
-                              count: totalPendingPicks,
-                            })}
-                      </Button>
-                    </div>
-                  ) : null}
-
-                  {totalPendingPicks > 0 ? (
-                    <p className="mt-3 text-xs leading-relaxed text-[#777]">
-                      {t.builder.analyzeDirectHint}
-                    </p>
-                  ) : null}
-
                   {builderError ? (
-                    <p className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+                    <p className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
                       {builderError}
                     </p>
                   ) : null}
-                </section>
+                </>
               ) : (
-                <p className="mt-6 rounded-2xl border border-dashed border-white/10 bg-black/20 p-5 text-sm text-[#A9A9A9]">
-                  {t.builder.selectMatchFirst}
-                </p>
+                <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-black/20 p-8 text-center">
+                  <p className="text-lg font-bold text-white">
+                    {t.builder.selectMatch}
+                  </p>
+                  <p className="mt-2 max-w-sm text-sm text-[#A9A9A9]">
+                    {t.builder.selectMatchFirst}
+                  </p>
+                </div>
               )}
 
 {selectedFixture && isPlayerProp && (
@@ -1905,24 +1939,21 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 </>
               ) : null}
 
-              <div className="mt-5 brain-card rounded-3xl p-4 xl:hidden">
-                <BuilderSlipPanel
-                  compact
-                  slip={slip}
-                  onRemove={(index) =>
-                    setSlip((current) =>
-                      current.filter((_, itemIndex) => itemIndex !== index)
-                    )
-                  }
-                  onClear={() => setSlip([])}
-                  onAnalyze={analyze}
-                />
-              </div>
             </section>
 
-            <aside className="brain-card relative z-10 hidden h-fit rounded-3xl p-4 sm:p-8 xl:sticky xl:top-24 xl:block">
+            <aside
+              className={`min-w-0 xl:sticky xl:top-24 ${
+                mobilePane !== "slip" ? "hidden xl:block" : ""
+              }`}
+            >
               <BuilderSlipPanel
-                slip={slip}
+                slip={slip.map((item) => ({
+                  fixtureId: item.fixtureId,
+                  homeTeam: item.homeTeam,
+                  awayTeam: item.awayTeam,
+                  market: item.market,
+                  date: item.date,
+                }))}
                 onRemove={(index) =>
                   setSlip((current) =>
                     current.filter((_, itemIndex) => itemIndex !== index)
@@ -1930,6 +1961,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 }
                 onClear={() => setSlip([])}
                 onAnalyze={analyze}
+                compact={isMobile}
               />
             </aside>
           </div>
@@ -1937,9 +1969,9 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
         <BuilderStickyBar
           slipCount={slip.length}
-          pendingCount={totalPendingPicks}
+          pendingCount={0}
           onAnalyzeSlip={analyze}
-          onAnalyzeSelection={analyzeSelectionDirect}
+          onAnalyzeSelection={analyze}
         />
       </div>
     </main>

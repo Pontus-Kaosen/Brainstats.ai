@@ -4,11 +4,15 @@ import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation } from "@/lib/locale";
 import {
+  getMarketShortLabel,
+  getMatchResultMarkets,
   groupMarkets,
+  isMatchResultMarket,
   isPlayerMarketLabel,
   splitPopularMarkets,
   type MarketGroupId,
 } from "@/lib/builderMarkets";
+import type { MappedFixture } from "@/lib/footballFixtures";
 
 type BuilderMarketGridProps = {
   markets: readonly string[];
@@ -20,6 +24,7 @@ type BuilderMarketGridProps = {
   isMarketInSlip?: (market: string) => boolean;
   getMarketDisplayLabel?: (market: string) => string;
   simpleMode?: boolean;
+  fixture?: MappedFixture | null;
 };
 
 const groupOrder: MarketGroupId[] = [
@@ -30,60 +35,31 @@ const groupOrder: MarketGroupId[] = [
   "players",
 ];
 
-function MarketButton({
-  marketOption,
+function OddsButton({
+  label,
+  shortLabel,
   selected,
-  inSlip,
-  displayLabel,
-  badgeLabel,
+  pickLabel,
+  selectedLabel,
   onClick,
 }: {
-  marketOption: string;
+  label: string;
+  shortLabel: string;
   selected: boolean;
-  inSlip: boolean;
-  displayLabel: string;
-  badgeLabel: string;
+  pickLabel: string;
+  selectedLabel: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-left transition ${
-        selected
-          ? "border-[#18ff6d] bg-[#18ff6d]/10"
-          : "border-white/8 bg-black/30 hover:border-[#18ff6d]/40"
-      }`}
+      title={label}
+      className={`brain-odds-btn ${selected ? "brain-odds-btn-selected" : ""}`}
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs font-black ${
-            selected
-              ? "border-[#18ff6d] bg-[#18ff6d] text-black"
-              : "border-white/20 bg-black/40 text-transparent"
-          }`}
-        >
-          {selected ? "✓" : ""}
-        </span>
-        <span
-          className={`truncate text-sm font-semibold sm:text-base ${
-            selected ? "text-white" : "text-[#E8E8E8]"
-          }`}
-        >
-          {displayLabel}
-        </span>
-      </div>
-
-      <span
-        className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold ${
-          inSlip
-            ? "border-[#18ff6d] bg-[#18ff6d]/20 text-[#18ff6d]"
-            : selected
-              ? "border-[#18ff6d]/40 bg-[#18ff6d]/10 text-[#18ff6d]"
-              : "border-white/10 bg-black/40 text-[#777]"
-        }`}
-      >
-        {badgeLabel}
+      <span className="brain-odds-btn-label">{shortLabel}</span>
+      <span className="brain-odds-btn-value">
+        {selected ? selectedLabel : pickLabel}
       </span>
     </button>
   );
@@ -99,11 +75,13 @@ export default function BuilderMarketGrid({
   isMarketInSlip,
   getMarketDisplayLabel,
   simpleMode = false,
+  fixture = null,
 }: BuilderMarketGridProps) {
   const { t } = useLanguage();
   const [showAllMarkets, setShowAllMarkets] = useState(false);
   const grouped = groupMarkets(markets);
   const { popular, other } = splitPopularMarkets(markets);
+  const resultMarkets = getMatchResultMarkets(markets);
 
   const groupLabels: Record<MarketGroupId, string> = {
     result: t.builder.marketGroups.result,
@@ -113,68 +91,114 @@ export default function BuilderMarketGrid({
     players: t.builder.marketGroups.players,
   };
 
-  function renderMarketRow(marketOption: string) {
+  function isMarketSelected(marketOption: string) {
     const isPlayerRow = isPlayerMarketLabel(marketOption);
     const inSlip = isMarketInSlip?.(marketOption) ?? false;
     const draftCount = playerDraftCountForMarket?.(marketOption) ?? 0;
-    const selected = isPlayerRow
-      ? activePlayerMarket === marketOption || draftCount > 0
-      : inSlip || selectedMarkets.includes(marketOption);
-    const displayLabel = getMarketDisplayLabel?.(marketOption) ?? marketOption;
 
-    const badgeLabel = inSlip
-      ? t.fixtureCard.inSlipBadge
-      : isPlayerRow
-        ? draftCount > 0
-          ? formatTranslation(t.builder.playerDraftCount, {
-              count: draftCount,
-            })
-          : activePlayerMarket === marketOption
-            ? t.builder.configurePlayer
-            : t.fixtureCard.select
-        : selectedMarkets.includes(marketOption)
-          ? t.builder.marketSelected
-          : t.fixtureCard.select;
+    if (isPlayerRow) {
+      return (
+        activePlayerMarket === marketOption ||
+        draftCount > 0 ||
+        inSlip
+      );
+    }
+
+    return inSlip || selectedMarkets.includes(marketOption);
+  }
+
+  function handleMarketClick(marketOption: string) {
+    if (isPlayerMarketLabel(marketOption)) {
+      onSelectPlayerMarket?.(marketOption);
+      return;
+    }
+
+    onToggleMarket(marketOption);
+  }
+
+  function renderOddsButton(marketOption: string) {
+    const selected = isMarketSelected(marketOption);
+    const displayLabel =
+      getMarketDisplayLabel?.(marketOption) ?? marketOption;
+    const shortLabel = isMatchResultMarket(marketOption)
+      ? getMarketShortLabel(marketOption, fixture ?? undefined)
+      : getMarketShortLabel(displayLabel, fixture ?? undefined);
 
     return (
-      <MarketButton
+      <OddsButton
         key={marketOption}
-        marketOption={marketOption}
+        label={displayLabel}
+        shortLabel={shortLabel}
         selected={selected}
-        inSlip={inSlip}
-        displayLabel={displayLabel}
-        badgeLabel={badgeLabel}
-        onClick={() =>
-          isPlayerRow
-            ? onSelectPlayerMarket?.(marketOption)
-            : onToggleMarket(marketOption)
-        }
+        pickLabel={t.builder.oddsPick}
+        selectedLabel={t.builder.oddsSelected}
+        onClick={() => handleMarketClick(marketOption)}
       />
     );
   }
 
+  function renderMarketGroup(groupId: MarketGroupId, items: string[]) {
+    if (items.length === 0) {
+      return null;
+    }
+
+    const resultItems = items.filter(isMatchResultMarket);
+    const nonResultItems = items.filter((item) => !isMatchResultMarket(item));
+
+    return (
+      <section key={groupId}>
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#777]">
+          {groupLabels[groupId]}
+        </p>
+
+        {resultItems.length >= 2 ? (
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {resultItems.map(renderOddsButton)}
+          </div>
+        ) : null}
+
+        {nonResultItems.length > 0 ? (
+          <div
+            className={`grid gap-2 ${
+              resultItems.length >= 2 ? "mt-2" : "mt-3"
+            } grid-cols-2 sm:grid-cols-3`}
+          >
+            {nonResultItems.map(renderOddsButton)}
+          </div>
+        ) : null}
+      </section>
+    );
+  }
+
   if (simpleMode && !showAllMarkets && popular.length > 0) {
-    const hiddenSelectedCount = other.filter(
-      (market) =>
-        selectedMarkets.includes(market) ||
-        isMarketInSlip?.(market) ||
-        (isPlayerMarketLabel(market) &&
-          (activePlayerMarket === market ||
-            (playerDraftCountForMarket?.(market) ?? 0) > 0))
+    const hiddenSelectedCount = other.filter((market) =>
+      isMarketSelected(market)
     ).length;
+    const popularResults = popular.filter(isMatchResultMarket);
+    const popularOther = popular.filter((market) => !isMatchResultMarket(market));
 
     return (
       <div className="space-y-4">
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#777]">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#777]">
           {t.builder.popularMarketsTitle}
         </p>
 
-        <div className="space-y-2">{popular.map(renderMarketRow)}</div>
+        {popularResults.length >= 2 ? (
+          <div className="grid grid-cols-3 gap-2">
+            {popularResults.map(renderOddsButton)}
+          </div>
+        ) : null}
+
+        {popularOther.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {popularOther.map(renderOddsButton)}
+          </div>
+        ) : null}
 
         <button
           type="button"
           onClick={() => setShowAllMarkets(true)}
-          className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-[#E8DCC8] transition hover:border-[#18ff6d44]"
+          className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-[#E8DCC8] transition hover:border-[#18ff6d44]"
         >
           {formatTranslation(t.builder.showMoreMarkets, {
             count: other.length,
@@ -191,11 +215,25 @@ export default function BuilderMarketGrid({
 
   return (
     <div className="space-y-5">
+      {simpleMode &&
+      showAllMarkets &&
+      resultMarkets.length >= 2 &&
+      !popular.some(isMatchResultMarket) ? (
+        <section>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#777]">
+            {t.builder.marketGroups.result}
+          </p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {resultMarkets.map(renderOddsButton)}
+          </div>
+        </section>
+      ) : null}
+
       {simpleMode && showAllMarkets ? (
         <button
           type="button"
           onClick={() => setShowAllMarkets(false)}
-          className="w-full rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2.5 text-sm font-semibold text-[#18ff6d]"
+          className="w-full rounded-xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2.5 text-sm font-semibold text-[#18ff6d]"
         >
           {t.builder.showFewerMarkets}
         </button>
@@ -204,21 +242,11 @@ export default function BuilderMarketGrid({
       {groupOrder.map((groupId) => {
         const items = grouped[groupId];
 
-        if (items.length === 0) {
+        if (groupId === "result" && simpleMode && !showAllMarkets) {
           return null;
         }
 
-        return (
-          <section key={groupId}>
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#777]">
-              {groupLabels[groupId]}
-            </p>
-
-            <div className="mt-3 space-y-2">
-              {items.map(renderMarketRow)}
-            </div>
-          </section>
-        );
+        return renderMarketGroup(groupId, items);
       })}
     </div>
   );
