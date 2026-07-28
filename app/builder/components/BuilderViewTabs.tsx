@@ -47,7 +47,8 @@ export default function BuilderViewTabs({
   ];
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="shrink-0 overflow-visible py-0.5">
+      <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {tabs.map((tab) => {
         const active = value === tab.id;
         const isLive = tab.accent === "live";
@@ -57,7 +58,7 @@ export default function BuilderViewTabs({
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={`shrink-0 rounded-2xl border px-4 py-3 text-sm font-bold transition sm:px-5 sm:py-3.5 sm:text-base ${
+            className={`shrink-0 rounded-2xl border px-3 py-2.5 text-xs font-bold transition sm:px-4 sm:py-3 sm:text-sm ${
               active
                 ? isLive
                   ? "border-red-500 bg-red-500 text-white"
@@ -72,6 +73,7 @@ export default function BuilderViewTabs({
           </button>
         );
       })}
+      </div>
     </div>
   );
 }

@@ -1391,10 +1391,11 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
 
           <div className="grid gap-4 xl:grid-cols-[minmax(250px,290px)_minmax(0,1fr)_minmax(300px,340px)] xl:items-start xl:gap-5">
             <aside
-              className={`brain-card min-w-0 rounded-2xl p-3 sm:p-4 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-hidden xl:flex xl:flex-col ${
+              className={`brain-card min-w-0 rounded-2xl p-3 sm:p-4 xl:sticky xl:top-24 xl:flex xl:max-h-[calc(100vh-7rem)] xl:flex-col ${
                 mobilePane !== "matches" ? "hidden xl:flex" : ""
               }`}
             >
+              <div className="shrink-0 space-y-4 overflow-visible">
               <BuilderViewTabs
                 value={viewMode}
                 onChange={setViewMode}
@@ -1405,7 +1406,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               />
 
               {loadingOptions ? (
-                <div className="mt-4 rounded-2xl border border-[#18ff6d22] bg-black/30 p-4 text-center text-sm text-[#18ff6d]">
+                <div className="rounded-2xl border border-[#18ff6d22] bg-black/30 p-4 text-center text-sm text-[#18ff6d]">
                   {t.builder.loadingOptionsLong}
                 </div>
               ) : (
@@ -1413,7 +1414,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                   <button
                     type="button"
                     onClick={() => setShowAdvancedFilters((value) => !value)}
-                    className="mt-4 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-xs font-semibold text-[#E8DCC8] transition hover:border-[#18ff6d44]"
+                    className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-xs font-semibold text-[#E8DCC8] transition hover:border-[#18ff6d44]"
                   >
                     {showAdvancedFilters
                       ? t.builder.hideAdvancedFilters
@@ -1480,7 +1481,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                 </>
               )}
 
-              <div className="mt-4">
+              <div>
                 <label className="text-xs font-semibold text-[#888]">
                   {t.builder.searchMatch}
                 </label>
@@ -1493,10 +1494,11 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
               </div>
 
               {viewMode === "live" && liveError ? (
-                <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
                   {t.builder.liveError} {liveError}
                 </div>
               ) : null}
+              </div>
 
               <div className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
                 {viewMode === "live" && loadingLive ? (
