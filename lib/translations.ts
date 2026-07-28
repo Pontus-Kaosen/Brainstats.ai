@@ -821,6 +821,11 @@ export const translations = {
         cards: "Kort",
         players: "Spelare",
       },
+      overUnderOver: "Över",
+      overUnderUnder: "Under",
+      resultHomeWin: "{team} vinner",
+      resultAwayWin: "{team} vinner",
+      resultDraw: "Oavgjort",
       buildPickTitle: "Bygg ditt spel",
       buildPickHint:
         "Klicka på ett odds för att lägga till i kupongen. Ta bort genom att klicka igen.",
@@ -1930,6 +1935,11 @@ export const translations = {
         cards: "Cards",
         players: "Players",
       },
+      overUnderOver: "Over",
+      overUnderUnder: "Under",
+      resultHomeWin: "{team} to win",
+      resultAwayWin: "{team} to win",
+      resultDraw: "Draw",
       buildPickTitle: "Build your pick",
       buildPickHint:
         "Tap an odds button to add it to your slip. Tap again to remove.",

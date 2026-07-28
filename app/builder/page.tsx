@@ -43,6 +43,8 @@ import {
   isCornerOverUnderMarketLabel,
   isCardOverUnderMarketLabel,
   isPlayerMarketLabel,
+  isMatchResultMarket,
+  getMatchResultDisplay,
   CORNER_LINE_OPTIONS,
   CARD_LINE_OPTIONS,
   formatMarketWithLine,
@@ -1164,6 +1166,18 @@ export default function BuilderPage() {
       }
     }
 
+    if (selectedFixture && isMatchResultMarket(marketName)) {
+      const resultDisplay = getMatchResultDisplay(marketName, selectedFixture, {
+        draw: t.builder.resultDraw,
+        homeWin: t.builder.resultHomeWin,
+        awayWin: t.builder.resultAwayWin,
+      });
+
+      if (resultDisplay) {
+        return resultDisplay.title;
+      }
+    }
+
     return marketName;
   }
 
@@ -1205,6 +1219,18 @@ export default function BuilderPage() {
         marketName,
         options?.cardLine ?? cardLine
       );
+    }
+
+    if (targetFixture && isMatchResultMarket(marketName)) {
+      const resultDisplay = getMatchResultDisplay(marketName, targetFixture, {
+        draw: t.builder.resultDraw,
+        homeWin: t.builder.resultHomeWin,
+        awayWin: t.builder.resultAwayWin,
+      });
+
+      if (resultDisplay) {
+        return resultDisplay.title;
+      }
     }
 
     return marketName;
@@ -1389,7 +1415,7 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
             marketsDisabled={!selectedFixture}
           />
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(250px,290px)_minmax(0,1fr)_minmax(300px,340px)] xl:items-start xl:gap-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(300px,340px)_minmax(0,1fr)_minmax(300px,340px)] xl:items-start xl:gap-5">
             <aside
               className={`brain-card min-w-0 rounded-2xl p-3 sm:p-4 xl:sticky xl:top-24 xl:flex xl:max-h-[calc(100vh-7rem)] xl:flex-col ${
                 mobilePane !== "matches" ? "hidden xl:flex" : ""
@@ -1586,7 +1612,6 @@ ${item.playerName ? `Player Name: ${item.playerName}` : ""}`
                       isMarketInSlip={isMarketInSlip}
                       getMarketDisplayLabel={getMarketDisplayLabel}
                       fixture={selectedFixture}
-                      simpleMode
                     />
                   </div>
 

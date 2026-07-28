@@ -176,41 +176,81 @@ export function isMatchResultMarket(market: string) {
   return matchResultMatchers.some((pattern) => pattern.test(market.trim()));
 }
 
-function abbreviateTeamName(name: string) {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-
-  if (words.length >= 2) {
-    return words
-      .map((word) => word[0])
-      .join("")
-      .slice(0, 3)
-      .toUpperCase();
-  }
-
-  return name.slice(0, 4).toUpperCase();
-}
-
-export function getMarketShortLabel(
+export function getMatchResultDisplay(
   market: string,
-  fixture?: {
+  fixture: {
     teams: { home: { name: string }; away: { name: string } };
+  },
+  labels: {
+    draw: string;
+    homeWin: string;
+    awayWin: string;
   }
 ) {
   const normalized = market.trim();
 
   if (/^hemmalag vinner$/i.test(normalized) || /^home win$/i.test(normalized)) {
-    return fixture ? abbreviateTeamName(fixture.teams.home.name) : "1";
+    return {
+      title: labels.homeWin.replace("{team}", fixture.teams.home.name),
+      marketLabel: normalized,
+    };
   }
 
   if (/^bortalag vinner$/i.test(normalized) || /^away win$/i.test(normalized)) {
-    return fixture ? abbreviateTeamName(fixture.teams.away.name) : "2";
+    return {
+      title: labels.awayWin.replace("{team}", fixture.teams.away.name),
+      marketLabel: normalized,
+    };
   }
 
   if (/^oavgjort$/i.test(normalized) || /^draw$/i.test(normalized)) {
-    return "X";
+    return {
+      title: labels.draw,
+      marketLabel: normalized,
+    };
   }
 
-  return normalized.length > 22 ? `${normalized.slice(0, 20)}…` : normalized;
+  return null;
+}
+
+export function isOverMarketLabel(market: string) {
+  const normalized = market.trim().toLowerCase();
+  return normalized.startsWith("över") || normalized.startsWith("over");
+}
+
+export function isUnderMarketLabel(market: string) {
+  const normalized = market.trim().toLowerCase();
+  return normalized.startsWith("under");
+}
+
+export function isOverUnderMarketLabel(market: string) {
+  return isOverMarketLabel(market) || isUnderMarketLabel(market);
+}
+
+function getOverUnderSortKey(market: string) {
+  const match = market.match(/(\d+(?:\.\d+)?)/);
+  return match ? Number.parseFloat(match[1]) : Number.MAX_SAFE_INTEGER;
+}
+
+export function splitOverUnderMarkets(markets: readonly string[]) {
+  const over: string[] = [];
+  const under: string[] = [];
+  const other: string[] = [];
+
+  for (const market of markets) {
+    if (isOverMarketLabel(market)) {
+      over.push(market);
+    } else if (isUnderMarketLabel(market)) {
+      under.push(market);
+    } else {
+      other.push(market);
+    }
+  }
+
+  over.sort((a, b) => getOverUnderSortKey(a) - getOverUnderSortKey(b));
+  under.sort((a, b) => getOverUnderSortKey(a) - getOverUnderSortKey(b));
+
+  return { over, under, other };
 }
 
 export function getMatchResultMarkets(markets: readonly string[]) {
