@@ -57,6 +57,10 @@ export const translations = {
       footballIntelligence: "Fotbollsintelligens",
       menuOpen: "Öppna meny",
       menuClose: "Stäng meny",
+      more: "Mer",
+      navGroupTools: "Verktyg",
+      navGroupExplore: "Utforska",
+      navGroupAccount: "Konto",
     },
 
     home: {
@@ -1155,6 +1159,10 @@ export const translations = {
       footballIntelligence: "Football Intelligence",
       menuOpen: "Open menu",
       menuClose: "Close menu",
+      more: "More",
+      navGroupTools: "Tools",
+      navGroupExplore: "Explore",
+      navGroupAccount: "Account",
     },
 
     home: {

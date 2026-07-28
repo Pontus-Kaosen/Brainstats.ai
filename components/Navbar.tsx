@@ -21,6 +21,29 @@ import { ANALYZE_INPUT_MODE_KEY } from "@/lib/safeRedirect";
 
 type UserPlan = "free" | "pro" | "elite";
 
+type NavHighlight = "aiTips" | "valueBets";
+
+type NavLinkItem = {
+  title: string;
+  href: string;
+  highlight?: NavHighlight;
+  cta?: boolean;
+};
+
+function navPath(href: string) {
+  return href.split("?")[0];
+}
+
+function isNavActive(pathname: string, href: string) {
+  const path = navPath(href);
+
+  if (path === "/") {
+    return pathname === "/";
+  }
+
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
 function getInitials(email: string) {
   const name = email.split("@")[0] || "";
   const parts = name.split(/[._-]+/).filter(Boolean);
@@ -73,9 +96,11 @@ export default function Navbar() {
   const [email, setEmail] = useState<string | null>(null);
   const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loginNext, setLoginNext] = useState(pathname || "/dashboard");
   const menuRef = useRef<HTMLDivElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -180,11 +205,13 @@ export default function Navbar() {
   useEffect(() => {
     setMobileNavOpen(false);
     setMenuOpen(false);
+    setMoreMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
     return subscribeCloseOverlays(overlayId, () => {
       setMenuOpen(false);
+      setMoreMenuOpen(false);
     });
   }, [overlayId]);
 
@@ -208,13 +235,27 @@ export default function Navbar() {
     }
 
     setMobileNavOpen(false);
+    setMoreMenuOpen(false);
     dispatchCloseOverlays(overlayId);
     setMenuOpen(true);
+  }
+
+  function toggleMoreMenu() {
+    if (moreMenuOpen) {
+      setMoreMenuOpen(false);
+      return;
+    }
+
+    setMobileNavOpen(false);
+    setMenuOpen(false);
+    dispatchCloseOverlays(overlayId);
+    setMoreMenuOpen(true);
   }
 
   function toggleMobileNav() {
     const nextOpen = !mobileNavOpen;
     setMenuOpen(false);
+    setMoreMenuOpen(false);
     dispatchCloseOverlays();
 
     if (nextOpen) {
@@ -233,6 +274,13 @@ export default function Navbar() {
       ) {
         setMenuOpen(false);
       }
+
+      if (
+        moreMenuRef.current &&
+        !moreMenuRef.current.contains(event.target as Node)
+      ) {
+        setMoreMenuOpen(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -249,39 +297,77 @@ export default function Navbar() {
     window.location.href = "/";
   }
 
-  const navLinks = [
-    { title: t.navbar.home, href: "/" },
-    { title: t.navbar.analyze, href: "/analyze?mode=image" },
+  const primaryNavLinks: NavLinkItem[] = [
+    { title: t.navbar.analyze, href: "/analyze?mode=image", cta: true },
     { title: t.navbar.builder, href: "/builder" },
-    { title: t.navbar.standings, href: "/standings" },
     {
       title: t.navbar.aiTips,
       href: "/ai-tips",
-      highlight: "aiTips" as const,
+      highlight: "aiTips",
     },
     {
       title: t.navbar.valueBets,
       href: "/value-bets",
-      highlight: "valueBets" as const,
+      highlight: "valueBets",
     },
+    { title: t.navbar.standings, href: "/standings" },
+  ];
+
+  const exploreNavLinks: NavLinkItem[] = [
+    { title: t.navbar.home, href: "/" },
     { title: t.navbar.trackRecord, href: "/track-record" },
+  ];
+
+  const accountNavLinks: NavLinkItem[] = [
     { title: t.navbar.dashboard, href: "/dashboard" },
     { title: t.navbar.premium, href: "/premium" },
   ];
 
-  function navLinkClass(highlight?: "aiTips" | "valueBets") {
-    if (highlight === "aiTips") {
-      return "border-[#E8DCC8]/30 bg-gradient-to-r from-[#18ff6d]/10 via-[#E8DCC8]/10 to-[#2fbfff]/10 text-[#E8DCC8] hover:border-[#E8DCC8]/50 hover:bg-[#18ff6d]/15";
+  const secondaryNavLinks = [...exploreNavLinks, ...accountNavLinks];
+
+  function navLinkClass(
+    link: NavLinkItem,
+    active: boolean,
+    compact = false
+  ) {
+    if (link.cta) {
+      return active
+        ? "brain-nav-cta brain-nav-cta-active"
+        : "brain-nav-cta";
     }
 
-    if (highlight === "valueBets") {
-      return "border-[#72d5ff33] bg-gradient-to-r from-[#2fbfff]/10 via-[#18ff6d]/5 to-[#72d5ff]/10 text-[#72d5ff] hover:border-[#72d5ff55] hover:bg-[#2fbfff]/15";
+    const base = compact
+      ? "brain-nav-link px-3 py-2 text-sm"
+      : "brain-nav-link";
+
+    if (active) {
+      return `${base} brain-nav-link-active`;
     }
 
-    return "border-transparent text-[#D8D8D8] hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 hover:text-[#18ff6d]";
+    if (link.highlight === "aiTips") {
+      return `${base} border-[#E8DCC8]/25 text-[#E8DCC8] hover:border-[#E8DCC8]/45 hover:bg-[#18ff6d]/10`;
+    }
+
+    if (link.highlight === "valueBets") {
+      return `${base} border-[#72d5ff]/25 text-[#72d5ff] hover:border-[#72d5ff]/45 hover:bg-[#2fbfff]/10`;
+    }
+
+    return `${base} text-[#D8D8D8] hover:border-[#18ff6d]/35 hover:bg-[#18ff6d]/8 hover:text-[#18ff6d]`;
   }
 
+  function renderNavLink(link: NavLinkItem, compact = false) {
+    const active = isNavActive(pathname, link.href);
 
+    return (
+      <Link
+        key={link.href}
+        href={link.href}
+        className={navLinkClass(link, active, compact)}
+      >
+        {link.title}
+      </Link>
+    );
+  }
   const memberBadgeLabel =
     userPlan === "elite"
       ? t.navbar.planElite
@@ -291,39 +377,129 @@ export default function Navbar() {
 
   const planStyles = getPlanStyles(userPlan);
 
-  const profileMenuLinks = [
-    { title: t.navbar.dashboard, href: "/dashboard" },
-    { title: t.navbar.premium, href: "/premium" },
-  ];
+  const profileMenuLinks = accountNavLinks;
+
+  const moreMenuActive = secondaryNavLinks.some((link) =>
+    isNavActive(pathname, link.href)
+  );
 
   return (
-    <nav className="app-navbar relative border-b border-[#18ff6d22] bg-black/95 px-4 py-3 text-[#FAFAF8] max-md:backdrop-blur-none backdrop-blur-xl sm:px-8 sm:py-5">
+    <nav className="app-navbar brain-navbar relative px-4 py-3 text-[#FAFAF8] sm:px-8 sm:py-4">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-        <Link href="/" className="flex min-w-0 items-center">
+        <Link href="/" className="group flex min-w-0 items-center gap-3">
           <BrainStatsLogo variant="nav" />
+          <span className="hidden min-w-0 flex-col lg:flex">
+            <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#18ff6d]/75 transition group-hover:text-[#18ff6d]">
+              {t.navbar.footballIntelligence}
+            </span>
+          </span>
         </Link>
 
-        <div className="hidden items-center gap-2 lg:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${navLinkClass(link.highlight)}`}
+        <div className="hidden items-center gap-1.5 xl:gap-2 lg:flex">
+          {primaryNavLinks.map((link) => renderNavLink(link))}
+
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              type="button"
+              onClick={toggleMoreMenu}
+              aria-expanded={moreMenuOpen}
+              aria-haspopup="menu"
+              className={`brain-nav-link inline-flex items-center gap-1.5 ${
+                moreMenuActive ? "brain-nav-link-active" : "text-[#D8D8D8] hover:border-[#18ff6d]/35 hover:bg-[#18ff6d]/8 hover:text-[#18ff6d]"
+              }`}
             >
-              {link.title}
-            </Link>
-          ))}
+              {t.navbar.more}
+              <svg
+                aria-hidden
+                viewBox="0 0 20 20"
+                className={`h-3.5 w-3.5 transition ${moreMenuOpen ? "rotate-180" : ""}`}
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+
+            {moreMenuOpen ? (
+              <div className="app-dropdown-layer absolute right-0 mt-3 w-56 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1410]/95 shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+                <div className="h-1 bg-gradient-to-r from-[#18ff6d]/70 via-[#2fbfff]/40 to-transparent" />
+                <div className="p-2">
+                  <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#777]">
+                    {t.navbar.navGroupExplore}
+                  </p>
+                  {exploreNavLinks.map((link) => {
+                    const active = isNavActive(pathname, link.href);
+
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`block rounded-xl px-3 py-2.5 text-sm transition ${
+                          active
+                            ? "bg-[#18ff6d]/12 text-[#18ff6d]"
+                            : "text-[#D8D8D8] hover:bg-white/5 hover:text-white"
+                        }`}
+                      >
+                        {link.title}
+                      </Link>
+                    );
+                  })}
+
+                  <p className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#777]">
+                    {t.navbar.navGroupAccount}
+                  </p>
+                  {accountNavLinks.map((link) => {
+                    const active = isNavActive(pathname, link.href);
+
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`block rounded-xl px-3 py-2.5 text-sm transition ${
+                          active
+                            ? "bg-[#18ff6d]/12 text-[#18ff6d]"
+                            : "text-[#D8D8D8] hover:bg-white/5 hover:text-white"
+                        }`}
+                      >
+                        {link.title}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={toggleMobileNav}
-            className="rounded-2xl border border-[#18ff6d33] bg-[#121212]/80 px-3 py-3 text-sm font-bold text-[#18ff6d] transition hover:border-[#18ff6d88] hover:bg-[#18ff6d]/10 lg:hidden"
+            className="rounded-2xl border border-[#18ff6d33] bg-[#0a1612]/90 px-3 py-3 text-[#18ff6d] transition hover:border-[#18ff6d88] hover:bg-[#18ff6d]/10 lg:hidden"
             aria-expanded={mobileNavOpen}
             aria-label={mobileNavOpen ? t.navbar.menuClose : t.navbar.menuOpen}
           >
-            {mobileNavOpen ? "✕" : "☰"}
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              {mobileNavOpen ? (
+                <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+              ) : (
+                <>
+                  <path strokeLinecap="round" d="M4 7h16" />
+                  <path strokeLinecap="round" d="M4 12h16" />
+                  <path strokeLinecap="round" d="M4 17h16" />
+                </>
+              )}
+            </svg>
           </button>
 
           <LanguageSwitcher />
@@ -455,27 +631,99 @@ export default function Navbar() {
             className="app-nav-overlay fixed inset-0 bg-black/70 lg:hidden"
           />
 
-          <div className="app-nav-overlay relative border-t border-[#18ff6d22] bg-black/95 px-4 py-4 lg:hidden sm:px-8">
-          <div className="mx-auto flex max-w-7xl flex-col gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#18ff6d]/10 ${
-                  pathname === link.href ||
-                  (link.href.includes("#") &&
-                    pathname === link.href.split("#")[0])
-                    ? "bg-[#18ff6d]/10 text-[#18ff6d]"
-                    : link.highlight === "aiTips"
-                      ? "text-[#E8DCC8]"
-                      : link.highlight === "valueBets"
-                        ? "text-[#72d5ff]"
-                        : "text-[#D8D8D8]"
-                }`}
-              >
-                {link.title}
-              </Link>
-            ))}
+          <div className="app-nav-overlay relative border-t border-[#18ff6d]/15 bg-[#071210]/98 px-4 py-4 lg:hidden sm:px-8">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4">
+            <Link
+              href="/analyze?mode=image"
+              className={`flex w-full items-center justify-center rounded-2xl py-3.5 text-sm font-bold transition ${
+                isNavActive(pathname, "/analyze?mode=image")
+                  ? "brain-nav-cta brain-nav-cta-active"
+                  : "brain-nav-cta"
+              }`}
+            >
+              {t.navbar.analyze}
+            </Link>
+
+            <div>
+              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#777]">
+                {t.navbar.navGroupTools}
+              </p>
+              <div className="mt-2 flex flex-col gap-1">
+                {primaryNavLinks
+                  .filter((link) => !link.cta)
+                  .map((link) => {
+                    const active = isNavActive(pathname, link.href);
+
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                          active
+                            ? "bg-[#18ff6d]/12 text-[#18ff6d]"
+                            : link.highlight === "aiTips"
+                              ? "text-[#E8DCC8] hover:bg-[#18ff6d]/8"
+                              : link.highlight === "valueBets"
+                                ? "text-[#72d5ff] hover:bg-[#2fbfff]/10"
+                                : "text-[#D8D8D8] hover:bg-white/5"
+                        }`}
+                      >
+                        {link.title}
+                      </Link>
+                    );
+                  })}
+              </div>
+            </div>
+
+            <div>
+              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#777]">
+                {t.navbar.navGroupExplore}
+              </p>
+              <div className="mt-2 flex flex-col gap-1">
+                {exploreNavLinks.map((link) => {
+                  const active = isNavActive(pathname, link.href);
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                        active
+                          ? "bg-[#18ff6d]/12 text-[#18ff6d]"
+                          : "text-[#D8D8D8] hover:bg-white/5"
+                      }`}
+                    >
+                      {link.title}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#777]">
+                {t.navbar.navGroupAccount}
+              </p>
+              <div className="mt-2 flex flex-col gap-1">
+                {accountNavLinks.map((link) => {
+                  const active = isNavActive(pathname, link.href);
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                        active
+                          ? "bg-[#18ff6d]/12 text-[#18ff6d]"
+                          : "text-[#D8D8D8] hover:bg-white/5"
+                      }`}
+                    >
+                      {link.title}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
 
             {!email && (
               <Link
