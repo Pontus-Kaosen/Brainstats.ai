@@ -37,17 +37,15 @@ const groupOrder: MarketGroupId[] = [
 
 function OddsButton({
   label,
-  shortLabel,
+  primaryLabel,
   selected,
-  pickLabel,
-  selectedLabel,
+  isResultMarket,
   onClick,
 }: {
   label: string;
-  shortLabel: string;
+  primaryLabel: string;
   selected: boolean;
-  pickLabel: string;
-  selectedLabel: string;
+  isResultMarket: boolean;
   onClick: () => void;
 }) {
   return (
@@ -55,11 +53,21 @@ function OddsButton({
       type="button"
       onClick={onClick}
       title={label}
+      aria-pressed={selected}
       className={`brain-odds-btn ${selected ? "brain-odds-btn-selected" : ""}`}
     >
-      <span className="brain-odds-btn-label">{shortLabel}</span>
-      <span className="brain-odds-btn-value">
-        {selected ? selectedLabel : pickLabel}
+      {selected ? (
+        <span className="brain-odds-check" aria-hidden="true">
+          ✓
+        </span>
+      ) : null}
+
+      <span
+        className={
+          isResultMarket ? "brain-odds-btn-result" : "brain-odds-btn-text"
+        }
+      >
+        {primaryLabel}
       </span>
     </button>
   );
@@ -128,10 +136,11 @@ export default function BuilderMarketGrid({
       <OddsButton
         key={marketOption}
         label={displayLabel}
-        shortLabel={shortLabel}
+        primaryLabel={
+          isMatchResultMarket(marketOption) ? shortLabel : displayLabel
+        }
         selected={selected}
-        pickLabel={t.builder.oddsPick}
-        selectedLabel={t.builder.oddsSelected}
+        isResultMarket={isMatchResultMarket(marketOption)}
         onClick={() => handleMarketClick(marketOption)}
       />
     );

@@ -298,12 +298,11 @@ a {
 }
 
 .brain-odds-btn {
+  position: relative;
   display: flex;
   min-height: 3.25rem;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.15rem;
   border-radius: 0.65rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: linear-gradient(
@@ -311,7 +310,7 @@ a {
     rgba(14, 28, 24, 0.95) 0%,
     rgba(8, 16, 14, 0.98) 100%
   );
-  padding: 0.55rem 0.45rem;
+  padding: 0.65rem 0.55rem;
   text-align: center;
   transition: all 0.15s ease;
 }
@@ -327,28 +326,49 @@ a {
   box-shadow: 0 0 20px rgba(24, 255, 109, 0.15);
 }
 
-.brain-odds-btn-label {
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.65rem;
-  font-weight: 600;
-  line-height: 1.2;
-  color: #9aa8a2;
+.brain-odds-check {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  display: flex;
+  height: 1rem;
+  width: 1rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #18ff6d;
+  font-size: 0.6rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #000;
+  box-shadow: 0 0 10px rgba(24, 255, 109, 0.45);
 }
 
-.brain-odds-btn-selected .brain-odds-btn-label {
-  color: #c8ffe0;
-}
-
-.brain-odds-btn-value {
-  font-size: 0.8rem;
-  font-weight: 800;
+.brain-odds-btn-result {
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
   color: #f5f5f5;
 }
 
-.brain-odds-btn-selected .brain-odds-btn-value {
+.brain-odds-btn-selected .brain-odds-btn-result {
   color: #18ff6d;
+}
+
+.brain-odds-btn-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  padding-inline: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #e8e8e8;
+}
+
+.brain-odds-btn-selected .brain-odds-btn-text {
+  color: #d6ffe6;
 }
 
 .brain-betslip {
