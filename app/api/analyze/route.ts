@@ -374,12 +374,6 @@ async function analyzeSingleMatchBlock(
       home: slimMatches(homeLastMatches),
       away: slimMatches(awayLastMatches),
     },
-    lastMatches: {
-      home: slimMatches(homeLastMatches),
-      away: slimMatches(awayLastMatches),
-    },
-    homeLastMatches: slimMatches(homeLastMatches),
-    awayLastMatches: slimMatches(awayLastMatches),
     homeLastMatches: slimMatches(homeLastMatches),
     awayLastMatches: slimMatches(awayLastMatches),
     injuries,
@@ -395,10 +389,7 @@ async function analyzeSingleMatchBlock(
     dataQuality,
     referee: fixture?.fixture?.referee || null,
     rotationRisks,
-    rotationRisks,
     scheduleContext,
-    scheduleContext,
-    scheduleTeamsChecked: betTeams.map((team) => team.name),
     scheduleTeamsChecked: betTeams.map((team) => team.name),
   };
 
@@ -666,22 +657,19 @@ async function getWeather(
 
       const data = await response.json();
       const temperature =
-        data.main?.temp != null ? Math.round(data.main.temp) : null;
+        data.main?.temp != null ? Math.round(data.main.temp) : undefined;
       const windKmh =
         data.wind?.speed != null
           ? Math.round(Number(data.wind.speed) * 3.6)
-          : null;
-      const description = data.weather?.[0]?.description ?? null;
+          : undefined;
+      const description = data.weather?.[0]?.description || undefined;
 
       return {
         city: cleaned,
         temperature,
-        temperature,
-        description,
         description,
         wind: windKmh,
-        wind: windKmh,
-        humidity: data.main?.humidity ?? null,
+        humidity: data.main?.humidity ?? undefined,
       };
     } catch (error) {
       console.error("Vädret kunde inte hämtas:", error);

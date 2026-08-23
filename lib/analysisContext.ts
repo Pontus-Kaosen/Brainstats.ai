@@ -2,10 +2,10 @@ import type { Language } from "@/lib/translations";
 
 type WeatherData = {
   city?: string;
-  temperature?: number;
-  description?: string;
-  wind?: number;
-  humidity?: number;
+  temperature?: number | null;
+  description?: string | null;
+  wind?: number | null;
+  humidity?: number | null;
 } | null;
 
 type FormSummary = {

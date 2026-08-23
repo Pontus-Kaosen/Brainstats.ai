@@ -56,7 +56,6 @@ export type TeamLineup = {
     photo?: string;
   };
   startXI?: LineupPlayer[];
-  startXI?: LineupPlayer[];
   substitutes?: LineupPlayer[];
 };
 
@@ -115,15 +114,8 @@ export type AnalysisUsedData = {
     home?: LastMatch[];
     away?: LastMatch[];
   };
-  lastMatches?: {
-    home?: LastMatch[];
-    away?: LastMatch[];
-  };
   homeLastMatches?: LastMatch[];
   awayLastMatches?: LastMatch[];
-  homeLastMatches?: LastMatch[];
-  awayLastMatches?: LastMatch[];
-  injuries?: Injury[];
   injuries?: Injury[];
   lineups?: TeamLineup[];
   h2h?: LastMatch[];
@@ -137,17 +129,10 @@ export type AnalysisUsedData = {
   dataQuality?: unknown;
   referee?: string | null;
   rotationRisks?: RotationRisk[];
-  rotationRisks?: RotationRisk[];
   scheduleContext?:
     | ScheduleContextStatus
     | "checked_clear"
     | "no_team"
     | "no_fixture";
-  scheduleContext?:
-    | ScheduleContextStatus
-    | "checked_clear"
-    | "no_team"
-    | "no_fixture";
-  scheduleTeamsChecked?: string[];
   scheduleTeamsChecked?: string[];
 };
