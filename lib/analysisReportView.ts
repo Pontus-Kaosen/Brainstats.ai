@@ -36,36 +36,34 @@ export function readWeather(weather: AnalysisUsedData["weather"]): Weather | nul
 
 export function readLineupStarters(lineup: TeamLineup | undefined) {
   if (!lineup) return [];
-  return lineup.startXI || lineup.startXI || [];
+  return lineup.startXI || [];
 }
 
 export function readLastMatches(
   usedData: AnalysisUsedData,
   side: "home" | "away"
 ): LastMatch[] {
-  const nested = usedData.lastMatches?.[side] || usedData.lastMatches?.[side];
+  const nested = usedData.lastMatches?.[side];
   if (Array.isArray(nested) && nested.length > 0) {
     return nested;
   }
 
   const flat =
-    side === "home"
-      ? usedData.homeLastMatches || usedData.homeLastMatches
-      : usedData.awayLastMatches || usedData.awayLastMatches;
+    side === "home" ? usedData.homeLastMatches : usedData.awayLastMatches;
 
   return Array.isArray(flat) ? flat : [];
 }
 
 export function readInjuries(usedData: AnalysisUsedData): Injury[] {
-  return usedData.injuries || usedData.injuries || [];
+  return usedData.injuries || [];
 }
 
 export function readRotationRisks(usedData: AnalysisUsedData) {
-  return usedData.rotationRisks || usedData.rotationRisks || [];
+  return usedData.rotationRisks || [];
 }
 
 export function readScheduleContext(usedData: AnalysisUsedData) {
-  return usedData.scheduleContext || usedData.scheduleContext || null;
+  return usedData.scheduleContext ?? null;
 }
 
 export function readH2H(usedData: AnalysisUsedData): LastMatch[] {

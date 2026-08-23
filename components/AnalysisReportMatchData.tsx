@@ -72,17 +72,15 @@ export default function AnalysisReportMatchData({
   );
   const h2hMatches = readH2H(usedData);
   const scheduleContext = readScheduleContext(usedData);
-  const scheduleTeams =
-    usedData.scheduleTeamsChecked || usedData.scheduleTeamsChecked || [];
+  const scheduleTeams = usedData.scheduleTeamsChecked || [];
   const scheduleStatusMessage =
-    scheduleContext === "checked_clear" ||
     scheduleContext === "checked_clear"
       ? formatTranslation(t.analyze.scheduleCheckedClear, {
           teams: scheduleTeams.join(", "),
         })
-      : scheduleContext === "no_team" || scheduleContext === "no_team"
+      : scheduleContext === "no_team"
         ? t.analyze.scheduleNoTeam
-        : scheduleContext === "no_fixture" || scheduleContext === "no_fixture"
+        : scheduleContext === "no_fixture"
           ? t.analyze.scheduleNoFixture
           : "";
 

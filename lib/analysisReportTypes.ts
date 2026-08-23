@@ -129,10 +129,6 @@ export type AnalysisUsedData = {
   dataQuality?: unknown;
   referee?: string | null;
   rotationRisks?: RotationRisk[];
-  scheduleContext?:
-    | ScheduleContextStatus
-    | "checked_clear"
-    | "no_team"
-    | "no_fixture";
+  scheduleContext?: ScheduleContextStatus | null;
   scheduleTeamsChecked?: string[];
 };
