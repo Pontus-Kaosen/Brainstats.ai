@@ -9,13 +9,24 @@ import {
   analysisReportTitleGradient,
   injuryReason,
   matchText,
-  resultIcon,
 } from "@/lib/analysisReportHelpers";
 import type {
   AnalysisUsedData,
   LastMatch,
   ScoreBreakdown,
 } from "@/lib/analysisReportTypes";
+import {
+  formResultForTeam,
+  readH2H,
+  readInjuries,
+  readLastMatches,
+  readLineupStarters,
+  readRotationRisks,
+  readScheduleContext,
+  readWeather,
+  seasonLine,
+  standingLine,
+} from "@/lib/analysisReportView";
 import { summarizeRotationRisksForUi } from "@/lib/matchImportance";
 import { hasPartialLineups } from "@/lib/lineups";
 
@@ -41,34 +52,37 @@ export default function AnalysisReportMatchData({
   const titleGradient = analysisReportTitleGradient;
   const sectionGap = compact ? "space-y-4" : "space-y-8";
   const blockGap = compact ? "mt-4" : "mt-6";
-  const sectionTitle = compact
-    ? "text-xl font-bold"
-    : "text-2xl font-bold";
+  const sectionTitle = compact ? "text-xl font-bold" : "text-2xl font-bold";
   const gridGap = compact ? "gap-4" : "gap-6";
 
-  const homeLastMatches = usedData.lastMatches?.home || [];
-  const awayLastMatches = usedData.lastMatches?.away || [];
-  const injuries = usedData.injuries || [];
+  const homeLastMatches = readLastMatches(usedData, "home");
+  const awayLastMatches = readLastMatches(usedData, "away");
+  const injuries = readInjuries(usedData);
   const lineups = usedData.lineups || [];
   const homeLineup = lineups[0];
   const awayLineup = lineups[1];
   const confirmedLineups = usedData.confirmedLineups === true;
   const partialLineups = hasPartialLineups(lineups);
   const playerLineupStatus = usedData.playerLineupStatus ?? null;
-  const weather = usedData.weather;
+  const weather = readWeather(usedData.weather);
   const referee = usedData.referee;
   const rotationSummaries = summarizeRotationRisksForUi(
-    usedData.rotationRisks || [],
+    readRotationRisks(usedData),
     language
   );
+  const h2hMatches = readH2H(usedData);
+  const scheduleContext = readScheduleContext(usedData);
+  const scheduleTeams =
+    usedData.scheduleTeamsChecked || usedData.scheduleTeamsChecked || [];
   const scheduleStatusMessage =
-    usedData.scheduleContext === "checked_clear"
+    scheduleContext === "checked_clear" ||
+    scheduleContext === "checked_clear"
       ? formatTranslation(t.analyze.scheduleCheckedClear, {
-          teams: (usedData.scheduleTeamsChecked || []).join(", "),
+          teams: scheduleTeams.join(", "),
         })
-      : usedData.scheduleContext === "no_team"
+      : scheduleContext === "no_team" || scheduleContext === "no_team"
         ? t.analyze.scheduleNoTeam
-        : usedData.scheduleContext === "no_fixture"
+        : scheduleContext === "no_fixture" || scheduleContext === "no_fixture"
           ? t.analyze.scheduleNoFixture
           : "";
 
@@ -78,9 +92,33 @@ export default function AnalysisReportMatchData({
     return match ? Number(match[1]) : null;
   }, [betText, selectedPlayerId]);
 
+  const homeTeamId = usedData.homeTeamId;
+  const awayTeamId = usedData.awayTeamId;
+  const breakdownEntries = Object.entries(breakdown).filter(
+    ([, value]) => value != null
+  );
+
+  function renderFormList(matches: LastMatch[], teamId?: string | null) {
+    if (matches.length === 0) {
+      return (
+        <p className="text-sm text-[#A9A9A9]">{t.analyze.noMatchData}</p>
+      );
+    }
+
+    return matches.map((match) => (
+      <div
+        key={match.fixture.id}
+        className={`rounded-lg bg-[#101010]/80 text-sm text-[#D8D8D8] ${compact ? "p-2" : "rounded-xl p-3"}`}
+      >
+        <span className="mr-1.5">{formResultForTeam(match, teamId)}</span>
+        {matchText(match)}
+      </div>
+    ));
+  }
+
   return (
     <div className={sectionGap}>
-      {(rotationSummaries.length > 0 || scheduleStatusMessage) ? (
+      {rotationSummaries.length > 0 || scheduleStatusMessage ? (
         <div
           className={`rounded-2xl border ${compact ? "p-4" : "rounded-3xl p-6 sm:p-8"} ${
             rotationSummaries.length > 0
@@ -88,14 +126,16 @@ export default function AnalysisReportMatchData({
               : "border-white/10 bg-black/30"
           }`}
         >
-          <p className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
             {t.analyze.scheduleContextTitle}
           </p>
           <p className="mt-1.5 text-xs text-[#A9A9A9] sm:text-sm">
             {t.analyze.scheduleContextHint}
           </p>
           {rotationSummaries.length > 0 ? (
-            <ul className={`${compact ? "mt-3 space-y-2" : "mt-4 space-y-3"}`}>
+            <ul className={compact ? "mt-3 space-y-2" : "mt-4 space-y-3"}>
               {rotationSummaries.map((item) => (
                 <li
                   key={item}
@@ -115,31 +155,39 @@ export default function AnalysisReportMatchData({
 
       <div className={`grid ${gridGap} md:grid-cols-2`}>
         <div className={cardClass}>
-          <p className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
             {t.analyze.scoreBreakdownBadge}
           </p>
           <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
             {t.analyze.scoreBreakdownTitle}
           </h3>
           <div className={`${blockGap} ${compact ? "space-y-3" : "space-y-5"}`}>
-            {Object.entries(breakdown).map(([key, value]) => (
-              <div key={key}>
-                <div className="mb-2 flex justify-between text-sm">
-                  <span className="capitalize text-[#A9A9A9]">
-                    {translateBreakdownKey(key, t)}
-                  </span>
-                  <span className="font-semibold text-[#18ff6d]">+{value}</span>
+            {breakdownEntries.length === 0 ? (
+              <p className="text-sm text-[#A9A9A9]">{t.analyze.noMatchData}</p>
+            ) : (
+              breakdownEntries.map(([key, value]) => (
+                <div key={key}>
+                  <div className="mb-2 flex justify-between text-sm">
+                    <span className="capitalize text-[#A9A9A9]">
+                      {translateBreakdownKey(key, t)}
+                    </span>
+                    <span className="font-semibold text-[#18ff6d]">
+                      +{value}
+                    </span>
+                  </div>
+                  <div className="h-3 overflow-hidden rounded-full bg-black/50">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#18ff6d] to-[#2fbfff] transition-all duration-700"
+                      style={{
+                        width: `${Math.min(Number(value) * 5, 100)}%`,
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="h-3 overflow-hidden rounded-full bg-black/50">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#18ff6d] to-[#2fbfff] transition-all duration-700"
-                    style={{
-                      width: `${Math.min(Number(value) * 5, 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -167,7 +215,9 @@ export default function AnalysisReportMatchData({
           </div>
 
           {!confirmedLineups && !partialLineups ? (
-            <div className={`${blockGap} rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4`}>
+            <div
+              className={`${blockGap} rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4`}
+            >
               <p className="text-sm font-semibold text-yellow-200">
                 {t.analyze.lineupsNotPublished}
               </p>
@@ -176,7 +226,9 @@ export default function AnalysisReportMatchData({
               </p>
             </div>
           ) : (
-            <div className={`${blockGap} ${compact ? "grid gap-4 xl:grid-cols-2" : "space-y-6"}`}>
+            <div
+              className={`${blockGap} ${compact ? "grid gap-4 xl:grid-cols-2" : "space-y-6"}`}
+            >
               {playerLineupStatus === "bench" ? (
                 <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-100 xl:col-span-2">
                   {t.analyze.playerOnBenchWarningReport}
@@ -188,13 +240,15 @@ export default function AnalysisReportMatchData({
                 </div>
               ) : null}
               {[homeLineup, awayLineup]
-                .filter((lineup) => (lineup?.startXI?.length ?? 0) > 0)
+                .filter((lineup) => readLineupStarters(lineup).length > 0)
                 .map((lineup, teamIndex) => (
                   <div
                     key={lineup?.team?.id || teamIndex}
                     className="overflow-hidden rounded-xl border border-[#18ff6d22] brain-inset"
                   >
-                    <div className={`flex items-center gap-3 border-b border-white/10 ${compact ? "p-3" : "p-5"}`}>
+                    <div
+                      className={`flex items-center gap-3 border-b border-white/10 ${compact ? "p-3" : "p-5"}`}
+                    >
                       {lineup?.team?.logo ? (
                         <img
                           src={lineup.team.logo}
@@ -203,7 +257,9 @@ export default function AnalysisReportMatchData({
                         />
                       ) : null}
                       <div>
-                        <p className={`font-black text-white ${compact ? "text-base" : "text-lg"}`}>
+                        <p
+                          className={`font-black text-white ${compact ? "text-base" : "text-lg"}`}
+                        >
                           {lineup?.team?.name ||
                             (teamIndex === 0
                               ? t.analyze.homeTeam
@@ -224,12 +280,17 @@ export default function AnalysisReportMatchData({
                       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#777]">
                         {t.analyze.startingPlayers}
                       </p>
-                      <div className={`${compact ? "mt-2 space-y-1.5" : "mt-4 space-y-2"}`}>
-                        {(lineup?.startXI || []).map((player, playerIndex) => (
+                      <div
+                        className={
+                          compact ? "mt-2 space-y-1.5" : "mt-4 space-y-2"
+                        }
+                      >
+                        {readLineupStarters(lineup).map((player, playerIndex) => (
                           <div
                             key={player.id || `${player.name}-${playerIndex}`}
                             className={`flex items-center justify-between rounded-lg border px-3 ${compact ? "py-2" : "rounded-xl px-4 py-3"} ${
-                              resolvedPlayerId && player.id === resolvedPlayerId
+                              resolvedPlayerId &&
+                              player.id === resolvedPlayerId
                                 ? "border-[#18ff6d] bg-[#18ff6d]/10"
                                 : "border-white/5 bg-[#101010]/80"
                             }`}
@@ -239,7 +300,7 @@ export default function AnalysisReportMatchData({
                                 {player.number ?? "–"}
                               </span>
                               <span className="truncate font-semibold text-[#E8E8E8]">
-                                {player.name || t.builder.unknownPlayer}
+                                {player.name || t.analyze.unknownPlayer}
                               </span>
                               {resolvedPlayerId &&
                               player.id === resolvedPlayerId ? (
@@ -262,185 +323,189 @@ export default function AnalysisReportMatchData({
         </div>
       </div>
 
-      {compact ? (
-        <div className={cardClass}>
-          <p className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}>
-            {t.analyze.matchConditions}
-          </p>
-          <div className={`${blockGap} grid gap-4 lg:grid-cols-[1.4fr_1fr]`}>
-            <div>
-              <h3 className={`${sectionTitle} text-white`}>
-                {t.analyze.weather}
-              </h3>
-              {weather ? (
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    [t.analyze.temperature, `${weather.temperature ?? "-"}°C`],
-                    [t.analyze.weatherDesc, weather.description ?? "-"],
-                    [t.analyze.wind, `${weather.wind ?? "-"} km/h`],
-                    [t.analyze.humidity, `${weather.humidity ?? "-"}%`],
-                  ].map(([label, value]) => (
-                    <div
-                      key={label}
-                      className="rounded-xl border border-[#18ff6d11] brain-inset p-3"
-                    >
-                      <p className="text-[10px] text-[#A9A9A9] sm:text-xs">{label}</p>
-                      <p className="mt-1 text-sm font-bold text-[#18ff6d] sm:text-base">
-                        {value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-3 text-sm leading-6 text-[#A9A9A9]">
-                  {t.analyze.noWeatherData}
-                </p>
-              )}
-            </div>
-
-            <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
-              <p className="text-xs text-[#A9A9A9]">{t.analyze.matchOfficial}</p>
-              <p className={`mt-2 text-lg font-bold sm:text-xl ${referee ? "text-[#18ff6d]" : "text-[#A9A9A9]"}`}>
-                {referee || t.analyze.noRefereeData}
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className={`grid ${gridGap} md:grid-cols-2`}>
-          <div className={cardClass}>
-            <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-              {t.analyze.matchConditions}
-            </p>
-            <h3 className="mt-2 text-2xl font-bold text-white">
+      <div className={cardClass}>
+        <p
+          className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+        >
+          {t.analyze.matchConditions}
+        </p>
+        <div
+          className={`${blockGap} grid gap-4 ${compact ? "lg:grid-cols-[1.4fr_1fr]" : "md:grid-cols-2"}`}
+        >
+          <div>
+            <h3 className={`${sectionTitle} text-white`}>
               {t.analyze.weather}
             </h3>
             {weather ? (
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {[
-                  [t.analyze.temperature, `${weather.temperature ?? "-"}°C`],
-                  [t.analyze.weatherDesc, weather.description ?? "-"],
-                  [t.analyze.wind, `${weather.wind ?? "-"} km/h`],
-                  [t.analyze.humidity, `${weather.humidity ?? "-"}%`],
+                  [t.analyze.temperature, `${weather.temperature ?? "–"}°C`],
+                  [t.analyze.weatherDesc, weather.description ?? "–"],
+                  [t.analyze.wind, `${weather.wind ?? "–"} km/h`],
+                  [t.analyze.humidity, `${weather.humidity ?? "–"}%`],
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="rounded-2xl border border-[#18ff6d11] brain-inset p-5"
+                    className="rounded-xl border border-[#18ff6d11] brain-inset p-3"
                   >
-                    <p className="text-sm text-[#A9A9A9]">{label}</p>
-                    <p className="mt-2 text-2xl font-bold text-[#18ff6d]">
+                    <p className="text-[10px] text-[#A9A9A9] sm:text-xs">
+                      {label}
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-[#18ff6d] sm:text-base">
                       {value}
                     </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="mt-6 text-sm leading-6 text-[#A9A9A9]">
+              <p className="mt-3 text-sm leading-6 text-[#A9A9A9]">
                 {t.analyze.noWeatherData}
               </p>
             )}
           </div>
-
-          <div className={cardClass}>
-            <p className={`text-sm uppercase tracking-[0.25em] ${titleGradient}`}>
-              {t.analyze.matchOfficial}
+          <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
+            <p className="text-xs text-[#A9A9A9]">{t.analyze.matchOfficial}</p>
+            <p
+              className={`mt-2 text-lg font-bold sm:text-xl ${referee ? "text-[#18ff6d]" : "text-[#A9A9A9]"}`}
+            >
+              {referee || t.analyze.noRefereeData}
             </p>
-            <h3 className="mt-2 text-2xl font-bold text-white">
-              {t.analyze.referee}
-            </h3>
-            <div className="mt-6 rounded-2xl border border-[#18ff6d11] brain-inset p-6">
-              <p className="text-sm text-[#A9A9A9]">{t.analyze.matchOfficial}</p>
-              <p
-                className={`mt-3 text-3xl font-bold ${
-                  referee ? "text-[#18ff6d]" : "text-[#A9A9A9]"
-                }`}
+          </div>
+        </div>
+      </div>
+
+      <div className={`grid ${gridGap} md:grid-cols-2`}>
+        <div className={cardClass}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
+            {t.scoreBreakdown.table}
+          </p>
+          <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
+            {t.scoreBreakdown.table}
+          </h3>
+          <div className={`${blockGap} space-y-3`}>
+            {[
+              [t.analyze.homeTeam, usedData.homeStanding, usedData.homeSeason],
+              [t.analyze.awayTeam, usedData.awayStanding, usedData.awaySeason],
+            ].map(([label, standing, season]) => (
+              <div
+                key={String(label)}
+                className="rounded-xl border border-[#18ff6d11] brain-inset p-4"
               >
-                {referee || t.analyze.noRefereeData}
-              </p>
+                <p className="text-sm font-bold text-[#18ff6d]">
+                  {label as string}
+                </p>
+                <p className="mt-1 text-sm text-[#E8E8E8]">
+                  {standingLine(standing as never) || t.standings.noTableData}
+                </p>
+                {seasonLine(season as never) ? (
+                  <p className="mt-1 text-xs text-[#A9A9A9]">
+                    {seasonLine(season as never)}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={cardClass}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
+            {t.scoreBreakdown.h2h}
+          </p>
+          <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
+            {t.scoreBreakdown.h2h}
+          </h3>
+          <div className={`${blockGap} space-y-2`}>
+            {h2hMatches.length === 0 ? (
+              <p className="text-sm text-[#A9A9A9]">{t.analyze.noMatchData}</p>
+            ) : (
+              h2hMatches.map((match) => (
+                <div
+                  key={match.fixture.id}
+                  className={`rounded-lg bg-[#101010]/80 text-sm text-[#D8D8D8] ${compact ? "p-2" : "rounded-xl p-3"}`}
+                >
+                  {matchText(match)}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className={`grid ${gridGap} ${compact ? "xl:grid-cols-2" : ""}`}>
+        <div className={cardClass}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
+            {t.analyze.teamFormBadge}
+          </p>
+          <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
+            {t.analyze.lastFiveMatches}
+          </h3>
+          <div className={`${blockGap} grid gap-4 md:grid-cols-2`}>
+            <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
+              <h4 className="text-sm font-bold text-[#18ff6d]">
+                {t.analyze.homeTeam}
+              </h4>
+              <div className={compact ? "mt-2 space-y-1.5" : "mt-4 space-y-3"}>
+                {renderFormList(homeLastMatches, homeTeamId)}
+              </div>
+            </div>
+            <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
+              <h4 className="text-sm font-bold text-[#18ff6d]">
+                {t.analyze.awayTeam}
+              </h4>
+              <div className={compact ? "mt-2 space-y-1.5" : "mt-4 space-y-3"}>
+                {renderFormList(awayLastMatches, awayTeamId)}
+              </div>
             </div>
           </div>
         </div>
-      )}
 
-      <div className={`grid ${gridGap} ${compact ? "xl:grid-cols-2" : ""}`}>
-      <div className={cardClass}>
-        <p className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}>
-          {t.analyze.teamFormBadge}
-        </p>
-        <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
-          {t.analyze.lastFiveMatches}
-        </h3>
-        <div className={`${blockGap} grid gap-4 md:grid-cols-2`}>
-          {[
-            [t.analyze.homeTeam, homeLastMatches],
-            [t.analyze.awayTeam, awayLastMatches],
-          ].map(([label, matches]) => (
-            <div
-              key={label as string}
-              className="rounded-xl border border-[#18ff6d11] brain-inset p-4"
-            >
-              <h4 className="text-sm font-bold text-[#18ff6d]">{label as string}</h4>
-              <div className={`${compact ? "mt-2 space-y-1.5" : "mt-4 space-y-3"}`}>
-                {(matches as LastMatch[]).length === 0 ? (
-                  <p className="text-sm text-[#A9A9A9]">
-                    {t.analyze.noMatchData}
-                  </p>
-                ) : (
-                  (matches as LastMatch[]).map((match) => (
-                    <div
-                      key={match.fixture.id}
-                      className={`rounded-lg bg-[#101010]/80 text-sm text-[#D8D8D8] ${compact ? "p-2" : "rounded-xl p-3"} transition hover:bg-[#151515]`}
-                    >
-                      <span className="mr-1.5">{resultIcon(match)}</span>
-                      {matchText(match)}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className={cardClass}>
-        <p className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}>
-          {t.analyze.injuriesBadge}
-        </p>
-        <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
-          {t.analyze.injuries}
-        </h3>
-        <div className={`${blockGap} ${compact ? "space-y-2" : "space-y-3"}`}>
-          {injuries.length === 0 ? (
-            <p className="text-sm text-[#A9A9A9]">{t.analyze.noInjuries}</p>
-          ) : (
-            injuries.map((injury, index) => (
-              <div
-                key={`${injury.player?.name}-${index}`}
-                className={`flex items-center gap-3 rounded-xl brain-inset text-sm ${compact ? "p-3" : "gap-4 rounded-2xl p-4"}`}
-              >
-                {injury.team?.logo ? (
-                  <img
-                    src={injury.team.logo}
-                    alt={injury.team.name || t.common.teamAlt}
-                    className={`rounded-full bg-white p-1 ${compact ? "h-8 w-8" : "h-9 w-9"}`}
-                  />
-                ) : null}
-                <div>
-                  <p className="font-semibold text-[#18ff6d]">
-                    {injury.player?.name || t.builder.unknownPlayer}
-                  </p>
-                  <p className="mt-0.5 text-[#D8D8D8]">
-                    {injury.team?.name || t.analyze.unknownTeam}
-                  </p>
-                  <p className="mt-0.5 text-xs text-[#A9A9A9]">
-                    {injuryReason(injury, t.analyze.noInjuryReason)}
-                  </p>
+        <div className={cardClass}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
+            {t.analyze.injuriesBadge}
+          </p>
+          <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
+            {t.analyze.injuries}
+          </h3>
+          <div className={`${blockGap} ${compact ? "space-y-2" : "space-y-3"}`}>
+            {injuries.length === 0 ? (
+              <p className="text-sm text-[#A9A9A9]">{t.analyze.noInjuries}</p>
+            ) : (
+              injuries.map((injury, index) => (
+                <div
+                  key={`${injury.player?.name}-${index}`}
+                  className={`flex items-center gap-3 rounded-xl brain-inset text-sm ${compact ? "p-3" : "gap-4 rounded-2xl p-4"}`}
+                >
+                  {injury.team?.logo ? (
+                    <img
+                      src={injury.team.logo}
+                      alt={injury.team.name || t.common.teamAlt}
+                      className={`rounded-full bg-white p-1 ${compact ? "h-8 w-8" : "h-9 w-9"}`}
+                    />
+                  ) : null}
+                  <div>
+                    <p className="font-semibold text-[#18ff6d]">
+                      {injury.player?.name || t.analyze.unknownPlayer}
+                    </p>
+                    <p className="mt-0.5 text-[#D8D8D8]">
+                      {injury.team?.name || t.analyze.unknownTeam}
+                    </p>
+                    <p className="mt-0.5 text-xs text-[#A9A9A9]">
+                      {injuryReason(injury, t.analyze.noInjuryReason)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
-      </div>
       </div>
 
       {betText ? (
@@ -448,7 +513,9 @@ export default function AnalysisReportMatchData({
           <h3 className={`${sectionTitle} text-white`}>
             {t.analyze.yourBetIdea}
           </h3>
-          <pre className={`whitespace-pre-wrap rounded-xl bg-black/40 text-sm text-[#D8D8D8] ${compact ? "mt-3 p-3" : "mt-5 rounded-2xl p-5"}`}>
+          <pre
+            className={`whitespace-pre-wrap rounded-xl bg-black/40 text-sm text-[#D8D8D8] ${compact ? "mt-3 p-3" : "mt-5 rounded-2xl p-5"}`}
+          >
             {betText}
           </pre>
         </div>

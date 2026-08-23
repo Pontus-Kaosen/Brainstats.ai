@@ -14,10 +14,10 @@ export type ScoreBreakdown = {
 };
 
 export type LastMatch = {
-  fixture: { id: number; date: string };
+  fixture: { id: number; date?: string };
   teams: {
-    home: { id: number; name: string; winner?: boolean | null };
-    away: { id: number; name: string; winner?: boolean | null };
+    home: { id?: number; name: string; winner?: boolean | null };
+    away: { id?: number; name: string; winner?: boolean | null };
   };
   goals: { home: number | null; away: number | null };
 };
@@ -56,14 +56,42 @@ export type TeamLineup = {
     photo?: string;
   };
   startXI?: LineupPlayer[];
+  startXI?: LineupPlayer[];
   substitutes?: LineupPlayer[];
 };
 
 export type Weather = {
+  city?: string;
   temperature?: string | number;
+  temp?: string | number;
   description?: string;
+  condition?: string;
   wind?: string | number;
+  windSpeed?: string | number;
   humidity?: string | number;
+};
+
+export type TableRowSnapshot = {
+  rank?: number;
+  points?: number;
+  played?: number;
+  won?: number;
+  draw?: number;
+  lost?: number;
+  goalsFor?: number;
+  goalsAgainst?: number;
+  form?: string;
+  teamName?: string;
+};
+
+export type SeasonRecordSnapshot = {
+  form?: string;
+  played?: number;
+  wins?: number;
+  draws?: number;
+  losses?: number;
+  goalsFor?: number | string;
+  goalsAgainst?: number | string;
 };
 
 export type AnalysisUsedData = {
@@ -87,13 +115,39 @@ export type AnalysisUsedData = {
     home?: LastMatch[];
     away?: LastMatch[];
   };
+  lastMatches?: {
+    home?: LastMatch[];
+    away?: LastMatch[];
+  };
+  homeLastMatches?: LastMatch[];
+  awayLastMatches?: LastMatch[];
+  homeLastMatches?: LastMatch[];
+  awayLastMatches?: LastMatch[];
+  injuries?: Injury[];
   injuries?: Injury[];
   lineups?: TeamLineup[];
+  h2h?: LastMatch[];
+  headToHead?: LastMatch[];
+  homeStanding?: TableRowSnapshot | null;
+  awayStanding?: TableRowSnapshot | null;
+  homeSeason?: SeasonRecordSnapshot | null;
+  awaySeason?: SeasonRecordSnapshot | null;
   weather?: Weather | null;
   oddsAvailable?: boolean;
   dataQuality?: unknown;
   referee?: string | null;
   rotationRisks?: RotationRisk[];
-  scheduleContext?: ScheduleContextStatus;
+  rotationRisks?: RotationRisk[];
+  scheduleContext?:
+    | ScheduleContextStatus
+    | "checked_clear"
+    | "no_team"
+    | "no_fixture";
+  scheduleContext?:
+    | ScheduleContextStatus
+    | "checked_clear"
+    | "no_team"
+    | "no_fixture";
+  scheduleTeamsChecked?: string[];
   scheduleTeamsChecked?: string[];
 };

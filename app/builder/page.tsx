@@ -596,7 +596,8 @@ export default function BuilderPage() {
     }
 
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 25000);
+    const timeout = window.setTimeout(() => controller.abort(), 45000);
+    let cancelled = false;
 
     async function loadMajorLeagueFixtures(date: string) {
       const responses = await Promise.allSettled(
@@ -730,6 +731,10 @@ export default function BuilderPage() {
 
         setFixtures(items);
       } catch (error: any) {
+        if (cancelled) {
+          return;
+        }
+
         const message =
           error?.name === "AbortError"
             ? t.builder.errors.fixturesTimeout
@@ -739,8 +744,10 @@ export default function BuilderPage() {
         setMatchError(message);
         setFixtures([]);
       } finally {
-        setLoadingMatches(false);
-        setLoadingBackgroundFixtures(false);
+        if (!cancelled) {
+          setLoadingMatches(false);
+          setLoadingBackgroundFixtures(false);
+        }
         window.clearTimeout(timeout);
       }
     }
@@ -748,6 +755,7 @@ export default function BuilderPage() {
     loadFixtures();
 
     return () => {
+      cancelled = true;
       controller.abort();
       window.clearTimeout(timeout);
     };

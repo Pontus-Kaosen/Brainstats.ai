@@ -125,9 +125,8 @@ async function analyzeSingleMatchBlock(
     getLastMatches(awayTeamId),
     getInjuries(fixtureId),
     getWeather(
-      fixture?.fixture?.venue?.city ||
-        fixture?.teams?.home?.name ||
-        null
+      fixture?.fixture?.venue?.city || null,
+      fixture?.league?.country || null
     ),
     getPlayerStats(playerId, leagueId, season),
     getLineups(fixtureId, homeTeamId, awayTeamId),
@@ -372,17 +371,34 @@ async function analyzeSingleMatchBlock(
     confirmedLineups,
     playerLineupStatus,
     lastMatches: {
-      home: homeLastMatches,
-      away: awayLastMatches,
+      home: slimMatches(homeLastMatches),
+      away: slimMatches(awayLastMatches),
     },
+    lastMatches: {
+      home: slimMatches(homeLastMatches),
+      away: slimMatches(awayLastMatches),
+    },
+    homeLastMatches: slimMatches(homeLastMatches),
+    awayLastMatches: slimMatches(awayLastMatches),
+    homeLastMatches: slimMatches(homeLastMatches),
+    awayLastMatches: slimMatches(awayLastMatches),
     injuries,
     lineups,
+    h2h: slimMatches(h2h),
+    headToHead: slimMatches(h2h),
+    homeStanding: slimStanding(standings, homeTeamId),
+    awayStanding: slimStanding(standings, awayTeamId),
+    homeSeason: slimSeasonStats(homeStats),
+    awaySeason: slimSeasonStats(awayStats),
     weather,
     oddsAvailable: oddsResponse.length > 0,
     dataQuality,
     referee: fixture?.fixture?.referee || null,
     rotationRisks,
+    rotationRisks,
     scheduleContext,
+    scheduleContext,
+    scheduleTeamsChecked: betTeams.map((team) => team.name),
     scheduleTeamsChecked: betTeams.map((team) => team.name),
   };
 
@@ -546,46 +562,133 @@ async function getLineups(
   return orderLineupsForFixture(lineups, homeTeamId, awayTeamId);
 }
 
+function slimMatches(items: any[]) {
+  return (Array.isArray(items) ? items : [])
+    .filter((item) => item?.fixture?.id)
+    .slice(0, 8)
+    .map((item) => ({
+      fixture: {
+        id: item.fixture.id,
+        date: item.fixture.date,
+      },
+      teams: {
+        home: {
+          id: item.teams?.home?.id,
+          name: item.teams?.home?.name,
+          winner: item.teams?.home?.winner,
+        },
+        away: {
+          id: item.teams?.away?.id,
+          name: item.teams?.away?.name,
+          winner: item.teams?.away?.winner,
+        },
+      },
+      goals: {
+        home: item.goals?.home ?? null,
+        away: item.goals?.away ?? null,
+      },
+    }));
+}
+
+function slimStanding(rows: any[], teamId: string | null) {
+  if (!teamId || !Array.isArray(rows)) return null;
+
+  const row = rows.find(
+    (item) => String(item?.team?.id) === String(teamId)
+  );
+
+  if (!row) return null;
+
+  return {
+    rank: row.rank,
+    points: row.points,
+    played: row.all?.played,
+    won: row.all?.win,
+    draw: row.all?.draw,
+    lost: row.all?.lose,
+    goalsFor: row.all?.goals?.for,
+    goalsAgainst: row.all?.goals?.against,
+    form: row.form,
+    teamName: row.team?.name,
+  };
+}
+
+function slimSeasonStats(stats: any) {
+  if (!stats || Array.isArray(stats)) return null;
+
+  return {
+    form: stats.form,
+    played: stats.fixtures?.played?.total,
+    wins: stats.fixtures?.wins?.total,
+    draws: stats.fixtures?.draws?.total,
+    losses: stats.fixtures?.loses?.total,
+    goalsFor:
+      stats.goals?.for?.total?.total ?? stats.goals?.for?.total ?? null,
+    goalsAgainst:
+      stats.goals?.against?.total?.total ??
+      stats.goals?.against?.total ??
+      null,
+  };
+}
+
+function cleanCityName(value: string) {
+  return value.replace(/\s*\([^)]*\)\s*/g, "").split(",")[0].trim();
+}
+
 async function getWeather(
-  city: string | null
+  city: string | null,
+  country?: string | null
 ) {
-  if (!city) return null;
-
   const apiKey =
-    process.env.OPENWEATHER_API_KEY;
+    process.env.OPENWEATHER_API_KEY ||
+    process.env.OPENWEATHER_API_KEY ||
+    process.env.OPENWEATHERMAP_API_KEY;
 
-  if (!apiKey) return null;
+  if (!apiKey || !city) return null;
 
-  try {
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-        city
-      )}&appid=${apiKey}&units=metric&lang=sv`,
-      {
-        cache: "no-store",
-      }
-    );
+  const cleaned = cleanCityName(city);
+  if (!cleaned) return null;
 
-    if (!response.ok) return null;
+  const queries = country
+    ? [cleaned, `${cleaned},${country}`]
+    : [cleaned];
 
-    const data = await response.json();
+  for (const query of queries) {
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
+          query
+        )}&appid=${apiKey}&units=metric&lang=sv`,
+        { cache: "no-store" }
+      );
 
-    return {
-      city,
-      temperature: data.main?.temp,
-      description:
-        data.weather?.[0]?.description,
-      wind: data.wind?.speed,
-      humidity: data.main?.humidity,
-    };
-  } catch (error) {
-    console.error(
-      "Vädret kunde inte hämtas:",
-      error
-    );
+      if (!response.ok) continue;
 
-    return null;
+      const data = await response.json();
+      const temperature =
+        data.main?.temp != null ? Math.round(data.main.temp) : null;
+      const windKmh =
+        data.wind?.speed != null
+          ? Math.round(Number(data.wind.speed) * 3.6)
+          : null;
+      const description = data.weather?.[0]?.description ?? null;
+
+      return {
+        city: cleaned,
+        temperature,
+        temperature,
+        description,
+        description,
+        wind: windKmh,
+        wind: windKmh,
+        humidity: data.main?.humidity ?? null,
+      };
+    } catch (error) {
+      console.error("Vädret kunde inte hämtas:", error);
+    }
   }
+
+  return null;
 }
 
 async function getOdds(fixtureId: string | null) {

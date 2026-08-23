@@ -43,12 +43,11 @@ export type HomeContent = {
 
 const homeContent: Record<Language, HomeContent> = {
   sv: {
-    badge: "Live fotbollsintelligens",
-    title: "Klistra in din spelidé. Få smart AI-analys.",
+    badge: "Privat fotbollsintelligens",
+    title: "Analys, inte brus.",
     description:
-      "BrainStats hjälper dig att analysera matcher, statistik, form, skador och risker. Tjänsten är ett analysverktyg och tar inte emot spel eller pengar.",
-    trustStrip:
-      "AI-analysverktyg · Inte ett spelbolag · Vi tar inte emot spel eller pengar · 3 gratis analyser/dag",
+      "En stillsam läsning av din spelidé — form, risk och underlag. Inget spelbolag. Inga garantier.",
+    trustStrip: "Analysverktyg · Inte ett spelbolag · 18+",
     pasteBet: "Klistra in spelidé",
     uploadBetSlip: "Ladda upp kupong",
     buildBet: "Bygg spelidé",
@@ -123,12 +122,11 @@ const homeContent: Record<Language, HomeContent> = {
     ],
   },
   en: {
-    badge: "Live football intelligence",
-    title: "Paste your bet idea. Get smart AI analysis.",
+    badge: "Private football intelligence",
+    title: "Analysis, not noise.",
     description:
-      "BrainStats helps you analyze matches, stats, form, injuries and risk. This is an analysis tool — we do not accept bets or money.",
-    trustStrip:
-      "AI analysis tool · Not a bookmaker · We do not accept bets or money · 3 free analyses/day",
+      "A quiet reading of your bet idea — form, risk and evidence. Not a bookmaker. No guarantees.",
+    trustStrip: "Analysis tool · Not a bookmaker · 18+",
     pasteBet: "Paste bet idea",
     uploadBetSlip: "Upload bet slip",
     buildBet: "Build bet idea",

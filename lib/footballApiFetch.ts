@@ -23,6 +23,23 @@ export async function fetchFootballApi(
   });
 }
 
+export function getFootballApiErrors(data: unknown) {
+  const errors =
+    data &&
+    typeof data === "object" &&
+    "errors" in data &&
+    data.errors &&
+    typeof data.errors === "object"
+      ? (data.errors as Record<string, unknown>)
+      : null;
+
+  if (!errors || Object.keys(errors).length === 0) {
+    return null;
+  }
+
+  return errors;
+}
+
 export function jsonWithCache(
   body: unknown,
   revalidateSeconds: number,

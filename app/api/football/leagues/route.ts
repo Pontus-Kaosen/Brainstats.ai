@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { fetchFootballApi, jsonWithCache } from "@/lib/footballApiFetch";
+import {
+  fetchFootballApi,
+  getFootballApiErrors,
+  jsonWithCache,
+} from "@/lib/footballApiFetch";
 
 const supportedCountries = new Set([
   "England",
@@ -86,19 +90,25 @@ export async function GET() {
       );
     }
 
-    const response = await fetchFootballApi("leagues", 86400);
+    const response = await fetchFootballApi("leagues", 300);
 
     const data = await response.json();
+    const apiErrors = getFootballApiErrors(data);
 
-    if (!response.ok) {
+    if (!response.ok || apiErrors) {
       return NextResponse.json(
         {
           success: false,
-          error: `Football API svarade med ${response.status}.`,
+          error: apiErrors
+            ? "Football API-kontot är spärrat eller otillgängligt."
+            : `Football API svarade med ${response.status}.`,
           leagues: [],
-          apiErrors: data?.errors || null,
+          apiErrors: apiErrors || data?.errors || null,
         },
-        { status: response.status }
+        {
+          status: apiErrors ? 502 : response.status,
+          headers: { "Cache-Control": "no-store" },
+        }
       );
     }
 

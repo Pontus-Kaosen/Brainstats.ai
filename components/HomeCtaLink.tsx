@@ -14,16 +14,17 @@ export default function HomeCtaLink({
   children,
 }: HomeCtaLinkProps) {
   const variants = {
-    primary: "brain-cta-primary",
+    primary:
+      "border border-[#18ff6d]/40 bg-[#18ff6d] text-black shadow-[0_0_24px_rgba(24,255,109,.18)] hover:bg-[#2aff7a]",
     secondary:
-      "border border-[#18ff6d55] bg-[#121212]/70 text-[#18ff6d] hover:bg-[#18ff6d22] hover:border-[#18ff6d] hover:shadow-[0_0_40px_rgba(24,255,109,.25)] max-md:backdrop-blur-none backdrop-blur-xl",
+      "border border-white/12 bg-transparent text-[#E8E8E8] hover:border-[#E8DCC8]/40 hover:text-[#E8DCC8]",
   };
 
   return (
     <Link
       href={href}
       prefetch={false}
-      className={`inline-flex items-center justify-center rounded-2xl px-6 py-3 text-center text-sm font-bold tracking-wide transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] max-md:py-3 sm:px-7 sm:py-4 sm:text-base ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full px-7 py-3.5 text-center text-sm font-semibold tracking-[0.04em] transition-colors duration-300 sm:text-[15px] ${variants[variant]} ${className}`}
     >
       {children}
     </Link>
