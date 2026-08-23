@@ -16,13 +16,19 @@ export default function Footer() {
 
   const productLinks = [
     { label: t.footer.linkAnalyze, href: "/analyze" },
+    { label: t.footer.linkUpload, href: "/analyze?mode=image" },
+    { label: t.footer.linkAiTips, href: "/ai-tips" },
+    { label: t.footer.linkValueBets, href: "/value-bets" },
+    { label: t.footer.linkAiAnalys, href: "/ai-analys" },
     { label: t.footer.linkBuilder, href: "/builder" },
     { label: t.footer.linkTrackRecord, href: "/track-record" },
+    { label: t.footer.linkStandings, href: "/standings" },
+    { label: t.footer.linkFootballAnalysis, href: "/football-analysis" },
     { label: t.footer.linkPremium, href: "/premium" },
   ];
 
   return (
-    <footer className="relative z-10 border-t border-white/8 bg-black/80 px-4 py-8 text-[#FAFAF8] max-md:text-center sm:px-8 sm:py-12">
+    <footer className="relative z-10 border-t border-[#18ff6d22] bg-black/95 px-4 py-6 text-[#FAFAF8] max-md:backdrop-blur-none max-md:text-center backdrop-blur-xl sm:px-8 sm:py-10">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 max-md:justify-items-center md:grid-cols-[1.2fr_1fr_1fr] md:text-left">
           <div className="max-md:flex max-md:flex-col max-md:items-center">
@@ -42,7 +48,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-[#E8DCC8]/50 sm:text-xs">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#18ff6d] sm:text-sm">
               {t.footer.productHeading}
             </p>
 
@@ -61,7 +67,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-[#E8DCC8]/50 sm:text-xs">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#18ff6d] sm:text-sm">
               {t.footer.legalHeading}
             </p>
 

@@ -298,14 +298,23 @@ export default function Navbar() {
   }
 
   const primaryNavLinks: NavLinkItem[] = [
-    { title: t.navbar.analyze, href: "/analyze" },
+    { title: t.navbar.analyze, href: "/analyze?mode=image", cta: true },
     { title: t.navbar.builder, href: "/builder" },
+    {
+      title: t.navbar.aiTips,
+      href: "/ai-tips",
+      highlight: "aiTips",
+    },
+    {
+      title: t.navbar.valueBets,
+      href: "/value-bets",
+      highlight: "valueBets",
+    },
+    { title: t.navbar.standings, href: "/standings" },
   ];
 
   const exploreNavLinks: NavLinkItem[] = [
-    { title: t.navbar.aiTips, href: "/ai-tips" },
-    { title: t.navbar.valueBets, href: "/value-bets" },
-    { title: t.navbar.standings, href: "/standings" },
+    { title: t.navbar.home, href: "/" },
     { title: t.navbar.trackRecord, href: "/track-record" },
   ];
 
@@ -379,8 +388,8 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <Link href="/" className="group flex min-w-0 items-center gap-3">
           <BrainStatsLogo variant="nav" />
-          <span className="hidden min-w-0 lg:flex">
-            <span className="text-[10px] font-medium uppercase tracking-[0.28em] text-[#E8DCC8]/55 transition group-hover:text-[#E8DCC8]/80">
+          <span className="hidden min-w-0 flex-col lg:flex">
+            <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#18ff6d]/75 transition group-hover:text-[#18ff6d]">
               {t.navbar.footballIntelligence}
             </span>
           </span>

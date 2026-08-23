@@ -64,10 +64,10 @@ export const translations = {
     },
 
     home: {
-      badge: "Privat fotbollsintelligens",
-      title: "Analys, inte brus.",
+      badge: "AI-driven fotbollsanalys",
+      title: "Klistra in din spelidé. Få smart AI-analys.",
       description:
-        "En stillsam läsning av din spelidé — form, risk och underlag. Inget spelbolag. Inga garantier.",
+        "BrainStats hjälper dig att analysera matcher, statistik, form, skador och risker. Tjänsten är ett analysverktyg och tar inte emot spel eller pengar.",
       pasteBet: "Klistra in spelidé",
       buildBet: "Bygg spelidé",
       seePremium: "Se Premium",
@@ -1081,7 +1081,7 @@ export const translations = {
 
     footer: {
       tagline:
-        "Fotbollsintelligens i stillhet. BrainStats är inte ett spelbolag.",
+        "AI-driven fotbollsanalys och beslutsstöd. BrainStats är inte ett spelbolag.",
       disclaimer:
         "18+. Spela ansvarsfullt. AI-analyser är ingen garanti för resultat.",
       legalHeading: "Juridiskt",
@@ -1179,10 +1179,10 @@ export const translations = {
     },
 
     home: {
-      badge: "Private football intelligence",
-      title: "Analysis, not noise.",
+      badge: "AI-powered football analysis",
+      title: "Paste your bet idea. Get smart AI analysis.",
       description:
-        "A quiet reading of your bet idea — form, risk and evidence. Not a bookmaker. No guarantees.",
+        "BrainStats helps you analyze matches, stats, form, injuries and risk. This is an analysis tool — we do not accept bets or money.",
       pasteBet: "Paste bet idea",
       buildBet: "Build bet idea",
       seePremium: "See Premium",
@@ -2196,7 +2196,7 @@ export const translations = {
 
     footer: {
       tagline:
-        "Football intelligence, quietly. BrainStats is not a bookmaker.",
+        "AI-powered football analysis and decision support. BrainStats is not a bookmaker.",
       disclaimer:
         "18+. Gamble responsibly. AI analyses are not a guarantee of results.",
       legalHeading: "Legal",
