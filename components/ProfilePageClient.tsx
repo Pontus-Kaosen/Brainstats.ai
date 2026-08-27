@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import FootballBackground from "@/components/FootballBackground";
 import Navbar from "@/components/Navbar";
+import ManageSubscriptionButton from "@/components/ManageSubscriptionButton";
 import { useLanguage } from "@/components/LanguageProvider";
 import { formatTranslation, getLocale } from "@/lib/locale";
 import {
@@ -20,7 +21,7 @@ const titleGradient =
   "bg-gradient-to-r from-[#18ff6d] via-[#E8DCC8] to-[#2fbfff] bg-clip-text text-transparent";
 
 const cardClass =
-  "brain-card rounded-3xl p-5 transition-all duration-300 sm:p-8";
+  "brain-card rounded-3xl p-4 transition-all duration-300 hover:-translate-y-1 sm:p-8";
 
 const ANALYSIS_SELECT_FULL =
   "id, created_at, match, score, risk, confidence, summary, markets, worth_betting";
@@ -190,6 +191,11 @@ export default function ProfilePageClient() {
     wait: t.worthBetting.verdicts.wait,
   };
 
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  }
+
   return (
     <main className="relative min-h-screen overflow-x-hidden brain-page">
       <FootballBackground />
@@ -213,65 +219,110 @@ export default function ProfilePageClient() {
 
           {state.status === "ready" ? (
             <>
-              <section className="overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-5 shadow-[0_0_80px_rgba(24,255,109,.12)] max-md:backdrop-blur-none backdrop-blur-xl sm:p-10">
+              <section className="mobile-hero overflow-hidden rounded-[2rem] border border-[#18ff6d22] bg-black/35 p-4 max-md:backdrop-blur-none backdrop-blur-xl shadow-[0_0_80px_rgba(24,255,109,.12)] sm:p-10 md:text-left">
                 <p className="inline-flex rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-4 py-2 text-sm font-semibold text-[#18ff6d]">
                   {t.profile.badge}
                 </p>
 
-                <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+                <p
+                  className={`mt-4 text-sm uppercase tracking-[0.45em] max-md:hidden sm:mt-8 ${titleGradient}`}
+                >
+                  {t.profile.title}
+                </p>
+
+                <div className="mt-4 flex flex-col gap-5 sm:mt-6 sm:flex-row sm:items-end">
                   <div
-                    className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl text-2xl font-black ring-2 ${
+                    className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-black ring-1 ring-inset sm:h-20 sm:w-20 sm:text-2xl ${
                       state.plan === "elite"
-                        ? "bg-[#E8DCC8]/12 text-[#F5EAD8] ring-[#E8DCC8]/50"
+                        ? "bg-[#0c0b09] text-[#F5EAD8] ring-[#E8DCC8]/55"
                         : state.plan === "pro"
-                          ? "bg-[#18ff6d]/12 text-[#18ff6d] ring-[#18ff6d]/50"
-                          : "bg-white/8 text-[#D8D8D8] ring-white/20"
+                          ? "bg-[#08110c] text-[#18ff6d] ring-[#18ff6d]/45"
+                          : "bg-[#111111] text-[#D8D8D8] ring-white/20"
                     }`}
                   >
                     {initialsFromEmail(state.email)}
                   </div>
 
                   <div className="min-w-0">
-                    <h1 className="text-3xl font-black text-white sm:text-5xl">
+                    <h1 className="text-3xl font-black leading-tight text-white max-md:leading-snug sm:text-6xl">
                       {displayNameFromEmail(state.email) || t.profile.title}
                     </h1>
-                    <p className="mt-2 truncate text-sm text-[#A9A9A9] sm:text-base">
+                    <p className="mt-2 truncate text-sm text-[#A9A9A9] sm:mt-3 sm:text-lg">
                       {state.email}
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#E8DCC8]">
-                        {planLabel(
-                          state.plan,
-                          t.common.planElite,
-                          t.common.planPro,
-                          t.common.planFree
-                        )}
-                      </span>
-                      <span className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-[#A9A9A9]">
-                        {formatTranslation(t.profile.memberSince, {
-                          date: formatDate(state.createdAt, language),
-                        })}
-                      </span>
-                    </div>
                   </div>
                 </div>
 
-                <p className="mt-6 max-w-2xl text-sm leading-7 text-[#A9A9A9] sm:text-base">
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-[#18ff6d33] bg-[#18ff6d]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#18ff6d]">
+                    {planLabel(
+                      state.plan,
+                      t.common.planElite,
+                      t.common.planPro,
+                      t.common.planFree
+                    )}
+                  </span>
+                  <span className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-[#A9A9A9]">
+                    {formatTranslation(t.profile.memberSince, {
+                      date: formatDate(state.createdAt, language),
+                    })}
+                  </span>
+                </div>
+
+                <p className="mt-4 hidden max-w-2xl text-lg leading-8 text-[#A9A9A9] md:block sm:mt-6">
                   {state.plan === "free"
                     ? t.profile.lockedDescription
                     : t.profile.description}
                 </p>
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-[#A9A9A9] md:hidden">
+                  {state.plan === "free"
+                    ? t.profile.lockedDescription
+                    : t.profile.description}
+                </p>
+
+                <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15 sm:px-6 sm:text-base"
+                  >
+                    {t.navbar.dashboard}
+                    <span aria-hidden>→</span>
+                  </Link>
+                  <Link
+                    href="/analyze"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/12 bg-black/30 px-5 py-3 text-sm font-bold text-white transition hover:border-[#18ff6d]/35 sm:px-6 sm:text-base"
+                  >
+                    {t.dashboard.newAnalysis}
+                  </Link>
+                  {state.plan === "free" ? (
+                    <Link
+                      href="/premium"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#E8DCC8]/30 bg-[#E8DCC8]/10 px-5 py-3 text-sm font-bold text-[#F5EAD8] transition hover:bg-[#E8DCC8]/15 sm:px-6 sm:text-base"
+                    >
+                      {t.profile.lockedCta}
+                    </Link>
+                  ) : (
+                    <ManageSubscriptionButton compact />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void handleLogout()}
+                    className="inline-flex items-center justify-center rounded-2xl border border-white/10 px-5 py-3 text-sm font-semibold text-[#A9A9A9] transition hover:border-red-400/30 hover:text-red-300 sm:px-6"
+                  >
+                    {t.navbar.logout}
+                  </button>
+                </div>
               </section>
 
               {state.plan === "free" ? (
-                <section className="mt-6 overflow-hidden rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-r from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 sm:mt-8 sm:p-10">
+                <section className="mobile-hero mt-6 overflow-hidden rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-r from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-5 sm:mt-8 sm:p-8 md:text-left">
                   <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#E8DCC8]">
                     {t.profile.lockedBadge}
                   </p>
-                  <h2 className="mt-3 text-2xl font-black text-white sm:text-4xl">
+                  <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">
                     {t.profile.lockedTitle}
                   </h2>
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-[#A9A9A9] sm:text-base">
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9] sm:text-base">
                     {t.profile.lockedText}
                   </p>
                   <ul className="mt-6 grid gap-3 text-sm text-[#D8D8D8] sm:grid-cols-3">
@@ -287,7 +338,7 @@ export default function ProfilePageClient() {
                   </ul>
                   <Link
                     href="/premium"
-                    className="mt-6 inline-flex rounded-2xl border border-[#E8DCC8]/35 bg-[#0a0a0a] px-5 py-3 text-sm font-bold text-[#F5EAD8] transition hover:border-[#E8DCC8]/55"
+                    className="mt-5 inline-flex rounded-2xl border border-[#E8DCC8]/35 bg-[#0a0a0a] px-5 py-3 text-sm font-bold text-[#F5EAD8] transition hover:border-[#E8DCC8]/55 hover:bg-[#111111]"
                   >
                     {t.profile.lockedCta} →
                   </Link>

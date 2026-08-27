@@ -9,7 +9,11 @@ type PortalResponse = {
   error?: string;
 };
 
-export default function ManageSubscriptionButton() {
+export default function ManageSubscriptionButton({
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -74,12 +78,16 @@ export default function ManageSubscriptionButton() {
   }
 
   return (
-    <div className="mt-4">
+    <div className={compact ? "" : "mt-4"}>
       <button
         type="button"
         onClick={openPortal}
         disabled={loading}
-        className="w-full rounded-2xl border border-[#18ff6d55] bg-[#18ff6d]/10 px-5 py-4 font-bold text-[#18ff6d] transition hover:bg-[#18ff6d] hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+        className={
+          compact
+            ? "inline-flex w-full items-center justify-center rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6 sm:text-base"
+            : "w-full rounded-2xl border border-[#18ff6d55] bg-[#18ff6d]/10 px-5 py-4 font-bold text-[#18ff6d] transition hover:bg-[#18ff6d] hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+        }
       >
         {loading ? t.manageSubscription.opening : t.manageSubscription.button}
       </button>
