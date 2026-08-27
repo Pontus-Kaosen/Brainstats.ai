@@ -300,6 +300,7 @@ export default function Navbar() {
   const primaryNavLinks: NavLinkItem[] = [
     { title: t.navbar.analyze, href: "/analyze?mode=image", cta: true },
     { title: t.navbar.builder, href: "/builder" },
+    { title: t.navbar.profile, href: "/profile" },
     {
       title: t.navbar.aiTips,
       href: "/ai-tips",

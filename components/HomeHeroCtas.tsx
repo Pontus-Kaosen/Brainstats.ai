@@ -39,7 +39,11 @@ export default function HomeHeroCtas() {
   if (isLoggedIn) {
     return (
       <div className="mt-6 grid w-full max-w-3xl grid-cols-1 gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4">
-        <HomeCtaLink href="/analyze?mode=image" className="w-full sm:col-span-2">
+        <HomeCtaLink href="/profile" className="w-full sm:col-span-2">
+          {t.openProfile}
+        </HomeCtaLink>
+
+        <HomeCtaLink href="/analyze?mode=image" className="w-full">
           {t.uploadBetSlipLoggedIn ?? t.uploadBetSlip}
         </HomeCtaLink>
 

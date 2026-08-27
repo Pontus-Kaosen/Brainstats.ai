@@ -116,6 +116,26 @@ export default async function Home() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8 sm:pb-16">
+          <Link
+            href="/profile"
+            className="block rounded-[2rem] border border-[#E8DCC8]/25 bg-gradient-to-r from-[#E8DCC8]/10 via-[#18ff6d]/5 to-[#2fbfff]/10 p-6 text-center transition hover:border-[#E8DCC8]/40 sm:p-10 sm:text-left"
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#E8DCC8]">
+              {t.profileBadge}
+            </p>
+            <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">
+              {t.profileTitle}
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#A9A9A9] sm:text-base">
+              {t.profileText}
+            </p>
+            <span className="mt-5 inline-flex text-sm font-bold text-[#E8DCC8]">
+              {t.profileCta} →
+            </span>
+          </Link>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-8 sm:pb-16">
           <h2 className="text-center text-2xl font-black text-white sm:text-3xl">
             {t.howItWorksTitle}
           </h2>

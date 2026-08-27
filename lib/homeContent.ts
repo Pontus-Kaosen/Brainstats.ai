@@ -31,6 +31,11 @@ export type HomeContent = {
   uploadBetSlipLoggedIn: string;
   analyzeNow: string;
   openDashboard: string;
+  openProfile: string;
+  profileBadge: string;
+  profileTitle: string;
+  profileText: string;
+  profileCta: string;
   transparencyBadge: string;
   mobileStatAi: string;
   mobileStatOnline: string;
@@ -97,6 +102,12 @@ const homeContent: Record<Language, HomeContent> = {
     uploadBetSlipLoggedIn: "Analysera kupong",
     analyzeNow: "Kör ny analys",
     openDashboard: "Öppna dashboard",
+    openProfile: "Öppna din profil",
+    profileBadge: "Pro & Elite",
+    profileTitle: "Din personliga analysprofil",
+    profileText:
+      "Följ vad du har analyserat: BrainScore, riskmix, marknader och historik. Ingår för betalande medlemmar.",
+    profileCta: "Se din profil",
     transparencyBadge: "Transparens",
     mobileStatAi: "AI Engine",
     mobileStatOnline: "Online",
@@ -177,6 +188,12 @@ const homeContent: Record<Language, HomeContent> = {
     uploadBetSlipLoggedIn: "Analyze bet slip",
     analyzeNow: "Run new analysis",
     openDashboard: "Open dashboard",
+    openProfile: "Open your profile",
+    profileBadge: "Pro & Elite",
+    profileTitle: "Your personal analysis profile",
+    profileText:
+      "Follow what you have analyzed: BrainScore, risk mix, markets and history. Included for paying members.",
+    profileCta: "See your profile",
     transparencyBadge: "Transparency",
     mobileStatAi: "AI Engine",
     mobileStatOnline: "Online",
