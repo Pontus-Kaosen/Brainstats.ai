@@ -55,41 +55,6 @@ function getInitials(email: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
-function getPlanStyles(plan: UserPlan | null) {
-  if (plan === "elite") {
-    return {
-      shell:
-        "border-[#E8DCC8]/35 bg-[#0c0b09] shadow-[0_0_28px_rgba(232,220,200,.14)]",
-      accent: "from-[#E8DCC8] via-[#f5ead8] to-[#c9b896]",
-      avatarRing: "ring-[#E8DCC8]/55",
-      badge: "border-[#E8DCC8]/35 bg-[#E8DCC8]/12 text-[#F5EAD8]",
-      dot: "bg-[#E8DCC8]",
-      menuAccent: "from-[#E8DCC8]/80 via-[#E8DCC8]/20 to-transparent",
-    };
-  }
-
-  if (plan === "pro") {
-    return {
-      shell:
-        "border-[#18ff6d]/35 bg-[#08110c] shadow-[0_0_28px_rgba(24,255,109,.12)]",
-      accent: "from-[#18ff6d] via-[#7dffb0] to-[#2fbfff]",
-      avatarRing: "ring-[#18ff6d]/45",
-      badge: "border-[#18ff6d]/35 bg-[#18ff6d]/12 text-[#9dffc4]",
-      dot: "bg-[#18ff6d]",
-      menuAccent: "from-[#18ff6d]/80 via-[#18ff6d]/20 to-transparent",
-    };
-  }
-
-  return {
-    shell: "border-white/15 bg-[#0a0a0a] shadow-[0_0_20px_rgba(0,0,0,.35)]",
-    accent: "from-[#666] via-[#888] to-[#555]",
-    avatarRing: "ring-white/20",
-    badge: "border-white/12 bg-white/6 text-[#B8B8B8]",
-    dot: "bg-[#777]",
-    menuAccent: "from-white/30 via-white/10 to-transparent",
-  };
-}
-
 export default function Navbar() {
   const pathname = usePathname();
   const overlayId = useId();
@@ -268,7 +233,6 @@ export default function Navbar() {
   const primaryNavLinks: NavLinkItem[] = [
     { title: t.navbar.analyze, href: "/analyze?mode=image", cta: true },
     { title: t.navbar.builder, href: "/builder" },
-    { title: t.navbar.profile, href: "/profile" },
     {
       title: t.navbar.aiTips,
       href: "/ai-tips",
@@ -338,14 +302,14 @@ export default function Navbar() {
       </Link>
     );
   }
-  const memberBadgeLabel =
+  const profileActive = isNavActive(pathname, "/profile");
+  const profileChipClass = profileActive
+    ? "border-[#18ff6d]/35 bg-[#18ff6d]/12 text-[#18ff6d]"
+    : "border-white/10 bg-white/5 text-white hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10";
+  const avatarClass =
     userPlan === "elite"
-      ? t.navbar.planElite
-      : userPlan === "pro"
-        ? t.navbar.planPro
-        : t.navbar.memberBadge;
-
-  const planStyles = getPlanStyles(userPlan);
+      ? "border-[#E8DCC8]/35 bg-[#E8DCC8]/10 text-[#E8DCC8]"
+      : "border-[#18ff6d]/35 bg-[#18ff6d]/10 text-[#18ff6d]";
 
   const moreMenuActive = secondaryNavLinks.some((link) =>
     isNavActive(pathname, link.href)
@@ -476,46 +440,27 @@ export default function Navbar() {
             {email ? (
               <Link
                 href="/profile"
-                aria-current={isNavActive(pathname, "/profile") ? "page" : undefined}
-                className={`group relative flex items-center gap-2 overflow-hidden rounded-full border py-1 pl-1 pr-2.5 transition hover:brightness-110 sm:gap-2.5 sm:pr-3 ${planStyles.shell} ${
-                  isNavActive(pathname, "/profile")
-                    ? "ring-1 ring-[#18ff6d]/40"
-                    : ""
-                }`}
+                aria-current={profileActive ? "page" : undefined}
+                className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-sm font-bold transition sm:px-4 ${profileChipClass}`}
               >
                 <span
-                  className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${planStyles.accent}`}
-                />
-
-                <span
-                  className={`relative ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xs font-semibold tracking-wide text-[#F5EAD8] ring-1 ring-inset ${planStyles.avatarRing}`}
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold tracking-wide ${avatarClass}`}
                 >
                   {getInitials(email)}
-                  <span
-                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0a0a0a] ${planStyles.dot}`}
-                  />
                 </span>
-
-                <span className="min-w-0">
-                  <span className="block max-w-[6.5rem] truncate text-left text-xs font-medium text-white">
-                    {email.split("@")[0]}
-                  </span>
-                  <span
-                    className={`mt-0.5 inline-flex rounded-full border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] ${planStyles.badge}`}
-                  >
-                    {memberBadgeLabel}
-                  </span>
-                </span>
+                <span className="hidden sm:inline">{t.navbar.profile}</span>
               </Link>
             ) : (
               <Link
                 href={loginHref}
-                className="inline-flex items-center gap-2 rounded-full border border-[#E8DCC8]/30 bg-[#0a0a0a] px-3 py-2 text-sm font-medium text-[#F5EAD8] shadow-[0_0_24px_rgba(232,220,200,.08)] transition hover:border-[#E8DCC8]/50 hover:bg-[#111111]"
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-bold text-white transition hover:border-[#18ff6d55] hover:bg-[#18ff6d]/10 sm:px-4"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#E8DCC8]/25 bg-[#141414] text-[10px] font-bold tracking-wider text-[#E8DCC8]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#18ff6d]/30 bg-[#18ff6d]/10 text-[10px] font-bold tracking-wider text-[#18ff6d]">
                   BS
                 </span>
-                <span>{pathname === "/" ? t.navbar.memberArea : t.navbar.login}</span>
+                <span className="hidden sm:inline">
+                  {pathname === "/" ? t.navbar.memberArea : t.navbar.login}
+                </span>
               </Link>
             )}
           </div>
