@@ -262,6 +262,15 @@ export default function DashboardPage() {
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
+              {plan !== "free" ? (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#E8DCC8]/30 bg-[#E8DCC8]/10 px-5 py-3 text-sm font-bold text-[#F5EAD8] transition hover:bg-[#E8DCC8]/15 sm:px-6 sm:text-base"
+                >
+                  {t.dashboard.openProfile}
+                  <span aria-hidden>→</span>
+                </Link>
+              ) : null}
               <Link
                 href="/ai-tips"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#18ff6d33] bg-[#18ff6d]/10 px-5 py-3 text-sm font-bold text-[#18ff6d] transition hover:bg-[#18ff6d]/15 sm:px-6 sm:text-base"
@@ -426,7 +435,16 @@ export default function DashboardPage() {
                         </a>
                       </div>
                     ) : (
-                      analyses.slice(0, isMobile ? 5 : 10).map((analysis) => (
+                      <>
+                      {plan !== "free" ? (
+                        <Link
+                          href="/profile"
+                          className="mb-2 inline-flex text-sm font-bold text-[#18ff6d]"
+                        >
+                          {t.dashboard.openProfile} →
+                        </Link>
+                      ) : null}
+                      {analyses.slice(0, isMobile ? 5 : 10).map((analysis) => (
                         <a
                           key={analysis.id}
                           href={`/report/${analysis.id}`}
@@ -457,6 +475,7 @@ export default function DashboardPage() {
                           )}
                         </a>
                       ))
+                      </>
                     )}
                   </div>
                 </div>

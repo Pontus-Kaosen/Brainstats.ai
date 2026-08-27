@@ -319,6 +319,7 @@ export default function Navbar() {
   ];
 
   const accountNavLinks: NavLinkItem[] = [
+    { title: t.navbar.profile, href: "/profile" },
     { title: t.navbar.dashboard, href: "/dashboard" },
     { title: t.navbar.premium, href: "/premium" },
   ];
@@ -560,7 +561,10 @@ export default function Navbar() {
                       className={`h-1 bg-gradient-to-r ${planStyles.menuAccent}`}
                     />
 
-                    <div className="border-b border-white/8 px-4 py-4">
+                    <Link
+                      href="/profile"
+                      className="block border-b border-white/8 px-4 py-4 transition hover:bg-white/3"
+                    >
                       <div className="flex items-center gap-3">
                         <span
                           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#141414] text-xs font-semibold text-[#E8DCC8] ring-1 ring-inset ${planStyles.avatarRing}`}
@@ -583,7 +587,7 @@ export default function Navbar() {
                       >
                         {memberBadgeLabel}
                       </span>
-                    </div>
+                    </Link>
 
                     <div className="p-2">
                       {profileMenuLinks.map((link) => (
