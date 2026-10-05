@@ -17,7 +17,7 @@ import BetSlipImageUpload from "@/components/BetSlipImageUpload";
 import AnalyzeQuickStart from "@/components/AnalyzeQuickStart";
 import ResponsibleUseNotice from "@/components/ResponsibleUseNotice";
 import type { WorthBetting } from "@/lib/worthBetting";
-import { getSampleAnalysis } from "@/lib/sampleAnalysis";
+import { getSampleAnalysis, getSampleUsedData } from "@/lib/sampleAnalysis";
 import AnalyzeMatchReport from "@/components/AnalyzeMatchReport";
 import type { AnalysisUsedData, ScoreBreakdown } from "@/lib/analysisReportTypes";
 
@@ -110,7 +110,7 @@ function AnalyzePageContent() {
           worthBetting: sample.worthBetting,
           brainPicks: sample.brainPicks,
         },
-        usedData: {},
+        usedData: getSampleUsedData(),
       },
     ]);
     setAiResult({

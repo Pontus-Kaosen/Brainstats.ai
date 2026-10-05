@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchFootballApi, jsonWithCache } from "@/lib/footballApiFetch";
 
 export async function GET() {
   try {
@@ -16,15 +17,7 @@ export async function GET() {
       );
     }
 
-    const response = await fetch(
-      "https://v3.football.api-sports.io/fixtures?live=all",
-      {
-        headers: {
-          "x-apisports-key": apiKey,
-        },
-        cache: "no-store",
-      }
-    );
+    const response = await fetchFootballApi("fixtures?live=all", 20);
 
     const data = await response.json();
 
@@ -94,11 +87,14 @@ export async function GET() {
         score: item.score || null,
       }));
 
-    return NextResponse.json({
-      success: true,
-      count: fixtures.length,
-      fixtures,
-    });
+    return jsonWithCache(
+      {
+        success: true,
+        count: fixtures.length,
+        fixtures,
+      },
+      20
+    );
   } catch (error: unknown) {
     return NextResponse.json(
       {

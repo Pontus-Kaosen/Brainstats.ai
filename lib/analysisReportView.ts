@@ -118,5 +118,13 @@ export function seasonLine(stats?: SeasonRecordSnapshot | null) {
       ? `${stats.goalsFor}-${stats.goalsAgainst ?? "?"}`
       : null;
 
-  return [record, goals, stats.form].filter(Boolean).join(" · ");
+  const average =
+    stats.goalsForAvg != null
+      ? `avg ${stats.goalsForAvg}-${stats.goalsAgainstAvg ?? "?"}`
+      : null;
+
+  const sheets =
+    stats.cleanSheets != null ? `CS ${stats.cleanSheets}` : null;
+
+  return [record, goals, average, sheets, stats.form].filter(Boolean).join(" · ");
 }

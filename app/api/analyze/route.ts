@@ -46,6 +46,17 @@ import {
   getMarketsFromBlock,
   getMatchLabelFromBlock,
 } from "@/lib/betTextParser";
+import {
+  filterActiveSidelined,
+  isMatchStarted,
+  mergeAbsences,
+  pickFinishedFixtureIds,
+  slimFixtureEvents,
+  slimFixtureStatistics,
+  slimLeagueLeaders,
+  slimPrediction,
+  slimSeasonStats,
+} from "@/lib/apiFootballEnrichment";
 
 type UserPlan = "free" | "pro" | "elite";
 
@@ -77,6 +88,29 @@ function extractNumber(text: string, label: string) {
   return extractNumberFromBlock(text, label);
 }
 
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  mapper: (item: T) => Promise<R>
+) {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const current = nextIndex;
+      nextIndex += 1;
+      results[current] = await mapper(items[current]);
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, () => worker())
+  );
+
+  return results;
+}
+
 type AnalyzeBlockOptions = {
   userPlan: UserPlan;
   brainPickLimit: number;
@@ -96,7 +130,31 @@ async function analyzeSingleMatchBlock(
   const fixtureId = extractNumber(text, "Fixture ID");
   const playerId = extractNumber(text, "Player ID");
 
-  const fixture = await getFixture(fixtureId);
+  const calibrationPromise = getTrackRecordCalibrationNote(language);
+
+  const [
+    fixture,
+    h2h,
+    homeLastMatches,
+    awayLastMatches,
+    fixtureInjuries,
+    lineups,
+    oddsResponse,
+    predictionRaw,
+    homeSidelinedRaw,
+    awaySidelinedRaw,
+  ] = await Promise.all([
+    getFixture(fixtureId),
+    getH2H(homeTeamId, awayTeamId),
+    getLastMatches(homeTeamId),
+    getLastMatches(awayTeamId),
+    getInjuries(fixtureId),
+    getLineups(fixtureId, homeTeamId, awayTeamId),
+    getOdds(fixtureId),
+    getPredictions(fixtureId),
+    getSidelined(homeTeamId),
+    getSidelined(awayTeamId),
+  ]);
 
   const leagueId = String(fixture?.league?.id || 39);
 
@@ -104,35 +162,13 @@ async function analyzeSingleMatchBlock(
     fixture?.league?.season || new Date().getFullYear()
   );
 
-  const [
-    homeStats,
-    awayStats,
-    standings,
-    h2h,
-    homeLastMatches,
-    awayLastMatches,
-    injuries,
-    weather,
-    playerStats,
-    lineups,
-    oddsResponse,
-  ] = await Promise.all([
-    getTeamStats(homeTeamId, leagueId, season),
-    getTeamStats(awayTeamId, leagueId, season),
-    getStandings(leagueId, season),
-    getH2H(homeTeamId, awayTeamId),
-    getLastMatches(homeTeamId),
-    getLastMatches(awayTeamId),
-    getInjuries(fixtureId),
-    getWeather(
-      fixture?.fixture?.venue?.city || null,
-      fixture?.league?.country || null
-    ),
-    getPlayerStats(playerId, leagueId, season),
-    getLineups(fixtureId, homeTeamId, awayTeamId),
-    getOdds(fixtureId),
-  ]);
-
+  const matchStarted = isMatchStarted(fixture);
+  const recentFixtureIds = [
+    ...new Set([
+      ...pickFinishedFixtureIds(homeLastMatches, 2),
+      ...pickFinishedFixtureIds(awayLastMatches, 2),
+    ]),
+  ];
   const homeName = fixture?.teams?.home?.name ?? "";
   const awayName = fixture?.teams?.away?.name ?? "";
   const betSides = resolveBetSides(text, homeName, awayName);
@@ -152,9 +188,79 @@ async function analyzeSingleMatchBlock(
     });
   }
 
-  const upcomingLists = await Promise.all(
-    betTeams.map((team) => getUpcomingMatches(String(team.id), 12))
-  );
+  const homeRecentFixtureId = pickFinishedFixtureIds(homeLastMatches, 1)[0];
+  const awayRecentFixtureId = pickFinishedFixtureIds(awayLastMatches, 1)[0];
+
+  const [
+    [
+      homeStats,
+      awayStats,
+      standings,
+      weather,
+      playerStats,
+      topScorersRaw,
+      topAssistsRaw,
+    ],
+    [liveStatisticsRaw, liveEventsRaw, ...recentStatisticsRaw],
+    upcomingLists,
+    [homeCoach, awayCoach, homeMatchPlayers, awayMatchPlayers],
+  ] = await Promise.all([
+    Promise.all([
+      getTeamStats(homeTeamId, leagueId, season),
+      getTeamStats(awayTeamId, leagueId, season),
+      getStandings(leagueId, season),
+      getWeather(
+        fixture?.fixture?.venue?.city || null,
+        fixture?.league?.country || null
+      ),
+      getPlayerStats(playerId, leagueId, season),
+      getTopScorers(leagueId, season),
+      getTopAssists(leagueId, season),
+    ]),
+    Promise.all([
+      matchStarted ? getFixtureStatistics(fixtureId) : Promise.resolve([]),
+      matchStarted ? getFixtureEvents(fixtureId) : Promise.resolve([]),
+      ...recentFixtureIds.map((id) => getFixtureStatistics(String(id))),
+    ]),
+    Promise.all(
+      betTeams.map((team) => getUpcomingMatches(String(team.id), 12))
+    ),
+    Promise.all([
+      getCoach(homeTeamId),
+      getCoach(awayTeamId),
+      getMatchPlayers(
+        homeRecentFixtureId ? String(homeRecentFixtureId) : null
+      ),
+      getMatchPlayers(
+        awayRecentFixtureId ? String(awayRecentFixtureId) : null
+      ),
+    ]),
+  ]);
+
+  const injuries = mergeAbsences(fixtureInjuries, [
+    ...(homeTeamId
+      ? filterActiveSidelined(homeSidelinedRaw, {
+          id: Number(homeTeamId),
+          name: fixture?.teams?.home?.name || "Home",
+        })
+      : []),
+    ...(awayTeamId
+      ? filterActiveSidelined(awaySidelinedRaw, {
+          id: Number(awayTeamId),
+          name: fixture?.teams?.away?.name || "Away",
+        })
+      : []),
+  ]);
+
+  const prediction = slimPrediction(predictionRaw);
+  const fixtureStatistics = slimFixtureStatistics(liveStatisticsRaw);
+  const fixtureEvents = slimFixtureEvents(liveEventsRaw);
+  const recentMatchStats = recentFixtureIds.map((id, index) => ({
+    fixtureId: id,
+    stats: slimFixtureStatistics(recentStatisticsRaw[index] || []),
+  }));
+  const topScorers = slimLeagueLeaders(topScorersRaw, "goals");
+  const topAssists = slimLeagueLeaders(topAssistsRaw, "assists");
 
   const upcomingFixturesByTeam = new Map<number, any[]>();
 
@@ -225,6 +331,8 @@ async function analyzeSingleMatchBlock(
     lineups,
     weather,
     oddsResponse,
+    prediction,
+    fixtureStatistics,
     language,
   });
 
@@ -242,11 +350,21 @@ async function analyzeSingleMatchBlock(
     injuries,
     weather,
     oddsResponse,
+    prediction,
+    fixtureStatistics,
+    fixtureEvents,
+    recentMatchStats,
+    topScorers,
+    topAssists,
+    homeCoach,
+    awayCoach,
+    homeMatchPlayers,
+    awayMatchPlayers,
     dataQuality,
     language,
   });
 
-  const calibrationNote = await getTrackRecordCalibrationNote(language);
+  const calibrationNote = await calibrationPromise;
 
   const calculatedScore = calculateEnhancedBrainScore({
     homeStanding,
@@ -263,6 +381,7 @@ async function analyzeSingleMatchBlock(
     isPlayerProp,
     playerLineupStatus,
     dataQuality,
+    prediction,
   });
 
   const completion = await openai.chat.completions.create({
@@ -386,8 +505,19 @@ async function analyzeSingleMatchBlock(
     awaySeason: slimSeasonStats(awayStats),
     weather,
     oddsAvailable: oddsResponse.length > 0,
+    prediction,
+    fixtureStatistics,
+    fixtureEvents,
+    recentMatchStats,
+    topScorers,
+    topAssists,
     dataQuality,
     referee: fixture?.fixture?.referee || null,
+    fixtureDate: fixture?.fixture?.date || null,
+    homeCoach,
+    awayCoach,
+    homeMatchHighlights: slimPlayerHighlights(homeMatchPlayers, homeTeamId),
+    awayMatchHighlights: slimPlayerHighlights(awayMatchPlayers, awayTeamId),
     rotationRisks,
     scheduleContext,
     scheduleTeamsChecked: betTeams.map((team) => team.name),
@@ -404,6 +534,43 @@ async function analyzeSingleMatchBlock(
   };
 }
 
+function slimPlayerHighlights(squads: any[], teamId: string | null) {
+  const block = (Array.isArray(squads) ? squads : []).find(
+    (item) => teamId && String(item?.team?.id) === String(teamId)
+  );
+  const players = Array.isArray(block?.players) ? block.players : [];
+
+  return players
+    .map((item: any) => {
+      const stats = item?.statistics?.[0];
+      const minutes = Number(stats?.games?.minutes ?? 0);
+
+      if (!minutes || !item?.player?.name) return null;
+
+      return {
+        name: String(item.player.name),
+        rating: stats?.games?.rating ? String(stats.games.rating) : null,
+        goals: Number(stats?.goals?.total ?? 0),
+        assists: Number(stats?.goals?.assists ?? 0),
+        minutes,
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null)
+    .sort(
+      (a, b) =>
+        b.goals + b.assists - (a.goals + a.assists) || b.minutes - a.minutes
+    )
+    .slice(0, 3)
+    .map(({ name, rating, goals, assists }) => ({
+      name,
+      rating,
+      goals,
+      assists,
+    }));
+}
+
+const FOOTBALL_FETCH_TIMEOUT_MS = 8000;
+
 async function apiFootball(path: string) {
   const apiKey = process.env.API_FOOTBALL_KEY;
 
@@ -419,7 +586,8 @@ async function apiFootball(path: string) {
         headers: {
           "x-apisports-key": apiKey,
         },
-        cache: "no-store",
+        signal: AbortSignal.timeout(FOOTBALL_FETCH_TIMEOUT_MS),
+        next: { revalidate: 60 },
       }
     );
 
@@ -477,9 +645,11 @@ async function getTeamStats(
 ) {
   if (!teamId) return null;
 
-  return apiFootball(
+  const data = await apiFootball(
     `/teams/statistics?league=${leagueId}&season=${season}&team=${teamId}`
   );
+
+  return Array.isArray(data) ? data[0] || null : data || null;
 }
 
 async function getStandings(
@@ -502,7 +672,7 @@ async function getH2H(
   }
 
   return apiFootball(
-    `/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=5`
+    `/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=8`
   );
 }
 
@@ -512,7 +682,7 @@ async function getLastMatches(
   if (!teamId) return [];
 
   return apiFootball(
-    `/fixtures?team=${teamId}&last=5`
+    `/fixtures?team=${teamId}&last=8`
   );
 }
 
@@ -604,22 +774,75 @@ function slimStanding(rows: any[], teamId: string | null) {
   };
 }
 
-function slimSeasonStats(stats: any) {
-  if (!stats || Array.isArray(stats)) return null;
+async function getPredictions(fixtureId: string | null) {
+  if (!fixtureId) return null;
+
+  const data = await apiFootball(`/predictions?fixture=${fixtureId}`);
+
+  return Array.isArray(data) ? data[0] || null : data || null;
+}
+
+async function getFixtureStatistics(fixtureId: string | null) {
+  if (!fixtureId) return [];
+
+  return apiFootball(`/fixtures/statistics?fixture=${fixtureId}`);
+}
+
+async function getFixtureEvents(fixtureId: string | null) {
+  if (!fixtureId) return [];
+
+  return apiFootball(`/fixtures/events?fixture=${fixtureId}`);
+}
+
+async function getSidelined(teamId: string | null) {
+  if (!teamId) return [];
+
+  return apiFootball(`/sidelined?team=${teamId}`);
+}
+
+async function getCoach(teamId: string | null) {
+  if (!teamId) return null;
+
+  const data = await apiFootball(`/coachs?team=${teamId}`);
+  const coach = Array.isArray(data) ? data[0] : null;
+
+  if (!coach) return null;
+
+  const name =
+    coach.name ||
+    [coach.firstname, coach.lastname].filter(Boolean).join(" ") ||
+    null;
+
+  const current = Array.isArray(coach.career)
+    ? coach.career.find(
+        (job: any) =>
+          !job?.end && String(job?.team?.id) === String(teamId)
+      )
+    : null;
 
   return {
-    form: stats.form,
-    played: stats.fixtures?.played?.total,
-    wins: stats.fixtures?.wins?.total,
-    draws: stats.fixtures?.draws?.total,
-    losses: stats.fixtures?.loses?.total,
-    goalsFor:
-      stats.goals?.for?.total?.total ?? stats.goals?.for?.total ?? null,
-    goalsAgainst:
-      stats.goals?.against?.total?.total ??
-      stats.goals?.against?.total ??
-      null,
+    name,
+    nationality: coach.nationality || null,
+    since: current?.start ? String(current.start).slice(0, 10) : null,
   };
+}
+
+async function getMatchPlayers(fixtureId: string | null) {
+  if (!fixtureId) return [];
+
+  return apiFootball(`/fixtures/players?fixture=${fixtureId}`);
+}
+
+async function getTopScorers(leagueId: string, season: string) {
+  return apiFootball(
+    `/players/topscorers?league=${leagueId}&season=${season}`
+  );
+}
+
+async function getTopAssists(leagueId: string, season: string) {
+  return apiFootball(
+    `/players/topassists?league=${leagueId}&season=${season}`
+  );
 }
 
 function cleanCityName(value: string) {
@@ -650,7 +873,10 @@ async function getWeather(
         `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
           query
         )}&appid=${apiKey}&units=metric&lang=sv`,
-        { cache: "no-store" }
+        {
+          signal: AbortSignal.timeout(5000),
+          next: { revalidate: 600 },
+        }
       );
 
       if (!response.ok) continue;
@@ -1051,12 +1277,11 @@ export async function POST(
       messages,
     };
 
-    const matchResults = [];
-
-    for (const block of blocks) {
-      const result = await analyzeSingleMatchBlock(block, blockOptions);
-      matchResults.push(result);
-    }
+    const matchResults = await mapWithConcurrency(
+      blocks,
+      2,
+      (block) => analyzeSingleMatchBlock(block, blockOptions)
+    );
 
     const primary = matchResults[0];
     const combinedMatch = matchResults

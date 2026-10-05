@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import AnalysisReportMatchData from "@/components/AnalysisReportMatchData";
+import MatchPulse from "@/components/MatchPulse";
 import WorthBettingBlock from "@/components/WorthBettingBlock";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
@@ -147,6 +148,8 @@ export default function AnalyzeMatchReport({
           </div>
         </div>
       </div>
+
+      <MatchPulse usedData={usedData} />
 
       <AnalysisReportMatchData
         usedData={usedData}

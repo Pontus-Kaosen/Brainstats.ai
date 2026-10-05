@@ -48,7 +48,7 @@ export function jsonWithCache(
   return NextResponse.json(body, {
     status,
     headers: {
-      "Cache-Control": `public, s-maxage=${revalidateSeconds}, stale-while-revalidate=${Math.max(revalidateSeconds * 2, 120)}`,
+      "Cache-Control": `public, max-age=${revalidateSeconds}, s-maxage=${revalidateSeconds}, stale-while-revalidate=${Math.max(revalidateSeconds * 2, 120)}`,
     },
   });
 }

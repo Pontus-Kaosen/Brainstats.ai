@@ -1,4 +1,13 @@
 import type { Language } from "@/lib/translations";
+import {
+  parsePredictionPercent,
+  summarizeEventsForPrompt,
+  summarizeFixtureStatsForPrompt,
+  summarizeLeagueLeadersForPrompt,
+  summarizePredictionForPrompt,
+  summarizeRecentMatchStats,
+  type RecentMatchStatsPack,
+} from "@/lib/apiFootballEnrichment";
 
 type WeatherData = {
   city?: string;
@@ -41,6 +50,7 @@ type BrainScoreInput = {
   isPlayerProp: boolean;
   playerLineupStatus?: string | null;
   dataQuality: DataQuality;
+  prediction?: any;
 };
 
 type BrainScoreResult = {
@@ -70,6 +80,11 @@ const labels = {
     weather: "Väder",
     referee: "Domare",
     odds: "Marknadsodds",
+    prediction: "API-Football-prediktion",
+    fixtureStats: "Matchstatistik (aktuell match)",
+    recentStats: "Färsk matchstatistik",
+    events: "Nyckelhändelser",
+    leagueLeaders: "Ligaledare",
     dataQuality: "Datakvalitet",
     noInjuries: "Inga rapporterade skador för matchen.",
     noH2H: "Inga tidigare möten i underlaget.",
@@ -97,6 +112,11 @@ const labels = {
     weather: "Weather",
     referee: "Referee",
     odds: "Market odds",
+    prediction: "API-Football prediction",
+    fixtureStats: "Current fixture statistics",
+    recentStats: "Recent match statistics",
+    events: "Key events",
+    leagueLeaders: "League leaders",
     dataQuality: "Data quality",
     noInjuries: "No reported injuries for this match.",
     noH2H: "No head-to-head history in the dataset.",
@@ -228,12 +248,26 @@ function summarizeStanding(
   const points = standing.points ?? "?";
   const played = standing.all?.played ?? "?";
   const gd = standing.goalsDiff ?? "?";
+  const form = standing.form || "";
+  const homeRecord = sideRecord(standing.home);
+  const awayRecord = sideRecord(standing.away);
 
   if (language === "en") {
-    return `${sideLabel}: rank ${rank}, ${points} pts from ${played}, GD ${gd}`;
+    return `${sideLabel}: rank ${rank}, ${points} pts from ${played}, GD ${gd}${form ? `, form ${form}` : ""}. Home ${homeRecord}, away ${awayRecord}.`;
   }
 
-  return `${sideLabel}: plats ${rank}, ${points} p efter ${played}, MS ${gd}`;
+  return `${sideLabel}: plats ${rank}, ${points} p efter ${played}, MS ${gd}${form ? `, form ${form}` : ""}. Hemma ${homeRecord}, borta ${awayRecord}.`;
+}
+
+function sideRecord(side: any) {
+  if (!side) return "–";
+
+  const played = side.played ?? side.fixtures?.played ?? "?";
+  const win = side.win ?? side.wins ?? "?";
+  const draw = side.draw ?? side.draws ?? "?";
+  const lose = side.lose ?? side.loses ?? "?";
+
+  return `${win}-${draw}-${lose} (${played})`;
 }
 
 function summarizeSeasonStats(
@@ -256,12 +290,25 @@ function summarizeSeasonStats(
   const gfAvg = stats.goals?.for?.average?.total ?? "?";
   const gaAvg = stats.goals?.against?.average?.total ?? "?";
   const cleanSheets = stats.clean_sheet?.total ?? "?";
+  const failedToScore = stats.failed_to_score?.total ?? "?";
+  const homePlayed = stats.fixtures?.played?.home ?? "?";
+  const homeWins = stats.fixtures?.wins?.home ?? "?";
+  const awayPlayed = stats.fixtures?.played?.away ?? "?";
+  const awayWins = stats.fixtures?.wins?.away ?? "?";
+  const gfHome = stats.goals?.for?.total?.home ?? "?";
+  const gaHome = stats.goals?.against?.total?.home ?? "?";
+  const gfAway = stats.goals?.for?.total?.away ?? "?";
+  const gaAway = stats.goals?.against?.total?.away ?? "?";
+  const formation = stats.lineups?.[0]?.formation ?? "?";
+  const penaltyScored = stats.penalty?.scored?.total ?? "?";
+  const yellow = stats.cards?.yellow?.total ?? "?";
+  const red = stats.cards?.red?.total ?? "?";
 
   if (language === "en") {
-    return `${teamName}: ${wins}-${draws}-${losses} in ${played}, goals ${gf}-${ga}, avg ${gfAvg}-${gaAvg}, clean sheets ${cleanSheets}`;
+    return `${teamName}: ${wins}-${draws}-${losses} in ${played}, goals ${gf}-${ga}, avg ${gfAvg}-${gaAvg}, clean sheets ${cleanSheets}, failed to score ${failedToScore}. Home ${homeWins}/${homePlayed} (${gfHome}-${gaHome}), away ${awayWins}/${awayPlayed} (${gfAway}-${gaAway}). Usual formation ${formation}, penalties scored ${penaltyScored}, cards ${yellow} yellow / ${red} red.`;
   }
 
-  return `${teamName}: ${wins}-${draws}-${losses} på ${played}, mål ${gf}-${ga}, snitt ${gfAvg}-${gaAvg}, nollor ${cleanSheets}`;
+  return `${teamName}: ${wins}-${draws}-${losses} på ${played}, mål ${gf}-${ga}, snitt ${gfAvg}-${gaAvg}, nollor ${cleanSheets}, utan mål ${failedToScore}. Hemma ${homeWins}/${homePlayed} (${gfHome}-${gaHome}), borta ${awayWins}/${awayPlayed} (${gfAway}-${gaAway}). Vanlig formation ${formation}, straffar gjorda ${penaltyScored}, kort ${yellow} gula / ${red} röda.`;
 }
 
 function summarizeH2H(
@@ -273,7 +320,7 @@ function summarizeH2H(
     return L(language).noH2H;
   }
 
-  const rows = h2h.slice(0, 5).map((match) => {
+  const rows = h2h.slice(0, 8).map((match) => {
     const home = match?.teams?.home?.name || "?";
     const away = match?.teams?.away?.name || "?";
     const score = `${match?.goals?.home ?? "?"}-${match?.goals?.away ?? "?"}`;
@@ -430,6 +477,8 @@ export function assessDataQuality(input: {
   lineups: any[];
   weather: WeatherData;
   oddsResponse: any[];
+  prediction?: any;
+  fixtureStatistics?: any[];
   language: Language;
 }): DataQuality {
   const l = L(input.language);
@@ -461,6 +510,13 @@ export function assessDataQuality(input: {
   if (input.oddsResponse.length > 0) score += 10;
   else missing.push("odds");
 
+  if (input.prediction) score += 6;
+  if (input.fixtureStatistics && input.fixtureStatistics.length > 0) {
+    score += 4;
+  }
+
+  score = Math.min(100, score);
+
   const tier =
     score >= 75 ? "high" : score >= 55 ? "medium" : "low";
 
@@ -483,6 +539,267 @@ export function assessDataQuality(input: {
   return { score, tier, missing, note };
 }
 
+function finishedRows(matches: any[], teamId: string | number | null) {
+  return (Array.isArray(matches) ? matches : [])
+    .map((match) => {
+      const result = getMatchResultForTeam(match, teamId);
+
+      if (!result) return null;
+
+      const isHome = String(match?.teams?.home?.id) === String(teamId);
+      const opponent = isHome
+        ? match?.teams?.away?.name
+        : match?.teams?.home?.name;
+      const date = String(match?.fixture?.date || "").slice(0, 10);
+
+      return {
+        isHome,
+        opponent: opponent || "?",
+        date,
+        scored: result.scored,
+        conceded: result.conceded,
+        total: result.scored + result.conceded,
+        bothScored: result.scored > 0 && result.conceded > 0,
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null);
+}
+
+function recordLabel(
+  rows: Array<{ scored: number; conceded: number }>,
+  language: Language
+) {
+  let wins = 0;
+  let draws = 0;
+  let losses = 0;
+
+  for (const row of rows) {
+    if (row.scored > row.conceded) wins += 1;
+    else if (row.scored < row.conceded) losses += 1;
+    else draws += 1;
+  }
+
+  const played = rows.length;
+
+  if (played === 0) {
+    return language === "en" ? "no matches" : "inga matcher";
+  }
+
+  return `${wins}-${draws}-${losses} (${played})`;
+}
+
+function rateLabel(count: number, total: number) {
+  if (total === 0) return "–";
+
+  return `${count}/${total}`;
+}
+
+function summarizeConcreteFacts(input: {
+  fixture: any;
+  homeLastMatches: any[];
+  awayLastMatches: any[];
+  h2h: any[];
+  topScorers?: Array<{ name?: string | null; team?: string | null; value?: number | null }>;
+  topAssists?: Array<{ name?: string | null; team?: string | null; value?: number | null }>;
+  language: Language;
+}) {
+  const language = input.language;
+  const homeId = input.fixture?.teams?.home?.id ?? null;
+  const awayId = input.fixture?.teams?.away?.id ?? null;
+  const homeName = input.fixture?.teams?.home?.name || (language === "en" ? "Home" : "Hemma");
+  const awayName = input.fixture?.teams?.away?.name || (language === "en" ? "Away" : "Borta");
+  const homeRows = finishedRows(input.homeLastMatches, homeId);
+  const awayRows = finishedRows(input.awayLastMatches, awayId);
+  const lines: string[] = [];
+
+  const formatResults = (
+    name: string,
+    rows: ReturnType<typeof finishedRows>
+  ) => {
+    const sample = rows.slice(0, 5).map((row) => {
+      const venue =
+        language === "en"
+          ? row.isHome
+            ? "H"
+            : "A"
+          : row.isHome
+            ? "H"
+            : "B";
+
+      return `${row.date} ${venue} ${row.opponent} ${row.scored}-${row.conceded}`;
+    });
+
+    if (sample.length === 0) {
+      return language === "en"
+        ? `${name}: no finished matches in the sample.`
+        : `${name}: inga färdigspelade matcher i urvalet.`;
+    }
+
+    return `${name}: ${sample.join("; ")}`;
+  };
+
+  lines.push(formatResults(homeName, homeRows));
+  lines.push(formatResults(awayName, awayRows));
+
+  const homeAtHome = homeRows.filter((row) => row.isHome);
+  const awayOnRoad = awayRows.filter((row) => !row.isHome);
+
+  if (language === "en") {
+    lines.push(
+      `Venue split in this sample: ${homeName} at home ${recordLabel(homeAtHome, language)}, ${awayName} away ${recordLabel(awayOnRoad, language)}.`
+    );
+    lines.push(
+      `${homeName} last ${homeRows.length}: both teams scored ${rateLabel(homeRows.filter((row) => row.bothScored).length, homeRows.length)}, over 2.5 goals ${rateLabel(homeRows.filter((row) => row.total >= 3).length, homeRows.length)}.`
+    );
+    lines.push(
+      `${awayName} last ${awayRows.length}: both teams scored ${rateLabel(awayRows.filter((row) => row.bothScored).length, awayRows.length)}, over 2.5 goals ${rateLabel(awayRows.filter((row) => row.total >= 3).length, awayRows.length)}.`
+    );
+  } else {
+    lines.push(
+      `Hemma/borta i urvalet: ${homeName} hemma ${recordLabel(homeAtHome, language)}, ${awayName} borta ${recordLabel(awayOnRoad, language)}.`
+    );
+    lines.push(
+      `${homeName} senaste ${homeRows.length}: båda lagen mål ${rateLabel(homeRows.filter((row) => row.bothScored).length, homeRows.length)}, över 2,5 mål ${rateLabel(homeRows.filter((row) => row.total >= 3).length, homeRows.length)}.`
+    );
+    lines.push(
+      `${awayName} senaste ${awayRows.length}: båda lagen mål ${rateLabel(awayRows.filter((row) => row.bothScored).length, awayRows.length)}, över 2,5 mål ${rateLabel(awayRows.filter((row) => row.total >= 3).length, awayRows.length)}.`
+    );
+  }
+
+  const kickoff = input.fixture?.fixture?.date
+    ? new Date(input.fixture.fixture.date).getTime()
+    : NaN;
+
+  const restLine = (
+    name: string,
+    rows: ReturnType<typeof finishedRows>
+  ) => {
+    const latest = rows
+      .map((row) => new Date(row.date).getTime())
+      .filter((value) => Number.isFinite(value))
+      .sort((a, b) => b - a)[0];
+
+    if (!Number.isFinite(kickoff) || latest == null) {
+      return null;
+    }
+
+    const days = Math.round((kickoff - latest) / 86_400_000);
+
+    if (days < 0 || days > 40) return null;
+
+    return language === "en"
+      ? `${name} last played ${days} day${days === 1 ? "" : "s"} before this match.`
+      : `${name} spelade senast för ${days} dag${days === 1 ? "" : "ar"} sedan.`;
+  };
+
+  const homeRest = restLine(homeName, homeRows);
+  const awayRest = restLine(awayName, awayRows);
+
+  if (homeRest) lines.push(homeRest);
+  if (awayRest) lines.push(awayRest);
+
+  const h2hRows = finishedRows(input.h2h, homeId);
+
+  if (h2hRows.length > 0) {
+    const goals = h2hRows.reduce((sum, row) => sum + row.total, 0);
+    const average = (goals / h2hRows.length).toFixed(1);
+
+    lines.push(
+      language === "en"
+        ? `Head-to-head from ${homeName}'s side: ${recordLabel(h2hRows, language)}, average ${average} goals.`
+        : `Inbördes från ${homeName}s håll: ${recordLabel(h2hRows, language)}, snitt ${average} mål.`
+    );
+  }
+
+  const clubNames = [homeName, awayName].map((name) => name.toLowerCase());
+  const involved = [...(input.topScorers || []), ...(input.topAssists || [])].filter(
+    (row) => clubNames.includes(String(row.team || "").toLowerCase())
+  );
+
+  if (involved.length > 0) {
+    const names = involved
+      .map((row) => `${row.name || "?"} (${row.team || "?"}, ${row.value ?? "?"})`)
+      .join("; ");
+
+    lines.push(
+      language === "en"
+        ? `League leaders from these clubs: ${names}.`
+        : `Ligaledare från de här lagen: ${names}.`
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function summarizeCoach(
+  coach: { name?: string | null; nationality?: string | null; since?: string | null } | null | undefined,
+  teamName: string,
+  language: Language
+) {
+  if (!coach?.name) {
+    return language === "en"
+      ? `${teamName}: coach not available.`
+      : `${teamName}: tränare saknas.`;
+  }
+
+  const since = coach.since
+    ? language === "en"
+      ? `, since ${coach.since}`
+      : `, sedan ${coach.since}`
+    : "";
+  const nationality = coach.nationality ? `, ${coach.nationality}` : "";
+
+  return `${teamName}: ${coach.name}${nationality}${since}`;
+}
+
+function summarizeMatchPlayers(
+  squads: any[] | undefined,
+  teamId: string | number | null,
+  teamName: string,
+  language: Language
+) {
+  const block = (Array.isArray(squads) ? squads : []).find(
+    (item) => teamId != null && String(item?.team?.id) === String(teamId)
+  );
+  const players = Array.isArray(block?.players) ? block.players : [];
+
+  const lines = players
+    .map((item: any) => {
+      const stats = item?.statistics?.[0];
+      const minutes = Number(stats?.games?.minutes ?? 0);
+
+      if (!minutes) return null;
+
+      const goals = Number(stats?.goals?.total ?? 0);
+      const assists = Number(stats?.goals?.assists ?? 0);
+      const rating = stats?.games?.rating;
+      const bits = [`${minutes} min`];
+
+      if (rating) bits.push(language === "en" ? `rating ${rating}` : `betyg ${rating}`);
+      if (goals) bits.push(language === "en" ? `${goals} goals` : `${goals} mål`);
+      if (assists) bits.push(`${assists} assist`);
+
+      return {
+        minutes,
+        goals,
+        assists,
+        text: `${item?.player?.name || "?"}: ${bits.join(", ")}`,
+      };
+    })
+    .filter((row: any) => row)
+    .sort((a: any, b: any) => b.goals + b.assists - (a.goals + a.assists) || b.minutes - a.minutes)
+    .slice(0, 6)
+    .map((row: any) => row.text);
+
+  if (lines.length === 0) {
+    return language === "en"
+      ? `${teamName}: no player ratings from the previous match.`
+      : `${teamName}: inga spelbetyg från föregående match.`;
+  }
+
+  return `${teamName}: ${lines.join("; ")}`;
+}
+
 export function buildStructuredAnalysisContext(input: {
   fixture: any;
   homeStanding: any;
@@ -497,6 +814,16 @@ export function buildStructuredAnalysisContext(input: {
   injuries: any[];
   weather: WeatherData;
   oddsResponse: any[];
+  prediction?: any;
+  fixtureStatistics?: any[];
+  fixtureEvents?: any[];
+  recentMatchStats?: RecentMatchStatsPack[];
+  topScorers?: any[];
+  topAssists?: any[];
+  homeCoach?: { name?: string | null; nationality?: string | null; since?: string | null } | null;
+  awayCoach?: { name?: string | null; nationality?: string | null; since?: string | null } | null;
+  homeMatchPlayers?: any[];
+  awayMatchPlayers?: any[];
   dataQuality: DataQuality;
   language: Language;
 }) {
@@ -511,9 +838,20 @@ ${l.form}:
 ${input.homeForm.label}
 ${input.awayForm.label}
 
+${input.language === "en" ? "Concrete match facts" : "Konkreta matchfakta"}:
+${summarizeConcreteFacts(input)}
+
 ${l.season}:
 ${summarizeSeasonStats(input.homeStats, input.fixture?.teams?.home?.name || l.home, input.language)}
 ${summarizeSeasonStats(input.awayStats, input.fixture?.teams?.away?.name || l.away, input.language)}
+
+${input.language === "en" ? "Coaches" : "Tränare"}:
+${summarizeCoach(input.homeCoach, input.fixture?.teams?.home?.name || l.home, input.language)}
+${summarizeCoach(input.awayCoach, input.fixture?.teams?.away?.name || l.away, input.language)}
+
+${input.language === "en" ? "Last match player ratings" : "Spelbetyg från senaste matchen"}:
+${summarizeMatchPlayers(input.homeMatchPlayers, input.fixture?.teams?.home?.id, input.fixture?.teams?.home?.name || l.home, input.language)}
+${summarizeMatchPlayers(input.awayMatchPlayers, input.fixture?.teams?.away?.id, input.fixture?.teams?.away?.name || l.away, input.language)}
 
 ${l.h2h}:
 ${summarizeH2H(input.h2h, input.fixture?.teams?.home?.id, input.language)}
@@ -529,6 +867,30 @@ ${summarizeReferee(input.fixture, input.language)}
 
 ${l.odds}:
 ${summarizeOddsForPrompt(input.oddsResponse, input.language)}
+
+${l.prediction}:
+${summarizePredictionForPrompt(input.prediction, input.language)}
+
+${l.fixtureStats}:
+${summarizeFixtureStatsForPrompt(input.fixtureStatistics || [], input.language)}
+
+${l.recentStats}:
+${summarizeRecentMatchStats(
+  input.recentMatchStats || [],
+  input.fixture?.teams?.home?.id ?? null,
+  input.fixture?.teams?.away?.id ?? null,
+  input.language
+)}
+
+${l.events}:
+${summarizeEventsForPrompt(input.fixtureEvents || [], input.language)}
+
+${l.leagueLeaders}:
+${summarizeLeagueLeadersForPrompt(
+  input.topScorers || [],
+  input.topAssists || [],
+  input.language
+)}
 
 ${l.dataQuality}:
 ${input.dataQuality.note}
@@ -603,6 +965,17 @@ export function calculateEnhancedBrainScore(
   if (input.h2h.length > 0) {
     score += 5;
     breakdown.h2h = 15;
+  }
+
+  const homeWinPct = parsePredictionPercent(input.prediction?.percent?.home);
+
+  if (homeWinPct != null) {
+    if (homeWinPct >= 55) {
+      score += 3;
+      breakdown.market = Math.max(breakdown.market, 14);
+    } else if (homeWinPct <= 30) {
+      score -= 2;
+    }
   }
 
   if (input.playerStats && input.isPlayerProp) {

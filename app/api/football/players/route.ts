@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchFootballApi, jsonWithCache } from "@/lib/footballApiFetch";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,14 +15,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(
-      `https://v3.football.api-sports.io/players/squads?team=${team}`,
-      {
-        headers: {
-          "x-apisports-key": process.env.API_FOOTBALL_KEY!,
-        },
-        cache: "no-store",
-      }
+    const response = await fetchFootballApi(
+      `players/squads?team=${team}`,
+      1800
     );
 
     const data = await response.json();
@@ -36,13 +32,16 @@ export async function GET(request: NextRequest) {
         photo: item.photo,
       })) || [];
 
-    return NextResponse.json({
-      success: true,
-      team,
-      season,
-      players,
-      errors: data.errors || null,
-    });
+    return jsonWithCache(
+      {
+        success: true,
+        team,
+        season,
+        players,
+        errors: data.errors || null,
+      },
+      1800
+    );
   } catch (error: any) {
     return NextResponse.json(
       {

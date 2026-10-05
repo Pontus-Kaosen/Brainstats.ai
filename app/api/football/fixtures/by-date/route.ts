@@ -8,7 +8,7 @@ import {
 
 export async function GET(request: NextRequest) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
+  const timeout = setTimeout(() => controller.abort(), 12000);
 
   try {
     const { searchParams } = new URL(request.url);

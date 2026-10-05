@@ -34,7 +34,7 @@ import {
   getFixtureStockholmDateKey,
   getStockholmDateKey,
 } from "@/lib/stockholmDate";
-import { MAJOR_LEAGUE_IDS } from "@/lib/footballFixtures";
+import { MAJOR_LEAGUE_IDS, POPULAR_LEAGUE_IDS } from "@/lib/footballFixtures";
 import {
   markOnboardingStepDone,
   ONBOARDING_BUILDER_KEY,
@@ -346,11 +346,9 @@ export default function BuilderPage() {
         try {
           const [countriesResponse, leaguesResponse] = await Promise.all([
             fetch("/api/football/countries", {
-              cache: "no-store",
               signal: controller.signal,
             }),
             fetch("/api/football/leagues", {
-              cache: "no-store",
               signal: controller.signal,
             }),
           ]);
@@ -596,61 +594,54 @@ export default function BuilderPage() {
     }
 
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 45000);
+    const timeout = window.setTimeout(() => controller.abort(), 18000);
     let cancelled = false;
 
-    async function loadMajorLeagueFixtures(date: string) {
-      const responses = await Promise.allSettled(
-        MAJOR_LEAGUE_IDS.map(async (id) => {
-          const season =
-            allLeagues.find((league) => league.id === id)?.currentSeason ||
-            new Date().getFullYear();
-
-          const response = await fetch(
-            `/api/football/fixtures?league=${id}&season=${season}&date=${date}`,
-            { signal: controller.signal }
-          );
-          const data = await response.json();
-
-          if (!response.ok || data.success === false) {
-            return [] as Fixture[];
-          }
-
-          return (data.fixtures || []) as Fixture[];
-        })
-      );
-
-      return responses.flatMap((result) =>
-        result.status === "fulfilled" ? result.value : []
+    function uniqueFixtures(items: Fixture[]) {
+      return Array.from(
+        new Map(items.map((fixture) => [fixture.fixture.id, fixture] as const)).values()
       );
     }
 
-    async function loadByDates(dates: string[]) {
-      const responses = await Promise.all(
-        dates.map(async (date) => {
-          const response = await fetch(
-            `/api/football/fixtures/by-date?date=${date}`,
-            { signal: controller.signal }
-          );
-          const data = await response.json();
+    async function loadLeagueFixtures(leagueIds: number[], dates: string[]) {
+      const jobs = dates.flatMap((date) =>
+        leagueIds.map((id) => ({ id, date }))
+      );
+      const collected: Fixture[] = [];
+      const batchSize = 8;
 
-          if (!response.ok || data.success === false) {
-            throw new Error(data.error || t.builder.errors.fixtures);
+      for (let index = 0; index < jobs.length; index += batchSize) {
+        if (controller.signal.aborted) break;
+
+        const batch = jobs.slice(index, index + batchSize);
+        const responses = await Promise.allSettled(
+          batch.map(async ({ id, date }) => {
+            const season =
+              allLeagues.find((league) => league.id === id)?.currentSeason ||
+              new Date().getFullYear();
+
+            const response = await fetch(
+              `/api/football/fixtures?league=${id}&season=${season}&date=${date}`,
+              { signal: controller.signal }
+            );
+            const data = await response.json();
+
+            if (!response.ok || data.success === false) {
+              return [] as Fixture[];
+            }
+
+            return (data.fixtures || []) as Fixture[];
+          })
+        );
+
+        for (const result of responses) {
+          if (result.status === "fulfilled") {
+            collected.push(...result.value);
           }
+        }
+      }
 
-          return (data.fixtures || []) as Fixture[];
-        })
-      );
-
-      const unique = Array.from(
-        new Map(
-          responses
-            .flat()
-            .map((fixture) => [fixture.fixture.id, fixture] as const)
-        ).values()
-      );
-
-      return unique;
+      return uniqueFixtures(collected);
     }
 
     async function loadFixtures() {
@@ -702,7 +693,7 @@ export default function BuilderPage() {
               ? todayKey
               : addDaysToDateKey(todayKey, 1);
 
-          const majorItems = await loadMajorLeagueFixtures(dateKey);
+          const majorItems = await loadLeagueFixtures(MAJOR_LEAGUE_IDS, [dateKey]);
           if (majorItems.length > 0) {
             setFixtures(majorItems);
             setLoadingMatches(false);
@@ -710,7 +701,11 @@ export default function BuilderPage() {
 
           setLoadingBackgroundFixtures(true);
           try {
-            items = await loadByDates([dateKey]);
+            const extraIds = POPULAR_LEAGUE_IDS.filter(
+              (id) => !MAJOR_LEAGUE_IDS.includes(id)
+            );
+            const extraItems = await loadLeagueFixtures(extraIds, [dateKey]);
+            items = uniqueFixtures([...majorItems, ...extraItems]);
             setFixtures(items);
           } catch (backgroundError) {
             console.warn("Builder background fixture load failed:", backgroundError);
@@ -726,7 +721,7 @@ export default function BuilderPage() {
           const dates = Array.from({ length: 7 }, (_, index) =>
             addDaysToDateKey(todayKey, index)
           );
-          items = await loadByDates(dates);
+          items = await loadLeagueFixtures(MAJOR_LEAGUE_IDS, dates);
         }
 
         setFixtures(items);
@@ -834,10 +829,7 @@ export default function BuilderPage() {
 
       try {
         const response = await fetch(
-          `/api/football/lineups?fixture=${selectedFixtureId}`,
-          {
-            cache: "no-store",
-          }
+          `/api/football/lineups?fixture=${selectedFixtureId}`
         );
 
         const data = await response.json();

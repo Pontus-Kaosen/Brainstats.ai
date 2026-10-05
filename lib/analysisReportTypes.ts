@@ -86,11 +86,88 @@ export type TableRowSnapshot = {
 export type SeasonRecordSnapshot = {
   form?: string;
   played?: number;
+  playedHome?: number;
+  playedAway?: number;
   wins?: number;
+  winsHome?: number;
+  winsAway?: number;
   draws?: number;
   losses?: number;
   goalsFor?: number | string;
   goalsAgainst?: number | string;
+  goalsForAvg?: number | string;
+  goalsAgainstAvg?: number | string;
+  goalsForHome?: number | string;
+  goalsForAway?: number | string;
+  goalsAgainstHome?: number | string;
+  goalsAgainstAway?: number | string;
+  cleanSheets?: number;
+  cleanSheetsHome?: number;
+  failedToScore?: number;
+  failedToScoreAway?: number;
+  penaltyScored?: number;
+  penaltyMissed?: number;
+  formation?: string | null;
+};
+
+export type ApiPrediction = {
+  winner?: { id?: number | null; name?: string | null; comment?: string | null } | null;
+  winOrDraw?: boolean | null;
+  underOver?: string | null;
+  advice?: string | null;
+  percent?: { home?: string | null; draw?: string | null; away?: string | null } | null;
+  goals?: { home?: string | number | null; away?: string | number | null } | null;
+  comparison?: {
+    form?: { home?: string | null; away?: string | null } | null;
+    attack?: { home?: string | null; away?: string | null } | null;
+    defense?: { home?: string | null; away?: string | null } | null;
+    poisson?: { home?: string | null; away?: string | null } | null;
+    h2h?: { home?: string | null; away?: string | null } | null;
+    goals?: { home?: string | null; away?: string | null } | null;
+    total?: { home?: string | null; away?: string | null } | null;
+  } | null;
+};
+
+export type FixtureTeamStatistics = {
+  teamId?: number | null;
+  teamName?: string | null;
+  stats?: Record<string, string | number | null>;
+};
+
+export type FixtureEvent = {
+  time?: number | null;
+  extra?: number | null;
+  team?: string | null;
+  player?: string | null;
+  assist?: string | null;
+  type?: string | null;
+  detail?: string | null;
+};
+
+export type LeagueLeader = {
+  id?: number | null;
+  name?: string | null;
+  photo?: string | null;
+  team?: string | null;
+  value?: number | null;
+};
+
+export type RecentMatchStatsPack = {
+  fixtureId: number;
+  stats: FixtureTeamStatistics[];
+};
+
+export type CoachSnapshot = {
+  name?: string | null;
+  nationality?: string | null;
+  since?: string | null;
+};
+
+export type MatchPlayerHighlight = {
+  name: string;
+  rating?: string | null;
+  goals?: number;
+  assists?: number;
 };
 
 export type AnalysisUsedData = {
@@ -126,8 +203,19 @@ export type AnalysisUsedData = {
   awaySeason?: SeasonRecordSnapshot | null;
   weather?: Weather | null;
   oddsAvailable?: boolean;
+  prediction?: ApiPrediction | null;
+  fixtureStatistics?: FixtureTeamStatistics[];
+  fixtureEvents?: FixtureEvent[];
+  recentMatchStats?: RecentMatchStatsPack[];
+  topScorers?: LeagueLeader[];
+  topAssists?: LeagueLeader[];
   dataQuality?: unknown;
   referee?: string | null;
+  fixtureDate?: string | null;
+  homeCoach?: CoachSnapshot | null;
+  awayCoach?: CoachSnapshot | null;
+  homeMatchHighlights?: MatchPlayerHighlight[];
+  awayMatchHighlights?: MatchPlayerHighlight[];
   rotationRisks?: RotationRisk[];
   scheduleContext?: ScheduleContextStatus | null;
   scheduleTeamsChecked?: string[];

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { fetchFootballApi, jsonWithCache } from "@/lib/footballApiFetch";
 import {
   areLineupsConfirmed,
   normalizeTeamLineup,
@@ -14,15 +15,7 @@ async function fetchFixtureTeams(fixtureId: string) {
   }
 
   try {
-    const response = await fetch(
-      `https://v3.football.api-sports.io/fixtures?id=${fixtureId}`,
-      {
-        headers: {
-          "x-apisports-key": apiKey,
-        },
-        cache: "no-store",
-      }
-    );
+    const response = await fetchFootballApi(`fixtures?id=${fixtureId}`, 60);
 
     const data = await response.json();
     const fixture = data.response?.[0];
@@ -64,15 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [lineupsResponse, fixtureTeams] = await Promise.all([
-      fetch(
-        `https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixtureId}`,
-        {
-          headers: {
-            "x-apisports-key": process.env.API_FOOTBALL_KEY,
-          },
-          cache: "no-store",
-        }
-      ),
+      fetchFootballApi(`fixtures/lineups?fixture=${fixtureId}`, 60),
       fetchFixtureTeams(fixtureId),
     ]);
 
@@ -96,15 +81,18 @@ export async function GET(request: NextRequest) {
       fixtureTeams.awayTeamId
     );
 
-    return NextResponse.json({
-      success: true,
-      fixtureId: Number(fixtureId),
-      homeTeamId: fixtureTeams.homeTeamId,
-      awayTeamId: fixtureTeams.awayTeamId,
-      confirmed: areLineupsConfirmed(lineups),
-      lineups,
-      errors: data.errors || null,
-    });
+    return jsonWithCache(
+      {
+        success: true,
+        fixtureId: Number(fixtureId),
+        homeTeamId: fixtureTeams.homeTeamId,
+        awayTeamId: fixtureTeams.awayTeamId,
+        confirmed: areLineupsConfirmed(lineups),
+        lineups,
+        errors: data.errors || null,
+      },
+      60
+    );
   } catch (error: unknown) {
     console.error("Lineups route error:", error);
 

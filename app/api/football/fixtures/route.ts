@@ -31,7 +31,7 @@ export async function GET(
 
   const timeout = setTimeout(
     () => controller.abort(),
-    25000
+    12000
   );
 
   try {

@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 import AnalysisReportMatchData from "@/components/AnalysisReportMatchData";
+import MatchPulse from "@/components/MatchPulse";
 import WorthBettingBlock from "@/components/WorthBettingBlock";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
@@ -212,7 +213,8 @@ export default function ReportView({
           </section>
 
           {usedData ? (
-            <section className="mt-8">
+            <section className="mt-8 space-y-8">
+              <MatchPulse usedData={usedData} />
               <AnalysisReportMatchData
                 usedData={usedData}
                 breakdown={scoreBreakdown}

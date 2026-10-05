@@ -1,7 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function hasSupabaseAuthCookie(request: NextRequest) {
+  return request.cookies.getAll().some(
+    (cookie) =>
+      cookie.name.startsWith("sb-") && cookie.name.includes("auth-token")
+  );
+}
+
 export async function middleware(request: NextRequest) {
+  if (
+    request.nextUrl.pathname.startsWith("/api") ||
+    !hasSupabaseAuthCookie(request)
+  ) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({
     request,
   });
@@ -38,6 +52,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

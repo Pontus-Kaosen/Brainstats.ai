@@ -1,3 +1,4 @@
+import type { AnalysisUsedData, LastMatch } from "@/lib/analysisReportTypes";
 import type { Language } from "@/lib/translations";
 import type { WorthBetting } from "@/lib/worthBetting";
 
@@ -100,4 +101,56 @@ const samples: Record<Language, SampleAnalysis> = {
 
 export function getSampleAnalysis(language: Language): SampleAnalysis {
   return samples[language];
+}
+
+export function getSampleUsedData(): AnalysisUsedData {
+  return {
+    homeTeamId: "1",
+    awayTeamId: "2",
+    fixtureDate: "2026-10-05T15:00:00Z",
+    homeStanding: { teamName: "Liverpool" },
+    awayStanding: { teamName: "Arsenal" },
+    homeCoach: { name: "Arne Slot" },
+    awayCoach: { name: "Mikel Arteta" },
+    homeMatchHighlights: [
+      { name: "Mohamed Salah", rating: "8.2", goals: 1, assists: 1 },
+    ],
+    awayMatchHighlights: [
+      { name: "Bukayo Saka", rating: "7.6", goals: 0, assists: 1 },
+    ],
+    homeLastMatches: [
+      played(11, "2026-10-01", 1, "Liverpool", 2, 8, "Chelsea", 1),
+      played(12, "2026-09-27", 4, "Bournemouth", 0, 1, "Liverpool", 3),
+      played(13, "2026-09-20", 1, "Liverpool", 2, 5, "Everton", 2),
+      played(14, "2026-09-13", 6, "Burnley", 1, 1, "Liverpool", 0),
+      played(15, "2026-09-06", 1, "Liverpool", 3, 7, "West Ham", 0),
+    ],
+    awayLastMatches: [
+      played(21, "2026-10-01", 3, "Newcastle", 1, 2, "Arsenal", 2),
+      played(22, "2026-09-28", 2, "Arsenal", 2, 9, "Brentford", 0),
+      played(23, "2026-09-21", 10, "City", 1, 2, "Arsenal", 1),
+      played(24, "2026-09-14", 2, "Arsenal", 3, 11, "Forest", 1),
+      played(25, "2026-09-07", 12, "Brighton", 0, 2, "Arsenal", 2),
+    ],
+  };
+}
+
+function played(
+  id: number,
+  date: string,
+  homeId: number,
+  home: string,
+  homeGoals: number,
+  awayId: number,
+  away: string,
+  awayGoals: number
+): LastMatch {
+  return {
+    fixture: { id, date },
+    teams: {
+      home: { id: homeId, name: home },
+      away: { id: awayId, name: away },
+    },
+    goals: { home: homeGoals, away: awayGoals },
+  };
 }

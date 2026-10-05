@@ -12,7 +12,9 @@ import {
 } from "@/lib/analysisReportHelpers";
 import type {
   AnalysisUsedData,
+  FixtureTeamStatistics,
   LastMatch,
+  LeagueLeader,
   ScoreBreakdown,
 } from "@/lib/analysisReportTypes";
 import {
@@ -73,6 +75,12 @@ export default function AnalysisReportMatchData({
   const h2hMatches = readH2H(usedData);
   const scheduleContext = readScheduleContext(usedData);
   const scheduleTeams = usedData.scheduleTeamsChecked || [];
+  const prediction = usedData.prediction ?? null;
+  const fixtureStatistics = usedData.fixtureStatistics || [];
+  const fixtureEvents = usedData.fixtureEvents || [];
+  const topScorers = usedData.topScorers || [];
+  const topAssists = usedData.topAssists || [];
+  const comparison = prediction?.comparison;
   const scheduleStatusMessage =
     scheduleContext === "checked_clear"
       ? formatTranslation(t.analyze.scheduleCheckedClear, {
@@ -112,6 +120,91 @@ export default function AnalysisReportMatchData({
         {matchText(match)}
       </div>
     ));
+  }
+
+  function percentWidth(value?: string | null) {
+    const parsed = Number.parseFloat(String(value || "").replace("%", ""));
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(4, Math.min(parsed, 100));
+  }
+
+  function comparisonRow(
+    label: string,
+    pair?: { home?: string | null; away?: string | null } | null
+  ) {
+    if (!pair) return null;
+
+    return (
+      <div
+        key={label}
+        className="flex items-center justify-between gap-3 rounded-lg bg-[#101010]/80 px-3 py-2 text-sm"
+      >
+        <span className="text-[#18ff6d]">{pair.home || "–"}</span>
+        <span className="text-xs uppercase tracking-wider text-[#A9A9A9]">
+          {label}
+        </span>
+        <span className="text-[#2fbfff]">{pair.away || "–"}</span>
+      </div>
+    );
+  }
+
+  function renderLeaders(rows: LeagueLeader[]) {
+    if (rows.length === 0) {
+      return (
+        <p className="text-sm text-[#A9A9A9]">{t.analyze.noMatchData}</p>
+      );
+    }
+
+    return rows.slice(0, 6).map((row) => (
+      <div
+        key={`${row.id}-${row.name}`}
+        className="flex items-center justify-between rounded-lg bg-[#101010]/80 px-3 py-2 text-sm text-[#D8D8D8]"
+      >
+        <span className="truncate">
+          {row.name || t.analyze.unknownPlayer}
+          <span className="ml-2 text-xs text-[#A9A9A9]">{row.team}</span>
+        </span>
+        <span className="font-bold text-[#18ff6d]">{row.value ?? "–"}</span>
+      </div>
+    ));
+  }
+
+  function renderFixtureStats(rows: FixtureTeamStatistics[]) {
+    const keys = [
+      "Ball Possession",
+      "Total Shots",
+      "Shots on Goal",
+      "Corner Kicks",
+      "Fouls",
+      "Yellow Cards",
+      "Red Cards",
+      "Expected Goals",
+    ];
+
+    return (
+      <div className={`${blockGap} grid gap-4 md:grid-cols-2`}>
+        {rows.map((team) => (
+          <div
+            key={team.teamId || team.teamName}
+            className="rounded-xl border border-[#18ff6d11] brain-inset p-4"
+          >
+            <p className="text-sm font-bold text-[#18ff6d]">
+              {team.teamName || t.common.teamAlt}
+            </p>
+            <div className="mt-3 space-y-1.5 text-sm text-[#D8D8D8]">
+              {keys
+                .filter((key) => team.stats?.[key] != null)
+                .map((key) => (
+                  <div key={key} className="flex justify-between gap-3">
+                    <span className="text-[#A9A9A9]">{key}</span>
+                    <span className="font-semibold">{team.stats?.[key]}</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -371,6 +464,160 @@ export default function AnalysisReportMatchData({
           </div>
         </div>
       </div>
+
+      {prediction ? (
+      <div className={`grid ${gridGap} md:grid-cols-2`}>
+        <div className={cardClass}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
+            {t.analyze.apiPredictionBadge}
+          </p>
+          <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
+            {t.analyze.apiPredictionTitle}
+          </h3>
+          <p className="mt-1.5 text-xs leading-5 text-[#A9A9A9]">
+            {t.analyze.apiPredictionHint}
+          </p>
+          {prediction ? (
+            <div className={`${blockGap} space-y-3`}>
+              <p className="text-sm text-[#E8E8E8]">
+                {prediction.advice || t.analyze.noApiPrediction}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  [t.analyze.homeWinPct, prediction.percent?.home],
+                  [t.analyze.drawPct, prediction.percent?.draw],
+                  [t.analyze.awayWinPct, prediction.percent?.away],
+                ].map(([label, value]) => (
+                  <div
+                    key={String(label)}
+                    className="rounded-xl border border-[#18ff6d11] brain-inset p-3"
+                  >
+                    <p className="text-[10px] text-[#A9A9A9]">{label}</p>
+                    <p className="mt-1 text-sm font-bold text-[#18ff6d]">
+                      {value || "–"}
+                    </p>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/50">
+                      <div
+                        className="h-full rounded-full bg-[#18ff6d]"
+                        style={{ width: `${percentWidth(value)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-[#D8D8D8]">
+                {t.analyze.apiPredictionWinner}:{" "}
+                <span className="font-semibold text-white">
+                  {prediction.winner?.name || "–"}
+                </span>
+              </p>
+              <p className="text-sm text-[#D8D8D8]">
+                {t.analyze.apiPredictionUnderOver}:{" "}
+                <span className="font-semibold text-white">
+                  {prediction.underOver || "–"}
+                </span>
+              </p>
+            </div>
+          ) : (
+            <p className={`${blockGap} text-sm text-[#A9A9A9]`}>
+              {t.analyze.noApiPrediction}
+            </p>
+          )}
+        </div>
+
+        <div className={cardClass}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
+            {t.analyze.comparisonBadge}
+          </p>
+          <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
+            {t.analyze.comparisonTitle}
+          </h3>
+          <div className={`${blockGap} space-y-2`}>
+            {comparisonRow(t.analyze.comparisonForm, comparison?.form)}
+            {comparisonRow(t.analyze.comparisonAttack, comparison?.attack)}
+            {comparisonRow(t.analyze.comparisonDefense, comparison?.defense)}
+            {comparisonRow(t.analyze.comparisonPoisson, comparison?.poisson)}
+            {comparisonRow(t.analyze.comparisonH2h, comparison?.h2h)}
+            {!comparison?.form &&
+            !comparison?.attack &&
+            !comparison?.defense ? (
+              <p className="text-sm text-[#A9A9A9]">{t.analyze.noMatchData}</p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+      ) : null}
+
+      {fixtureStatistics.length > 0 || fixtureEvents.length > 0 ? (
+        <div className={cardClass}>
+          <p
+            className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+          >
+            {t.analyze.fixtureStatsBadge}
+          </p>
+          <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
+            {t.analyze.fixtureStatsTitle}
+          </h3>
+          {fixtureStatistics.length > 0
+            ? renderFixtureStats(fixtureStatistics)
+            : (
+                <p className={`${blockGap} text-sm text-[#A9A9A9]`}>
+                  {t.analyze.noFixtureStats}
+                </p>
+              )}
+          <h4 className={`mt-5 text-sm font-bold uppercase tracking-wider text-[#A9A9A9]`}>
+            {t.analyze.matchEvents}
+          </h4>
+          <div className="mt-2 space-y-1.5">
+            {fixtureEvents.length === 0 ? (
+              <p className="text-sm text-[#A9A9A9]">{t.analyze.noMatchEvents}</p>
+            ) : (
+              fixtureEvents.map((event, index) => (
+                <div
+                  key={`${event.time}-${event.player}-${index}`}
+                  className="rounded-lg bg-[#101010]/80 px-3 py-2 text-sm text-[#D8D8D8]"
+                >
+                  {event.time ?? "–"}
+                  {event.extra != null ? `+${event.extra}` : ""}'{" "}
+                  {event.team}: {event.detail || event.type} (
+                  {event.player || "–"})
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {topScorers.length > 0 || topAssists.length > 0 ? (
+      <div className={cardClass}>
+        <p
+          className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
+        >
+          {t.analyze.leagueLeadersBadge}
+        </p>
+        <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
+          {t.analyze.leagueLeadersTitle}
+        </h3>
+        <div className={`${blockGap} grid gap-4 md:grid-cols-2`}>
+          <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
+            <h4 className="text-sm font-bold text-[#18ff6d]">
+              {t.analyze.topScorers}
+            </h4>
+            <div className="mt-3 space-y-1.5">{renderLeaders(topScorers)}</div>
+          </div>
+          <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
+            <h4 className="text-sm font-bold text-[#18ff6d]">
+              {t.analyze.topAssists}
+            </h4>
+            <div className="mt-3 space-y-1.5">{renderLeaders(topAssists)}</div>
+          </div>
+        </div>
+      </div>
+      ) : null}
 
       <div className={`grid ${gridGap} md:grid-cols-2`}>
         <div className={cardClass}>

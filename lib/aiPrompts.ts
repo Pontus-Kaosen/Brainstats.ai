@@ -185,6 +185,10 @@ export function buildAnalyzeSystemPrompt(language: Language) {
       "Use only data provided in the context and clearly state when data is missing. " +
       "When market odds are provided, treat them as a reference anchor and avoid probabilities far above the market unless multiple strong signals support it. " +
       "If data quality is low, use cautious language and lower probabilities. " +
+      "Every strength, risk and pick reason must include at least one concrete figure or a named result from the context. " +
+      "Do not write generic lines such as 'good form' or 'open game' without that figure. " +
+      "If home or away results differ from the overall record, say so. " +
+      "Open the summary with the single most decision-relevant fact. " +
       "Respond only with valid JSON. Write all user-facing text fields in English."
     );
   }
@@ -195,6 +199,10 @@ export function buildAnalyzeSystemPrompt(language: Language) {
     "Använd endast data som finns i underlaget och säg tydligt när data saknas. " +
     "När marknadsodds finns ska de användas som referens — undvik sannolikheter långt över marknaden om inte flera starka signaler stödjer det. " +
     "Vid låg datakvalitet ska språket vara försiktigt och sannolikheterna lägre. " +
+    "Varje styrka, risk och Brain Pick-motivering ska innehålla minst en konkret siffra eller ett namngivet resultat från underlaget. " +
+    "Skriv inte allmänna fraser som 'bra form' eller 'öppen match' utan den siffran. " +
+    "Om hemma- eller bortafacitet skiljer sig från det totala facitet, säg det. " +
+    "Börja sammanfattningen med den enskilt viktigaste faktorn. " +
     "Svara endast med giltig JSON. Skriv all användartext på svenska."
   );
 }
@@ -262,9 +270,11 @@ Historical calibration:
 ${input.calibrationNote || (language === "en" ? "Not enough resolved public picks yet." : "Inte tillräckligt med avgjorda publika tips ännu.")}
 
 Analysis rules:
-- Use the structured match data above as the primary source.
+- Use the structured match data above as the primary source, especially Concrete match facts.
 - Mention missing data explicitly in risks when relevant.
+- Prefer a named recent result, a venue split, a both-teams-to-score rate or a rest gap over a vague trend.
 - Keep probabilities realistic and anchored to market odds when available.
+- Treat the API-Football prediction as a secondary model. Use it as one signal among form, table, injuries and odds — never copy it as the final probability.
 - Do not exceed 75% probability unless data quality is high and several signals align.
 
 Player statistics:
@@ -390,9 +400,11 @@ Historisk kalibrering:
 ${input.calibrationNote || "Inte tillräckligt med avgjorda publika tips ännu."}
 
 Analysregler:
-- Använd strukturerat matchunderlag som primär källa.
+- Använd strukturerat matchunderlag som primär källa, särskilt Konkreta matchfakta.
 - Nämn saknad data tydligt i risker när det är relevant.
+- Välj ett namngivet senast resultat, hemma/borta-facit, andel matcher där båda lagen gör mål, eller vilodagar framför en vag trend.
 - Håll sannolikheter realistiska och förankra dem i marknadsodds när de finns.
+- Behandla API-Football-prediktionen som en sekundär modell. Använd den som en signal bland form, tabell, skador och odds — kopiera den aldrig som slutlig sannolikhet.
 - Överskrid inte 75% sannolikhet om inte datakvaliteten är hög och flera signaler pekar samma håll.
 
 Spelarstatistik:
