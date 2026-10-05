@@ -534,28 +534,37 @@ async function analyzeSingleMatchBlock(
   };
 }
 
+type PlayerHighlight = {
+  name: string;
+  rating: string | null;
+  goals: number;
+  assists: number;
+  minutes: number;
+};
+
 function slimPlayerHighlights(squads: any[], teamId: string | null) {
   const block = (Array.isArray(squads) ? squads : []).find(
     (item) => teamId && String(item?.team?.id) === String(teamId)
   );
   const players = Array.isArray(block?.players) ? block.players : [];
 
-  return players
-    .map((item: any) => {
-      const stats = item?.statistics?.[0];
-      const minutes = Number(stats?.games?.minutes ?? 0);
+  const rows: Array<PlayerHighlight | null> = players.map((item: any) => {
+    const stats = item?.statistics?.[0];
+    const minutes = Number(stats?.games?.minutes ?? 0);
 
-      if (!minutes || !item?.player?.name) return null;
+    if (!minutes || !item?.player?.name) return null;
 
-      return {
-        name: String(item.player.name),
-        rating: stats?.games?.rating ? String(stats.games.rating) : null,
-        goals: Number(stats?.goals?.total ?? 0),
-        assists: Number(stats?.goals?.assists ?? 0),
-        minutes,
-      };
-    })
-    .filter((row): row is NonNullable<typeof row> => row !== null)
+    return {
+      name: String(item.player.name),
+      rating: stats?.games?.rating ? String(stats.games.rating) : null,
+      goals: Number(stats?.goals?.total ?? 0),
+      assists: Number(stats?.goals?.assists ?? 0),
+      minutes,
+    };
+  });
+
+  return rows
+    .filter((row): row is PlayerHighlight => row !== null)
     .sort(
       (a, b) =>
         b.goals + b.assists - (a.goals + a.assists) || b.minutes - a.minutes
