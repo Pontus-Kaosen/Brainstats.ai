@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar";
 import FootballBackground from "@/components/FootballBackground";
 import AnalysisReportMatchData from "@/components/AnalysisReportMatchData";
+import EarlyAnalysisNotice from "@/components/EarlyAnalysisNotice";
 import MatchPulse from "@/components/MatchPulse";
 import WorthBettingBlock from "@/components/WorthBettingBlock";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -205,16 +206,35 @@ export default function ReportView({
               {analysis.summary || t.report.noSummary}
             </p>
 
-            {analysis.worth_betting ? (
-              <div className="mt-6">
-                <WorthBettingBlock worthBetting={analysis.worth_betting} />
-              </div>
-            ) : null}
           </section>
 
           {usedData ? (
             <section className="mt-8 space-y-8">
               <MatchPulse usedData={usedData} />
+              <EarlyAnalysisNotice lineupsConfirmed={usedData.confirmedLineups} />
+              {analysis.worth_betting ? (
+                <WorthBettingBlock
+                  worthBetting={analysis.worth_betting}
+                  figures={[
+                    {
+                      label: t.report.aiProbability,
+                      value: `${analysis.brain_picks?.[0]?.probability ?? analysis.confidence ?? "–"}${
+                        analysis.brain_picks?.[0]?.probability != null ||
+                        analysis.confidence != null
+                          ? "%"
+                          : ""
+                      }`,
+                    },
+                    {
+                      label: t.report.estimatedFairOdds,
+                      value:
+                        analysis.brain_picks?.[0]?.estimatedOdds != null
+                          ? String(analysis.brain_picks[0].estimatedOdds)
+                          : "–",
+                    },
+                  ]}
+                />
+              ) : null}
               <AnalysisReportMatchData
                 usedData={usedData}
                 breakdown={scoreBreakdown}

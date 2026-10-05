@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import AnalysisReportMatchData from "@/components/AnalysisReportMatchData";
+import EarlyAnalysisNotice from "@/components/EarlyAnalysisNotice";
 import MatchPulse from "@/components/MatchPulse";
 import WorthBettingBlock from "@/components/WorthBettingBlock";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -82,6 +83,30 @@ export default function AnalyzeMatchReport({
     return aiResult.brainPick ? [aiResult.brainPick] : [];
   }, [aiResult]);
 
+  const primaryPick = brainPicks[0];
+  const verdictFigures = primaryPick
+    ? [
+        {
+          label: t.report.aiProbability,
+          value: `${primaryPick.probability ?? primaryPick.confidence ?? "–"}${
+            primaryPick.probability != null || primaryPick.confidence != null
+              ? "%"
+              : ""
+          }`,
+        },
+        {
+          label: t.report.estimatedFairOdds,
+          value:
+            primaryPick.estimatedOdds != null
+              ? String(primaryPick.estimatedOdds)
+              : "–",
+        },
+      ]
+    : [
+        { label: t.analyze.brainScore, value: String(score) },
+        { label: t.analyze.confidence, value: `${confidence}%` },
+      ];
+
   const heroTitle = showMatchHeading ? matchLabel : t.analyze.reportTitle;
 
   return (
@@ -151,19 +176,22 @@ export default function AnalyzeMatchReport({
 
       <MatchPulse usedData={usedData} />
 
+      <EarlyAnalysisNotice lineupsConfirmed={usedData.confirmedLineups} />
+
+      {aiResult.worthBetting ? (
+        <WorthBettingBlock
+          worthBetting={aiResult.worthBetting}
+          figures={verdictFigures}
+          compact
+        />
+      ) : null}
+
       <AnalysisReportMatchData
         usedData={usedData}
         breakdown={breakdown}
         betText={blockBetText}
         compact
       />
-
-      {aiResult.worthBetting ? (
-        <WorthBettingBlock
-          worthBetting={aiResult.worthBetting}
-          compact
-        />
-      ) : null}
 
       <section>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

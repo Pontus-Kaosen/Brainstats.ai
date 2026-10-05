@@ -14,7 +14,6 @@ import type {
   AnalysisUsedData,
   FixtureTeamStatistics,
   LastMatch,
-  LeagueLeader,
   ScoreBreakdown,
 } from "@/lib/analysisReportTypes";
 import {
@@ -25,7 +24,6 @@ import {
   readLineupStarters,
   readRotationRisks,
   readScheduleContext,
-  readWeather,
   seasonLine,
   standingLine,
 } from "@/lib/analysisReportView";
@@ -66,7 +64,6 @@ export default function AnalysisReportMatchData({
   const confirmedLineups = usedData.confirmedLineups === true;
   const partialLineups = hasPartialLineups(lineups);
   const playerLineupStatus = usedData.playerLineupStatus ?? null;
-  const weather = readWeather(usedData.weather);
   const referee = usedData.referee;
   const rotationSummaries = summarizeRotationRisksForUi(
     readRotationRisks(usedData),
@@ -78,8 +75,6 @@ export default function AnalysisReportMatchData({
   const prediction = usedData.prediction ?? null;
   const fixtureStatistics = usedData.fixtureStatistics || [];
   const fixtureEvents = usedData.fixtureEvents || [];
-  const topScorers = usedData.topScorers || [];
-  const topAssists = usedData.topAssists || [];
   const comparison = prediction?.comparison;
   const scheduleStatusMessage =
     scheduleContext === "checked_clear"
@@ -146,27 +141,6 @@ export default function AnalysisReportMatchData({
         <span className="text-[#2fbfff]">{pair.away || "–"}</span>
       </div>
     );
-  }
-
-  function renderLeaders(rows: LeagueLeader[]) {
-    if (rows.length === 0) {
-      return (
-        <p className="text-sm text-[#A9A9A9]">{t.analyze.noMatchData}</p>
-      );
-    }
-
-    return rows.slice(0, 6).map((row) => (
-      <div
-        key={`${row.id}-${row.name}`}
-        className="flex items-center justify-between rounded-lg bg-[#101010]/80 px-3 py-2 text-sm text-[#D8D8D8]"
-      >
-        <span className="truncate">
-          {row.name || t.analyze.unknownPlayer}
-          <span className="ml-2 text-xs text-[#A9A9A9]">{row.team}</span>
-        </span>
-        <span className="font-bold text-[#18ff6d]">{row.value ?? "–"}</span>
-      </div>
-    ));
   }
 
   function renderFixtureStats(rows: FixtureTeamStatistics[]) {
@@ -414,56 +388,14 @@ export default function AnalysisReportMatchData({
         </div>
       </div>
 
-      <div className={cardClass}>
-        <p
-          className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
-        >
-          {t.analyze.matchConditions}
-        </p>
-        <div
-          className={`${blockGap} grid gap-4 ${compact ? "lg:grid-cols-[1.4fr_1fr]" : "md:grid-cols-2"}`}
-        >
-          <div>
-            <h3 className={`${sectionTitle} text-white`}>
-              {t.analyze.weather}
-            </h3>
-            {weather ? (
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {[
-                  [t.analyze.temperature, `${weather.temperature ?? "–"}°C`],
-                  [t.analyze.weatherDesc, weather.description ?? "–"],
-                  [t.analyze.wind, `${weather.wind ?? "–"} km/h`],
-                  [t.analyze.humidity, `${weather.humidity ?? "–"}%`],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="rounded-xl border border-[#18ff6d11] brain-inset p-3"
-                  >
-                    <p className="text-[10px] text-[#A9A9A9] sm:text-xs">
-                      {label}
-                    </p>
-                    <p className="mt-1 text-sm font-bold text-[#18ff6d] sm:text-base">
-                      {value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm leading-6 text-[#A9A9A9]">
-                {t.analyze.noWeatherData}
-              </p>
-            )}
-          </div>
-          <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
-            <p className="text-xs text-[#A9A9A9]">{t.analyze.matchOfficial}</p>
-            <p
-              className={`mt-2 text-lg font-bold sm:text-xl ${referee ? "text-[#18ff6d]" : "text-[#A9A9A9]"}`}
-            >
-              {referee || t.analyze.noRefereeData}
-            </p>
-          </div>
+      {referee ? (
+        <div className={cardClass}>
+          <p className="text-xs text-[#A9A9A9]">{t.analyze.matchOfficial}</p>
+          <p className="mt-2 text-lg font-bold text-[#18ff6d] sm:text-xl">
+            {referee}
+          </p>
         </div>
-      </div>
+      ) : null}
 
       {prediction ? (
       <div className={`grid ${gridGap} md:grid-cols-2`}>
@@ -590,33 +522,6 @@ export default function AnalysisReportMatchData({
             )}
           </div>
         </div>
-      ) : null}
-
-      {topScorers.length > 0 || topAssists.length > 0 ? (
-      <div className={cardClass}>
-        <p
-          className={`text-xs uppercase tracking-[0.25em] ${titleGradient} sm:text-sm`}
-        >
-          {t.analyze.leagueLeadersBadge}
-        </p>
-        <h3 className={`mt-1.5 ${sectionTitle} text-white`}>
-          {t.analyze.leagueLeadersTitle}
-        </h3>
-        <div className={`${blockGap} grid gap-4 md:grid-cols-2`}>
-          <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
-            <h4 className="text-sm font-bold text-[#18ff6d]">
-              {t.analyze.topScorers}
-            </h4>
-            <div className="mt-3 space-y-1.5">{renderLeaders(topScorers)}</div>
-          </div>
-          <div className="rounded-xl border border-[#18ff6d11] brain-inset p-4">
-            <h4 className="text-sm font-bold text-[#18ff6d]">
-              {t.analyze.topAssists}
-            </h4>
-            <div className="mt-3 space-y-1.5">{renderLeaders(topAssists)}</div>
-          </div>
-        </div>
-      </div>
       ) : null}
 
       <div className={`grid ${gridGap} md:grid-cols-2`}>

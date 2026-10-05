@@ -6,10 +6,16 @@ import {
   worthBettingStyles,
 } from "@/lib/worthBetting";
 
+type WorthBettingFigure = {
+  label: string;
+  value: string;
+};
+
 type WorthBettingBlockProps = {
   worthBetting: WorthBetting;
   className?: string;
   compact?: boolean;
+  figures?: WorthBettingFigure[];
 };
 
 const titleGradient =
@@ -19,6 +25,7 @@ export default function WorthBettingBlock({
   worthBetting,
   className = "",
   compact = false,
+  figures = [],
 }: WorthBettingBlockProps) {
   const { t } = useLanguage();
   const styles = worthBettingStyles(worthBetting.verdict);
@@ -52,6 +59,19 @@ export default function WorthBettingBlock({
         <p className={`mt-3 font-bold leading-7 text-white ${compact ? "text-lg" : "text-xl sm:text-2xl sm:leading-8"}`}>
           {worthBetting.headline}
         </p>
+
+        {figures.length > 0 ? (
+          <div className={`${compact ? "mt-4" : "mt-5"} grid grid-cols-2 gap-2`}>
+            {figures.slice(0, 2).map((figure) => (
+              <div key={figure.label} className="rounded-xl bg-black/30 px-3 py-2.5">
+                <p className="text-[10px] uppercase tracking-wide text-[#A9A9A9]">
+                  {figure.label}
+                </p>
+                <p className="mt-1 text-lg font-black text-white">{figure.value}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         <p className={`${compact ? "mt-3 text-sm leading-6" : "mt-4 leading-8"} text-[#D8D8D8]`}>
           {worthBetting.reason}

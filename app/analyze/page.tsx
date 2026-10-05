@@ -403,7 +403,7 @@ function AnalyzePageContent() {
               </div>
             )}
 
-            {isLoggedIn && plan === "free" && remainingToday !== null && (
+            {isLoggedIn && plan === "free" && remainingToday !== null && remainingToday > 0 && (
               <div
                 className={`mb-5 rounded-2xl border px-4 py-3 text-sm ${
                   remainingToday <= 1
@@ -429,6 +429,26 @@ function AnalyzePageContent() {
               </div>
             )}
 
+            {remainingToday === 0 && plan === "free" && isLoggedIn ? (
+              <div className="rounded-2xl border border-[#18ff6d33] bg-[#07140d] p-6 text-center sm:p-8">
+                <p className={`text-xs uppercase tracking-[0.28em] ${titleGradient}`}>
+                  Pro
+                </p>
+                <h3 className="mt-2 text-2xl font-black text-white">
+                  {t.analyze.limitReachedTitle}
+                </h3>
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#D8D8D8]">
+                  {t.analyze.limitReachedBody}
+                </p>
+                <Link
+                  href="/premium"
+                  className="mt-5 inline-flex rounded-full bg-[#18ff6d] px-6 py-3 text-sm font-bold text-black transition hover:opacity-90"
+                >
+                  {t.analyze.upgradeTrialCta} →
+                </Link>
+              </div>
+            ) : (
+            <>
             <div className="mb-5 flex gap-2 rounded-2xl border border-[#18ff6d22] bg-black/30 p-1">
               <button
                 type="button"
@@ -524,34 +544,14 @@ function AnalyzePageContent() {
               </div>
             ) : null}
 
-            {remainingToday === 0 && plan === "free" && isLoggedIn ? (
-              <div className="mt-5 rounded-2xl border border-[#E8DCC8]/30 bg-[#E8DCC8]/10 p-5 text-center">
-                <h3 className="text-lg font-bold text-[#F5EAD8]">
-                  {t.analyze.limitReachedTitle}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-[#D8D8D8]">
-                  {t.analyze.limitReachedBody}
-                </p>
-                <Link
-                  href="/premium"
-                  className="mt-4 inline-flex rounded-full bg-[#18ff6d] px-5 py-2.5 text-sm font-bold text-black transition hover:opacity-90"
-                >
-                  {t.analyze.upgradeTrialCta} →
-                </Link>
-              </div>
-            ) : (
               <Button
                 onClick={handleAnalyze}
-                disabled={
-                  !betText.trim() ||
-                  loading ||
-                  parsingImage ||
-                  remainingToday === 0
-                }
+                disabled={!betText.trim() || loading || parsingImage}
                 className="mt-5 w-full py-4"
               >
                 {loading ? t.analyze.analyzing : t.analyze.runEngine}
               </Button>
+            </>
             )}
           </section>
 
@@ -577,7 +577,7 @@ function AnalyzePageContent() {
         window.location.href = "/premium";
       }}
     >
-      {t.analyze.upgradePro}
+      {t.analyze.upgradeTrialCta}
     </Button>
   </section>
 )}

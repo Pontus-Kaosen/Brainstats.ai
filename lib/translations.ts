@@ -725,6 +725,9 @@ export const translations = {
       lineupsNotPublished: "Startelvorna är ännu inte publicerade",
       lineupsHint:
         "Bekräftade startelvor publiceras vanligtvis nära matchstart. Gör analysen igen senare för att hämta den senaste informationen.",
+      earlyAnalysisTitle: "Analysen är tidig",
+      earlyAnalysisBody:
+        "Startelvorna är inte publicerade. Rapporten blir säkrare nära avspark. Kör analysen igen då.",
       homeTeam: "Hemmalag",
       awayTeam: "Bortalag",
       formation: "Formation:",
@@ -1928,6 +1931,9 @@ export const translations = {
       lineupsNotPublished: "Starting lineups are not published yet",
       lineupsHint:
         "Confirmed lineups are usually published close to kick-off. Run the analysis again later for the latest information.",
+      earlyAnalysisTitle: "This analysis is early",
+      earlyAnalysisBody:
+        "Lineups are not published yet. The report is more reliable close to kick-off. Run it again then.",
       homeTeam: "Home team",
       awayTeam: "Away team",
       formation: "Formation:",
